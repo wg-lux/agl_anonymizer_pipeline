@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "agl_anonymizer_pipeline"
+version = "0.1.0"
+description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future"
+authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+transformers = "^4.20.0"
+Pillow = "^9.0.0"
+PyMuPDF = "^1.20.0"
+opencv-python = "^4.6.0"
+numpy = "1.26.4"
+spacy = "^3.4.0"
+requests = "2.31.0"
+flair = "0.13.0"
+gender-guesser = "0.4.0"
+PyPDF2 = "3.0.1"
+reportlab = "4.1.0"
+torch = "^1.10.0"
+gensim = "^4.1.2"
+
+
