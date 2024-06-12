@@ -55,4 +55,5 @@ coverage.xml
 .pytest_cache/
 cover/
 .tar.gz
-.whl
+.whlagl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
+agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
