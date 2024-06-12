@@ -54,3 +54,5 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.tar.gz
+.whl
