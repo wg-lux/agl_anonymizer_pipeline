@@ -57,3 +57,5 @@ cover/
 .tar.gz
 .whlagl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
 agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
+agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
+agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
