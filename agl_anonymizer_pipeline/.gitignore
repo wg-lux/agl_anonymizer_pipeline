@@ -29,7 +29,9 @@ share/python-wheels/
 MANIFEST
 EAST/
 .venv/
-
+results/
+images/
+temp/
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -54,8 +56,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-.tar.gz
-.whlagl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
-agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
-agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
-agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
+
+images/
+results/
