@@ -7,7 +7,26 @@ import tempfile
 from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
 
+## Main function is used to run the script
+
 def process_image(image_path, east_path, device, min_confidence, width, height, results_dir, temp_dir):
+    """
+    Processes a single image by detecting and anonymizing text using OCR and NER.
+
+    Args:
+        image_path (str): Path to the input image.
+        east_path (str): Path to the EAST text detector model.
+        device (str): Device name used to set correct text settings.
+        min_confidence (float): Minimum confidence for detecting text regions.
+        width (int): Width to which the image will be resized.
+        height (int): Height to which the image will be resized.
+        results_dir (str): Directory to save the processed results.
+        temp_dir (str): Temporary directory for intermediate files.
+
+    Returns:
+        str: Path to the reassembled image.
+        dict: Statistics from the processing.
+    """
     print(f"Processing file: {image_path}")
     unique_id = str(uuid.uuid4())[:8]
     id = f"image_{unique_id}"
@@ -32,6 +51,16 @@ def process_image(image_path, east_path, device, min_confidence, width, height, 
         raise RuntimeError(error_message)
 
 def get_image_paths(image_or_pdf_path, temp_dir):
+    """
+    Extracts image paths from a given PDF or returns the path if it's a single image.
+
+    Args:
+        image_or_pdf_path (str): Path to the input image or PDF.
+        temp_dir (str): Temporary directory for storing extracted images.
+
+    Returns:
+        list: List of paths to the extracted images.
+    """
     image_paths = []
 
     if image_or_pdf_path.endswith('.pdf'):
@@ -46,8 +75,21 @@ def get_image_paths(image_or_pdf_path, temp_dir):
 
     return image_paths
 
-
 def main(image_or_pdf_path, east_path='frozen_east_text_detection.pb', device="olympus_cv_1500", min_confidence=0.5, width=320, height=320):
+    """
+    Main function to process images or PDFs for text anonymization.
+
+    Args:
+        image_or_pdf_path (str): Path to the input image or PDF.
+        east_path (str, optional): Path to the EAST text detector model. Defaults to 'frozen_east_text_detection.pb'.
+        device (str, optional): Device name used to set correct text settings. Defaults to "olympus_cv_1500".
+        min_confidence (float, optional): Minimum confidence for detecting text regions. Defaults to 0.5.
+        width (int, optional): Width to which the image will be resized. Defaults to 320.
+        height (int, optional): Height to which the image will be resized. Defaults to 320.
+
+    Returns:
+        str: Path to the final output file (image or PDF).
+    """
     results_dir = os.path.join(os.path.dirname(image_or_pdf_path), "results")
     os.makedirs(results_dir, exist_ok=True)
     temp_dir = tempfile.mkdtemp()

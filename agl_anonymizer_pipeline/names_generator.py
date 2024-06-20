@@ -7,8 +7,29 @@ import time
 import uuid
 import json
 
-# Define the base directory and file paths
+import os
+
+# Define the base directory (current directory of the script)
 base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the path to the temp directory
+temp_dir = os.path.join(base_dir, 'temp')
+
+# Function to create temp directory if it doesn't exist
+def create_temp_directory(temp_dir):
+    if not os.path.exists(temp_dir):
+        try:
+            os.makedirs(temp_dir)
+            print(f"Created temp directory at {temp_dir}")
+        except Exception as e:
+            print(f"Error creating temp directory: {e}")
+    else:
+        print(f"Temp directory already exists at {temp_dir}")
+
+# Call the function to ensure the temp directory is created
+create_temp_directory(temp_dir)
+
+# Define the base directory and file paths
 female_names_file = os.path.join(base_dir, 'names_dict', 'first_and_last_name_female.txt')
 male_names_file = os.path.join(base_dir, 'names_dict', 'first_and_last_name_male.txt')
 female_first_names_file = os.path.join(base_dir, 'names_dict', 'first_names_female.txt')
@@ -58,28 +79,52 @@ def add_name_to_image(name, gender_par, device="olympus_cv_1500", font=None, tex
         formatted_name = format_string.replace("first_name", first_name).replace("last_name", last_name).replace("/n", "\n")
         return formatted_name
 
-    def draw_text(text, font, font_scale, font_color, font_thickness, background_color):
-        # Split text into lines
-        lines = text.split('\n')
-        text_height = 0
-        text_width = 0
-        line_sizes = []
+    def draw_text(text, font, font_scale, font_color, font_thickness, background_color, last_name_box=None, first_name_box=None):
+        if first_name_box or last_name_box is None:
+            # Split text into lines
+            lines = text.split('\n')
+            text_height = 0
+            text_width = 0
+            line_sizes = []
 
-        # Calculate the size of each line
-        for line in lines:
-            line_size = cv2.getTextSize(line, font, font_scale, font_thickness)[0]
-            text_width = max(text_width, line_size[0])
-            text_height += line_size[1] + 10  # Adding line spacing
-            line_sizes.append(line_size)
+            # Calculate the size of each line
+            for line in lines:
+                line_size = cv2.getTextSize(line, font, font_scale, font_thickness)[0]
+                text_width = max(text_width, line_size[0])
+                text_height += line_size[1] + 10  # Adding line spacing
+                line_sizes.append(line_size)
 
-        # Create a new image with the background color
-        text_img = np.full((text_height + 20, text_width + 20, 3), background_color, dtype=np.uint8)
+            # Create a new image with the background color
+            text_img = np.full((text_height + 20, text_width + 20, 3), background_color, dtype=np.uint8)
 
-        # Draw each line on the new image
-        y = 10
-        for line, size in zip(lines, line_sizes):
-            cv2.putText(text_img, line, (10, y + size[1]), font, font_scale, font_color, font_thickness)
-            y += size[1] + 10
+            # Draw each line on the new image
+            y = 10
+            for line, size in zip(lines, line_sizes):
+                cv2.putText(text_img, line, (10, y + size[1]), font, font_scale, font_color, font_thickness)
+                y += size[1] + 10
+        else:
+            # Split text into lines
+            
+            lines = text.split('\n')
+            text_height = 0
+            text_width = 0
+            line_sizes = []
+
+            # Calculate the size of each line
+            for line in lines:
+                line_size = cv2.getTextSize(line, font, font_scale, font_thickness)[0]
+                text_width = max(text_width, line_size[0])
+                text_height += line_size[1] + 10  # Adding line spacing
+                line_sizes.append(line_size)
+
+            # Create a new image with the background color
+            text_img = np.full((text_height + 20, text_width + 20, 3), background_color, dtype=np.uint8)
+
+            # Draw each line on the new image
+            y = 10
+            for line, size in zip(lines, line_sizes):
+                cv2.putText(text_img, line, (10, y + size[1]), font, font_scale, font_color, font_thickness)
+                y += size[1] + 10
 
         return text_img
 

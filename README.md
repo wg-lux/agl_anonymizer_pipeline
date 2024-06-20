@@ -19,11 +19,12 @@ To get started with AGL Anonymizer, clone this repository and install the requir
 git clone https://github.com/maxhild/agl_anonymizer_pipeline.git
 cd agl_anonymizer_pipeline
 nix develop
-dowload a text detection model like this frozen_east_text_detection.pb
+dowload a text detection model like frozen_east_text_detection.pb and place it inside the agl_anonymizer_pipeline folder.
+
 
 ## Usage
 
-To use AGL Anonymizer, follow these steps:
+To use AGL Anonymizer Pipeline, follow these steps:
 
 Prepare Your Images: Place the images you want to process in the designated folder.
 Configure Settings: Adjust the settings in the configuration file (if applicable) to suit your anonymizing and blurring needs.
@@ -52,7 +53,7 @@ You can customize the behavior of AGL Anonymize by modifying the parameters in t
 
 ## Contributing
 
-Contributions to AGL Anonymizer are welcome! If you have suggestions for improvements or bug fixes, please open an issue or a pull request.
+Contributions to the AGL Anonymizer Pipeline are welcome! If you have suggestions for improvements or bug fixes, please open an issue or a pull request.
 
 TO DO:
 

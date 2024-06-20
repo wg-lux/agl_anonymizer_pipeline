@@ -23,7 +23,7 @@ def ocr_on_boxes(image_path, boxes):
         (startX, startY, endX, endY) = box
         cropped_image = image.crop((startX, startY, endX, endY))
         pixel_values = processor(cropped_image, return_tensors="pt").pixel_values
-        outputs = model.generate(pixel_values, output_scores=True, return_dict_in_generate=True)
+        outputs = model.generate(pixel_values, output_scores=True, return_dict_in_generate=True, max_new_tokens=50)
         
         scores = outputs.scores
 
@@ -81,7 +81,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 pdf_data = pdf_file.read()
 
                 # Convert the entire PDF to images
-                # image_paths = convert_pdf_to_images(pdf_data)
+                image_paths = convert_pdf_to_images(pdf_data)
 
                 # Open the PDF again for text extraction
                 with fitz.open(stream=pdf_data, filetype="pdf") as doc:
