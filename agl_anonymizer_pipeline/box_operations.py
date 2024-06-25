@@ -1,5 +1,60 @@
-from .color_picker_avg import get_dominant_color
 import numpy as np
+import cv2
+
+def get_dominant_color(image, box):
+    """
+    Get the dominant color in a given box region of the image.
+    :param image: The input image
+    :param box: The bounding box (startX, startY, endX, endY)
+    :return: The dominant color as a tuple (B, G, R)
+    """
+    (startX, startY, endX, endY) = box
+    region = image[startY:endY, startX:endX]
+    pixels = np.float32(region.reshape(-1, 3))
+    
+    n_colors = 1
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.1)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    
+    _, labels, palette = cv2.kmeans(pixels, n_colors, None, criteria, 10, flags)
+    _, counts = np.unique(labels, return_counts=True)
+    
+    dominant = palette[np.argmax(counts)]
+    return tuple(map(int, dominant))
+
+def make_box_from_name(image, name, padding=10):
+    """
+    Create a bounding box around the given name in the image.
+
+    Parameters:
+    image: ndarray
+        The image in which to create the bounding box.
+    name: str
+        The name for which to create the bounding box.
+    padding: int
+        The padding to add around the name to create the bounding box.
+
+    Returns:
+    tuple
+        The bounding box coordinates as a tuple of (startX, startY, endX, endY).
+    """
+    # Get the text size of the name
+    text_size = cv2.getTextSize(name, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
+
+    # Calculate the bounding box coordinates
+    startX = max(0, text_size[0] - padding)
+    startY = max(0, text_size[1] - padding)
+    endX = min(image.shape[1], text_size[0] + padding)
+    endY = min(image.shape[0], text_size[1] + padding)
+
+    return (startX, startY, endX, endY)
+
+def make_box_from_device_list(x,y,w,h):
+    startX=x 
+    startY=y 
+    endX=x+w 
+    endY=y+h
+    return startX, startY, endX, endY
 
 def extend_boxes_if_needed(image, boxes, extension_margin=10, color_threshold=30):
     extended_boxes = []

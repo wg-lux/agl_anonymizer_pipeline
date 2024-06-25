@@ -2,7 +2,7 @@ import cv2
 import os
 import uuid
 
-def reassemble_image(modified_images_map, output_dir, id):
+def reassemble_image(modified_images_map, output_dir, id, original_image_path=None):
     curr_image_path = None
     original_image = None
 
@@ -53,7 +53,11 @@ def reassemble_image(modified_images_map, output_dir, id):
         final_image_path = os.path.join(output_dir, f"reassembled_image_{id}_{uuid.uuid4()}.jpg")
         cv2.imwrite(final_image_path, original_image)
         print(f"Reassembled image saved to: {final_image_path}")
+    elif original_image_path is not None:
+        final_image_path = os.path.join(output_dir, f"reassembled_image_{id}_{uuid.uuid4()}.jpg")
+        cv2.imwrite(final_image_path, cv2.imread(original_image_path))
+        print(f"No modifications were made. Copying the original image to the output directory: {final_image_path}")
     else:
-        print("No modifications were made, or no original image was successfully loaded.")
+        print("no original image was successfully loaded.")
 
     return final_image_path if original_image is not None else None

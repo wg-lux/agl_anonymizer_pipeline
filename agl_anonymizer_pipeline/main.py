@@ -9,6 +9,8 @@ from .image_reassembly import reassemble_image
 
 ## Main function is used to run the script
 
+
+
 def process_image(image_path, east_path, device, min_confidence, width, height, results_dir, temp_dir):
     """
     Processes a single image by detecting and anonymizing text using OCR and NER.
@@ -43,7 +45,7 @@ def process_image(image_path, east_path, device, min_confidence, width, height, 
         print("Modified Images Map:", modified_images_map)
 
         # Reassemble image
-        reassembled_image_path = reassemble_image(modified_images_map, results_dir, id)
+        reassembled_image_path = reassemble_image(modified_images_map, results_dir, id, image_path)
         return reassembled_image_path, stats
     except Exception as e:
         error_message = f"Error in process_image: {e}, Image Path: {image_path}"
