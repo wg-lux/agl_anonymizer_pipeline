@@ -2,30 +2,8 @@ import cv2
 import os
 import uuid
 from .temp_dir_setup import create_temp_directory
-
+from .box_operations import get_dominant_color
 temp_dir, base_dir = create_temp_directory()
-
-def expand_roi(startX, startY, endX, endY, expansion, image_shape):
-    """
-    Expand the ROI by a certain number of pixels in all directions and ensure it is within image boundaries.
-
-    Parameters:
-    startX, startY, endX, endY: int
-        The starting and ending coordinates of the ROI.
-    expansion: int
-        The number of pixels to expand the ROI in all directions.
-    image_shape: tuple
-        The shape of the image to ensure the expanded ROI is within the bounds.
-
-    Returns:
-    tuple
-        The expanded ROI coordinates.
-    """
-    startX = max(0, startX - expansion)
-    startY = max(0, startY - expansion)
-    endX = min(image_shape[1], endX + expansion)
-    endY = min(image_shape[0], endY + expansion)
-    return (startX, startY, endX, endY)
 
 def blur_function(image, box, background_color=None, expansion=10, blur_strength=(51, 51), rectangle_scale=0.8):
     """
@@ -136,7 +114,7 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     if background_color is not None:
         dominant_color = background_color
     else:
-        dominant_color = (255, 255, 255)
+        dominant_color = get_dominant_color(image, box)
 
     # Calculate the dimensions for the smaller rectangle
     rect_width = int((endX - startX) * rectangle_scale)

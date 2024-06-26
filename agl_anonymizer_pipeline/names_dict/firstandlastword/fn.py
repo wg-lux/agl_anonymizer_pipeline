@@ -27,8 +27,8 @@ def save_to_file(data, output_file_path):
 
 # Example usage
 if __name__ == "__main__":
-    input_file_path = 'first_and_last_name_male.txt'  # Replace with your input file path
-    first_words_output_file_path = 'first_names_male.txt'  # Replace with your first words output file path
+    input_file_path = 'first_and_last_names_neutral_ascii.txt'  # Replace with your input file path
+    first_words_output_file_path = 'first_names_neutral_ascii.txt'  # Replace with your first words output file path
     remaining_lines_output_file_path = 'fn_male_remaining.txt'  # Replace with your remaining lines output file path
 
     first_words, remaining_lines = extract_first_words(input_file_path)

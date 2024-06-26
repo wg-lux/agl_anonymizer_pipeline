@@ -3,6 +3,7 @@ import os
 import cv2
 from .box_operations import make_box_from_device_list
 
+
 def parse_color(color_str):
     return tuple(map(int, color_str.strip('()').split(',')))
 
@@ -20,87 +21,156 @@ FONT_MAP = {
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 def read_device(device):
-        device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
-        with open(device_file_path) as json_parameters:
-            data = json.load(json_parameters)
-            #print("Device JSON Loaded:", data)
-            keys_to_check = ["background_color", "text_color", "font", "font_size", "text_formatting", "patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
-            for key in data["fields"]:
-                if key in keys_to_check:
-                    if key == "background_color":
-                        background_color = parse_color(data["fields"][key])
-                    elif key == "text_color":
-                        font_color = parse_color(data["fields"][key])
-                    elif key == "font":
-                        font_key = data["fields"][key]
-                        if font_key in FONT_MAP:
-                            font = FONT_MAP[font_key]
-                        else:
-                            print(f"Warning: Font '{font_key}' not recognized. Using default font.")
-                            font = cv2.FONT_HERSHEY_SIMPLEX
-                    elif key == "font_size":
-                        font_size = data["fields"][key]
-                        font_scale = font_size / 20
-                        font_thickness = 2
-                    elif key == "text_formatting":
-                        text_formatting = data["fields"][key]
-                    elif key == "patient_first_name_x":
-                        first_name_x = data["fields"][key]
-                    elif key == "patient_first_name_y":
-                        first_name_y = data["fields"][key]
-                    elif key == "patient_first_name_width":
-                        first_name_width = data["fields"][key]
-                    elif key == "patient_first_name_height":
-                        first_name_height = data["fields"][key]
-                    elif key == "patient_last_name_x":
-                        last_name_x = data["fields"][key]
-                    elif key == "patient_last_name_y":
-                        last_name_y = data["fields"][key]
-                    elif key == "patient_last_name_width":
-                        last_name_width = data["fields"][key]
-                    elif key == "patient_last_name_height":
-                        last_name_height = data["fields"][key]
-                    elif key == "text_formatting":
-                        text_formatting = data["fields"][key]
-            return background_color, font_color, font, font_scale, font_thickness, text_formatting, first_name_x, first_name_y, first_name_width, first_name_height, last_name_x, last_name_y, last_name_width, last_name_height, text_formatting
+    print(f"reading device config for {device}")
+    device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
+    with open(device_file_path) as json_parameters:
+        data = json.load(json_parameters)
+        #print("Device JSON Loaded:", data)
+                    
+        
+        background_color = "(255, 255, 255)"
+        font_color = "(0, 0, 0)"
+        font = "FONT_HERSHEY_DUPLEX"
+        font_size = 40
+        font_scale = font_size / 20
+        font_thickness = 2
+        text_formatting = "first_name last_name"
+        first_name_x = 0
+        first_name_y = 0
+        first_name_width = 100
+        first_name_height = 20
+        last_name_x = 100
+        last_name_y = 0
+        last_name_width = 100
+        last_name_height = 20
+
+        keys_to_check = ["background_color", "text_color", "font", "font_size", "text_formatting", "patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
+        for key in data["fields"]:
+            if key in keys_to_check:
+                if key == "background_color":
+                    background_color = parse_color(data["fields"][key])
+                elif key == "text_color":
+                    font_color = parse_color(data["fields"][key])
+                elif key == "font":
+                    font_key = data["fields"][key]
+                    if font_key in FONT_MAP:
+                        font = FONT_MAP[font_key]
+                    else:
+                        print(f"Warning: Font '{font_key}' not recognized. Using default font.")
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                elif key == "font_size":
+                    font_size = data["fields"][key]
+                    font_scale = font_size / 20
+                    font_thickness = 2
+                elif key == "text_formatting":
+                    text_formatting = data["fields"][key]
+                elif key == "patient_first_name_x":
+                    first_name_x = data["fields"][key]
+                elif key == "patient_first_name_y":
+                    first_name_y = data["fields"][key]
+                elif key == "patient_first_name_width":
+                    first_name_width = data["fields"][key]
+                elif key == "patient_first_name_height":
+                    first_name_height = data["fields"][key]
+                elif key == "patient_last_name_x":
+                    last_name_x = data["fields"][key]
+                elif key == "patient_last_name_y":
+                    last_name_y = data["fields"][key]
+                elif key == "patient_last_name_width":
+                    last_name_width = data["fields"][key]
+                elif key == "patient_last_name_height":
+                    last_name_height = data["fields"][key]
+
+        return background_color, font_color, font, font_scale, font_thickness, text_formatting, first_name_x, first_name_y, first_name_width, first_name_height, last_name_x, last_name_y, last_name_width, last_name_height
+
+def read_name_boxes(device, first_name_x = 0, first_name_y = 0, first_name_width = 100, first_name_height = 20, last_name_x = 100, last_name_y = 0, last_name_width = 100, last_name_height = 20, parameter=False):
+    print(f"reading device patient name config for {device}")
+    if parameter==True:
+        
+        return None, None
+        
+    device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
+    with open(device_file_path) as json_parameters:
+        print(f"device file path opened:{device_file_path}")
+        data = json.load(json_parameters)
+        #print("Device JSON Loaded:", data)
         
 
-def read_name_boxes(device):
-        device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
-        with open(device_file_path) as json_parameters:
-            data = json.load(json_parameters)
-            #print("Device JSON Loaded:", data)
-            keys_to_check = ["patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
-            for key in data["fields"]:
-                if key in keys_to_check:
-                    if key == "patient_first_name_x":
-                        first_name_x = data["fields"][key]
-                    elif key == "patient_first_name_y":
-                        first_name_y = data["fields"][key]
-                    elif key == "patient_first_name_width":
-                        first_name_width = data["fields"][key]
-                    elif key == "patient_first_name_height":
-                        first_name_height = data["fields"][key]
-                    elif key == "patient_last_name_x":
-                        last_name_x = data["fields"][key]
-                    elif key == "patient_last_name_y":
-                        last_name_y = data["fields"][key]
-                    elif key == "patient_last_name_width":
-                        last_name_width = data["fields"][key]
-                    elif key == "patient_last_name_height":
-                        last_name_height = data["fields"][key]
-            first_name_box=make_box_from_device_list(first_name_x, first_name_y, first_name_width, first_name_height)
-            last_name_box=make_box_from_device_list(last_name_x, last_name_y, last_name_width, last_name_height)
-            return first_name_box, last_name_box
+        print("default values set")
+        keys_to_check = ["patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
+        for key in data["fields"]:
+            if key in keys_to_check:
+                if key == "patient_first_name_x":
+                    first_name_x = data["fields"][key]
+                elif key == "patient_first_name_y":
+                    first_name_y = data["fields"][key]
+                elif key == "patient_first_name_width":
+                    first_name_width = data["fields"][key]
+                elif key == "patient_first_name_height":
+                    first_name_height = data["fields"][key]
+                elif key == "patient_last_name_x":
+                    last_name_x = data["fields"][key]
+                elif key == "patient_last_name_y":
+                    last_name_y = data["fields"][key]
+                elif key == "patient_last_name_width":
+                    last_name_width = data["fields"][key]
+                elif key == "patient_last_name_height":
+                    last_name_height = data["fields"][key]
+        if first_name_x == 0 and first_name_y == 0 and first_name_width == 0 and first_name_height == 0 and last_name_x == 0 and last_name_y == 0 and last_name_width == 0 and last_name_height == 0:
+            first_name_box = None
+            last_name_box = None
+            parameter = True
+        else:
+            first_name_box = make_box_from_device_list(first_name_x, first_name_y, first_name_width, first_name_height)
+            last_name_box = make_box_from_device_list(last_name_x, last_name_y, last_name_width, last_name_height)
+        return first_name_box, last_name_box
         
 def read_background_color(device):
-        device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
-        with open(device_file_path) as json_parameters:
-            data = json.load(json_parameters)
-            #print("Device JSON Loaded:", data)
-            keys_to_check = ["background_color"]
-            for key in data["fields"]:
-                if key in keys_to_check:
-                    if key == "background_color":
-                        background_color = parse_color(data["fields"][key])
-            return background_color
+    device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
+    print(f"reading device background color config for {device}")
+    with open(device_file_path) as json_parameters:
+        data = json.load(json_parameters)
+        #print("Device JSON Loaded:", data)
+        
+        background_color = "(225, 225, 225)"
+
+        keys_to_check = ["background_color"]
+        for key in data["fields"]:
+            if key in keys_to_check:
+                if key == "background_color":
+                    background_color = parse_color(data["fields"][key])
+        return background_color
+    
+def read_text_formatting(device):
+    device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
+    with open(device_file_path) as json_parameters:
+        data = json.load(json_parameters)
+        #print("Device JSON Loaded:", data)
+        
+        text_formatting = "first_name last_name"
+
+        keys_to_check = ["text_formatting"]
+        for key in data["fields"]:
+            if key in keys_to_check:
+                if key == "text_formatting":
+                    text_formatting = data["fields"][key]
+                if key == "background_color":
+                    background_color = parse_color(data["fields"][key])
+                if key == "text_color":
+                    font_color = parse_color(data["fields"][key])
+                if key == "font":
+                    font_key = data["fields"][key]
+                    if font_key in FONT_MAP:
+                        font = FONT_MAP[font_key]
+                    else:
+                        print(f"Warning: Font '{font_key}' not recognized. Using default font.")
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                if key == "font_size":
+                    font_size = data["fields"][key]
+                    font_scale = font_size / 20
+                    font_thickness = 2
+                if key == "font_thickness":
+                    font_thickness = data["fields"][key]
+                if key == "font_scale":
+                    font_scale = data["fields"][key]
+        return background_color, font_color, font, font_scale, font_thickness, text_formatting

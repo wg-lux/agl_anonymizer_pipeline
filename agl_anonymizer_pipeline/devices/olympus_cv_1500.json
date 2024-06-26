@@ -40,8 +40,6 @@
         "text_color": "(225, 225, 225)",
         "font_size": 40,
         "font": "FONT_HERSHEY_DUPLEX",
-        "format_style": "1",
-        "text_formatting": "last_name, /n first_name",
-        "name_search": "seperate"
+        "text_formatting": "last_name, /n first_name"
     }
 }
