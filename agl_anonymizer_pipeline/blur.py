@@ -3,80 +3,10 @@ import os
 import uuid
 from .temp_dir_setup import create_temp_directory
 from .box_operations import get_dominant_color
-temp_dir, base_dir = create_temp_directory()
-
-def blur_function(image, box, background_color=None, expansion=10, blur_strength=(51, 51), rectangle_scale=0.8):
-    """
-    Apply a strong Gaussian blur to the specified ROI in the image and slightly extend the blur outside the ROI.
-
-    Parameters:
-    image: ndarray
-        The image on which to apply the blurring.
-    box: tuple
-        The bounding box as a tuple of (startX, startY, endX, endY).
-    background_color: tuple
-        The background color to fill the rectangle. Default is None.
-    expansion: int
-        The number of pixels to expand the blur beyond the ROI.
-    blur_strength: tuple
-        The size of the Gaussian kernel to use for blurring.
-    rectangle_scale: float
-        The scale of the rectangle relative to the expanded ROI.
-
-    Returns:
-    str
-        The path to the saved output image.
-    """
-    print("Applying blur to the specified region")
-    (startX, startY, endX, endY) = box
-    # Expand the ROI to include a border around the detected region
-    #original_roi = image[startY:endY, startX:endX]
-    image=cv2.imread(image)
-    (startX, startY, endX, endY) = expand_roi(startX, startY, endX, endY, expansion, image.shape)
-
-    # Extract the expanded ROI from the image
-    roi = image[startY:endY, startX:endX]
-    
-    # Use the provided background color or default to white
-    if background_color is not None:
-        dominant_color = background_color
-    else:
-        dominant_color = (255, 255, 255)
-
-    # Calculate the dimensions for the smaller rectangle
-    rect_width = int((endX - startX) * rectangle_scale)
-    rect_height = int((endY - startY) * rectangle_scale)
-    rect_startX = startX + (endX - startX - rect_width) // 2
-    rect_startY = startY + (endY - startY - rect_height) // 2
-
-    # Draw the rectangle on the blurred image
-    cv2.rectangle(image, (rect_startX, rect_startY), (rect_startX + rect_width, rect_startY + rect_height), dominant_color, -1)
-
-    # Apply a strong Gaussian blur to the ROI
-    blurred_roi = cv2.GaussianBlur(roi, blur_strength, 0)
-
-    # Replace the original image's ROI with the blurred one
-    image[startY:endY, startX:endX] = blurred_roi
-
-    # Save the modified image to a file
-    output_image_path = os.path.join(base_dir, "temp", uuid.uuid4().hex + ".png")
-    cv2.imwrite(output_image_path, image)
-    print(f"Blurred Image saved to {output_image_path}")
-
-    return output_image_path
-
-# Example usage:
-# image = cv2.imread('input_image.jpg')
-# box = (50, 50, 200, 200)
-# output_path = bimport cv2
-import os
-import uuid
-from .temp_dir_setup import create_temp_directory
 from .region_detector import expand_roi
 
+
 temp_dir, base_dir = create_temp_directory()
-
-
 
 def blur_function(image_path, box, background_color=None, expansion=10, blur_strength=(51, 51), rectangle_scale=0.8):
     """
@@ -105,12 +35,12 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     (startX, startY, endX, endY) = box
 
     # Expand the ROI to include a border around the detected region
-    #(startX, startY, endX, endY) = expand_roi(startX, startY, endX, endY, expansion, image.shape)
+    (startX, startY, endX, endY) = expand_roi(startX, startY, endX, endY, expansion, image.shape)
 
     # Extract the expanded ROI from the image
     roi = image[startY:endY, startX:endX]
     
-    # Use the provided background color or default to white
+    # Use the provided background color or default to the dominant color in the ROI
     if background_color is not None:
         dominant_color = background_color
     else:
@@ -132,14 +62,9 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     image[startY:endY, startX:endX] = blurred_roi
 
     # Save the modified image to a file
-    output_image_path = os.path.join(base_dir, "temp", uuid.uuid4().hex + ".png")
+    output_image_path = os.path.join(temp_dir, uuid.uuid4().hex + ".png")
+    print(f"Blurred Image is saved to: {output_image_path}")
     cv2.imwrite(output_image_path, image)
     print(f"Blurred Image saved to {output_image_path}")
 
     return output_image_path
-
-# Example usage:
-# image_path = 'input_image.jpg'
-# box = (50, 50, 200, 200)
-# output_path = blur_function(image_path, box, background_color=(0, 0, 255))
-# print(f"Blurred image saved at {output_path}")

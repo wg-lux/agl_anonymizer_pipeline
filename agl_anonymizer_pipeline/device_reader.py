@@ -1,8 +1,8 @@
+# Device reader module to parse JSON configurations
 import json
 import os
 import cv2
 from .box_operations import make_box_from_device_list
-
 
 def parse_color(color_str):
     return tuple(map(int, color_str.strip('()').split(',')))
@@ -25,9 +25,7 @@ def read_device(device):
     device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
     with open(device_file_path) as json_parameters:
         data = json.load(json_parameters)
-        #print("Device JSON Loaded:", data)
                     
-        
         background_color = "(255, 255, 255)"
         font_color = "(0, 0, 0)"
         font = "FONT_HERSHEY_DUPLEX"
@@ -86,17 +84,13 @@ def read_device(device):
 def read_name_boxes(device, first_name_x = 0, first_name_y = 0, first_name_width = 100, first_name_height = 20, last_name_x = 100, last_name_y = 0, last_name_width = 100, last_name_height = 20, parameter=False):
     print(f"reading device patient name config for {device}")
     if parameter==True:
-        
         return None, None
         
     device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
     with open(device_file_path) as json_parameters:
         print(f"device file path opened:{device_file_path}")
         data = json.load(json_parameters)
-        #print("Device JSON Loaded:", data)
         
-
-        print("default values set")
         keys_to_check = ["patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
         for key in data["fields"]:
             if key in keys_to_check:
@@ -130,7 +124,6 @@ def read_background_color(device):
     print(f"reading device background color config for {device}")
     with open(device_file_path) as json_parameters:
         data = json.load(json_parameters)
-        #print("Device JSON Loaded:", data)
         
         background_color = "(225, 225, 225)"
 
@@ -145,11 +138,16 @@ def read_text_formatting(device):
     device_file_path = os.path.join(base_dir, 'devices', f'{device}.json')
     with open(device_file_path) as json_parameters:
         data = json.load(json_parameters)
-        #print("Device JSON Loaded:", data)
         
         text_formatting = "first_name last_name"
+        background_color = "(255, 255, 255)"  # Default background color
+        font_color = "(0, 0, 0)"  # Default font color
+        font = cv2.FONT_HERSHEY_SIMPLEX  # Default font
+        font_size = 20
+        font_scale = font_size / 20
+        font_thickness = 2
 
-        keys_to_check = ["text_formatting"]
+        keys_to_check = ["text_formatting", "background_color", "text_color", "font", "font_size", "font_thickness", "font_scale"]
         for key in data["fields"]:
             if key in keys_to_check:
                 if key == "text_formatting":
@@ -168,7 +166,6 @@ def read_text_formatting(device):
                 if key == "font_size":
                     font_size = data["fields"][key]
                     font_scale = font_size / 20
-                    font_thickness = 2
                 if key == "font_thickness":
                     font_thickness = data["fields"][key]
                 if key == "font_scale":

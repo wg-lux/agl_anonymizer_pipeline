@@ -40,6 +40,6 @@
         "text_color": "(0, 0, 0)",
         "font_size": 40,
         "font": "FONT_HERSHEY_DUPLEX",
-        "text_formatting": "first_name, last_name"
+        "text_formatting": "first_name last_name"
     }
 }
