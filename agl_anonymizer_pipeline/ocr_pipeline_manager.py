@@ -116,14 +116,16 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
             
 
             for (phrase, phrase_box), ocr_confidence in zip(all_ocr_results, all_ocr_confidences):
-                blurred_image_path = process_ocr_results(blurred_image_path, phrase, phrase_box, ocr_confidence, combined_results, names_detected, device, modified_images_map, combined_boxes, first_name_box, last_name_box)
+                blurred_image_path, modified_images_map, combined_results, gender_pars = process_ocr_results(blurred_image_path, phrase, phrase_box, ocr_confidence, combined_results, names_detected, device, modified_images_map, combined_boxes, first_name_box, last_name_box)
 
         result = {
             'filename': file_path,
             'file_type': file_type,
-            'extracted_text': extracted_text,
-            'names_detected': names_detected,
+            # 'extracted_text': extracted_text,
+            # 'names_detected': names_detected,
             'combined_results': combined_results,
+            'modified_images_map': modified_images_map,
+            'genders': gender_pars
         }
 
         if blurred_image_path is not None:
@@ -152,26 +154,29 @@ def process_ocr_results(image_path, phrase, phrase_box, ocr_confidence, combined
     print(f"Entities detected: {entities}")
     
     box_to_image_map = {}
+    gender_pars = {}
     new_image_path = image_path  # Keep track of the current image path being manipulated
 
     for entity in entities:
         name = entity[0]
         if first_name_box and last_name_box:
             if close_to_box(first_name_box, phrase_box) or close_to_box(last_name_box, phrase_box):
-                box_to_image_map = gender_and_handle_device_names(name, phrase_box, new_image_path, device)
+                box_to_image_map, gender_par = gender_and_handle_device_names(name, phrase_box, new_image_path, device)
             else:
                 new_image_path, last_name_box = modify_image_for_name(new_image_path, phrase_box, combined_boxes)
-                box_to_image_map = gender_and_handle_separate_names(name, phrase_box, last_name_box, new_image_path, device)
+                box_to_image_map, gender_par = gender_and_handle_separate_names(name, phrase_box, last_name_box, new_image_path, device)
         else:
             new_image_path, last_name_box = modify_image_for_name(new_image_path, phrase_box, combined_boxes)
-            box_to_image_map = gender_and_handle_separate_names(name, phrase_box, last_name_box, new_image_path, device)
+            box_to_image_map, gender_par = gender_and_handle_separate_names(name, phrase_box, last_name_box, new_image_path, device)
 
         names_detected.append(name)
+        gender_pars.append(gender_par)
         for box_key, modified_image_path in box_to_image_map.items():
             modified_images_map[(box_key, new_image_path)] = modified_image_path
+            
 
     combined_results.append((phrase, phrase_box, ocr_confidence, entities))
-    return new_image_path  # Always return the last modified path
+    return new_image_path, modified_images_map, combined_results, gender_pars  # Always return the last modified path
 
 
 def close_to_box(name_box, phrase_box):

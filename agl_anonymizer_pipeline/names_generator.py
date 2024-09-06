@@ -60,7 +60,7 @@ def gender_and_handle_full_names(words, box, image_path, device="olympus_cv_1500
     # Create a string key for the box to ensure it's hashable
     box_key = f"{box[0]},{box[1]},{box[2]},{box[3]}"
     box_to_image_map[(box_key, image_path)] = output_image_path
-    return box_to_image_map
+    return box_to_image_map, gender_guess
 
 def gender_and_handle_separate_names(words, first_name_box, last_name_box, image_path, device):
     print("Finding out gender and name of separate names")
@@ -108,7 +108,7 @@ def gender_and_handle_separate_names(words, first_name_box, last_name_box, image
     # Create a string key for the box to ensure it's hashable
     box_key = f"{box[0]},{box[1]},{box[2]},{box[3]}"
     box_to_image_map[(box_key, image_path)] = output_image_path
-    return box_to_image_map
+    return box_to_image_map, gender_guess
 
 def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_1500"):
     print("Finding out gender and name of device specified patient names")
@@ -152,4 +152,4 @@ def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_15
     # Create a string key for the box to ensure it's hashable
     box_key = f"{box[0]},{box[1]},{box[2]},{box[3]}"
     box_to_image_map[(box_key, image_path)] = output_image_path
-    return box_to_image_map
+    return box_to_image_map, gender_guess

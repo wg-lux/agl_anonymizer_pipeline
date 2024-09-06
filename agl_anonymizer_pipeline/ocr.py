@@ -5,17 +5,24 @@ from transformers import ViTImageProcessor, VisionEncoderDecoderModel
 import torch
 import pytesseract
 import numpy as np
+from transformers import ViTImageProcessor, VisionEncoderDecoderModel, pipeline
+
+def preload_models():
+    global processor, model, pipe
+    print("Preloading models...")
+    processor = ViTImageProcessor.from_pretrained('microsoft/trocr-large-str')
+    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-str')
+    pipe = pipeline("image-to-text", model=model, device=0 if torch.cuda.is_available() else -1)
+    print("Models preloaded successfully.")
+    return processor, model, pipe
 
 
-
-processor = ViTImageProcessor.from_pretrained('microsoft/trocr-large-str')
-model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-str')
-pipe = pipeline("image-to-text", model="microsoft/trocr-large-str")
 
 def trocr_on_boxes(image_path, boxes):
     image = Image.open(image_path).convert("RGB")
     extracted_text_with_boxes = []
     confidences = []
+    processor, model, pipe = preload_models()
     print("Processing image with TROCR")
     for box in boxes:
         (startX, startY, endX, endY) = box
@@ -29,27 +36,14 @@ def trocr_on_boxes(image_path, boxes):
         outputs = model.generate(pixel_values, output_scores=True, return_dict_in_generate=True, max_new_tokens=50)
         
         scores = outputs.scores
-
-        # Simplified confidence score calculation
         confidence_score = torch.nn.functional.softmax(scores[-1], dim=-1).max().item()
-        
-        # Process cropped image with the OCR pipeline
         ocr_results = pipe(cropped_image, max_new_tokens=50)
-
-        # Initialize an empty string to store concatenated text
-        concatenated_text = ''
-
-        # Iterate over each result and concatenate the 'generated_text'
-        for result in ocr_results:
-            if 'generated_text' in result:
-                concatenated_text += ' ' + result['generated_text']
-
-        # Append the concatenated text and corresponding box to the list
+        concatenated_text = ' '.join([result['generated_text'] for result in ocr_results if 'generated_text' in result])
         extracted_text_with_boxes.append((concatenated_text.strip(), box))
-        # Append the confidence score to the confidences list
         confidences.append(confidence_score)
     print("TROCR processing complete")
     return extracted_text_with_boxes, confidences
+
 
 
 # Configure pytesseract path if necessary (specifically for Windows)
@@ -90,3 +84,5 @@ def tesseract_on_boxes(image_path, boxes):
     return extracted_text_with_boxes, confidences
 
 
+if __name__ == "__main__":
+    processor, model, pipe = preload_models()
