@@ -13,6 +13,12 @@ import json
 import os
 import uuid
 from .temp_dir_setup import create_temp_directory
+import csv
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def find_or_create_close_box(phrase_box, boxes, image_width, offset=60):
     (startX, startY, endX, endY) = phrase_box
@@ -60,6 +66,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
     modified_images_map = {}
     combined_results = []
     names_detected = []
+    gender_pars = []  # Initialize as a list
 
     try:
         file_extension = file_path.split('.')[-1].lower()
@@ -113,10 +120,40 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
 
             all_ocr_results = trocr_results + tesseract_results
             all_ocr_confidences = trocr_confidences + tess_confidences
-            
 
             for (phrase, phrase_box), ocr_confidence in zip(all_ocr_results, all_ocr_confidences):
-                blurred_image_path, modified_images_map, combined_results, gender_pars = process_ocr_results(blurred_image_path, phrase, phrase_box, ocr_confidence, combined_results, names_detected, device, modified_images_map, combined_boxes, first_name_box, last_name_box)
+                blurred_image_path, modified_images_map, combined_results, genders = process_ocr_results(
+                    blurred_image_path, phrase, phrase_box, ocr_confidence,
+                    combined_results, names_detected, device,
+                    modified_images_map, combined_boxes,
+                    first_name_box, last_name_box
+                )
+                gender_pars.extend(genders)  # Assuming 'genders' is a list
+
+        # Prepare CSV writing
+        csv_path = os.path.join(temp_dir, "ner_results.csv")
+        with open(csv_path, mode='w', newline='', encoding='utf-8') as csv_file:
+            fieldnames = ['filename', 'startX', 'startY', 'endX', 'endY', 'ocr_confidence', 'entity_text', 'entity_tag']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+            writer.writeheader()
+
+            for combined_result in combined_results:
+                phrase, phrase_box, ocr_confidence, entities = combined_result
+                startX, startY, endX, endY = phrase_box
+                for entity_text, entity_tag in entities:
+                    writer.writerow({
+                        'filename': file_path,
+                        'startX': startX,
+                        'startY': startY,
+                        'endX': endX,
+                        'endY': endY,
+                        'ocr_confidence': ocr_confidence,
+                        'entity_text': entity_text,
+                        'entity_tag': entity_tag
+                    })
+
+        print(f"NER results saved to {csv_path}")
 
         result = {
             'filename': file_path,
@@ -137,7 +174,6 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
 
         print("Processing completed:", combined_results)
         return modified_images_map, result
-
     except Exception as e:
         error_message = f"Error in process_images_with_OCR_and_NER: {e}, File Path: {file_path}"
         print(error_message)
@@ -148,13 +184,27 @@ def process_text(extracted_text):
     cleaned_text = cleaned_text.replace("\n", " ")
     return cleaned_text
 
-def process_ocr_results(image_path, phrase, phrase_box, ocr_confidence, combined_results, names_detected, device, modified_images_map, combined_boxes, first_name_box=None, last_name_box=None):
+from typing import List, Tuple, Dict
+
+def process_ocr_results(
+    image_path: str,
+    phrase: str,
+    phrase_box: Tuple[int, int, int, int],
+    ocr_confidence: float,
+    combined_results: List[Tuple[str, Tuple[int, int, int, int], float, List[Tuple[str, str]]]],
+    names_detected: List[str],
+    device: str,
+    modified_images_map: Dict[Tuple[str, str], str],
+    combined_boxes: List[Tuple[int, int, int, int]],
+    first_name_box: Tuple[int, int, int, int] = None,
+    last_name_box: Tuple[int, int, int, int] = None
+) -> Tuple[str, Dict[Tuple[str, str], str], List[Tuple[str, Tuple[int, int, int, int], float, List[Tuple[str, str]]]], List[str]]:
     processed_text = process_text(phrase)
     entities = split_and_check(processed_text)
     print(f"Entities detected: {entities}")
     
     box_to_image_map = {}
-    gender_pars = {}
+    gender_pars = []  # Changed from {} to []
     new_image_path = image_path  # Keep track of the current image path being manipulated
 
     for entity in entities:
@@ -170,14 +220,12 @@ def process_ocr_results(image_path, phrase, phrase_box, ocr_confidence, combined
             box_to_image_map, gender_par = gender_and_handle_separate_names(name, phrase_box, last_name_box, new_image_path, device)
 
         names_detected.append(name)
-        gender_pars.append(gender_par)
+        gender_pars.append(gender_par)  # Now valid since gender_pars is a list
         for box_key, modified_image_path in box_to_image_map.items():
             modified_images_map[(box_key, new_image_path)] = modified_image_path
-            
 
     combined_results.append((phrase, phrase_box, ocr_confidence, entities))
     return new_image_path, modified_images_map, combined_results, gender_pars  # Always return the last modified path
-
 
 def close_to_box(name_box, phrase_box):
     (startX, startY, _, _) = phrase_box

@@ -1,53 +1,49 @@
+# flair_NER.py
+
 from flair.data import Sentence
 from flair.models import SequenceTagger
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Load the NER tagger once at module level
+try:
+    logger.info("Loading Flair German NER tagger...")
+    tagger = SequenceTagger.load("flair/ner-german")  # Use the correct model name
+    logger.info("Flair German NER tagger loaded successfully.")
+except Exception as e:
+    logger.error(f"Failed to load Flair German NER tagger: {e}")
+    tagger = None
 
 def NER_German(text):
-    # Check if input is a string
     if not isinstance(text, str):
-        print(f"Expected a string, but got {type(text)}")
+        logger.error(f"Expected a string, but got {type(text)}")
+        return None
+
+    if tagger is None:
+        logger.error("NER tagger is not loaded.")
         return None
 
     try:
-        tagger = SequenceTagger.load("flair/ner-german-large")
-
-        # Convert string to Sentence object
         sentence = Sentence(text)
-
-        # Predict NER tags
         tagger.predict(sentence)
-
-        # Print the sentence (optional)
-        print(sentence)
-
-        # Print predicted NER spans
-
-        # Get NER spans
         entities = sentence.get_spans('ner')
 
-        # Check if any entity is found
         if entities:
-            print('The following NER tags are found:')
+            logger.info('The following NER tags are found:')
             for entity in entities:
-                print(entity)
-                
-            # Flag to check if 'PER' tag is found
-            per_found = False
+                logger.info(entity)
+            
+            per_found = any(entity.tag == 'PER' for entity in entities)
 
-            # Check each entity for 'PER' tag
-            for entity in entities:
-                if entity.tag == 'PER':
-                    per_found = True
-                    break
-
-            # Implement if/else logic based on 'PER' tag presence
             if per_found:
-                print("A person tag ('PER') was found in the text. Replacing...")
+                logger.info("A person tag ('PER') was found in the text. Replacing...")
             else:
-                print("No person tag ('PER') was found in the text.")
+                logger.info("No person tag ('PER') was found in the text.")
             return entities
         else:
-            print("No entities found")
+            logger.info("No entities found")
             return None
     except Exception as e:
-        print("Error:", e)
+        logger.error(f"Error in NER_German: {e}")
         return None
