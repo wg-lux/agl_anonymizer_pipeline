@@ -1,12 +1,12 @@
 import cv2
 import os
 import uuid
-from .temp_dir_setup import create_temp_directory
+from .temp_dir_setup import create_temp_directory, create_blur_directory
 from .box_operations import get_dominant_color
 from .region_detector import expand_roi
 
 
-temp_dir, base_dir = create_temp_directory()
+temp_dir, base_dir, csv_dir = create_temp_directory()
 
 def blur_function(image_path, box, background_color=None, expansion=10, blur_strength=(51, 51), rectangle_scale=0.8):
     """
@@ -29,8 +29,9 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     Returns:
     str
         The path to the saved output image.
-    """
+    """ 
     print("Applying blur to the specified region")
+    blur_dir= create_blur_directory()
     image = cv2.imread(image_path)
     (startX, startY, endX, endY) = box
 
@@ -62,9 +63,9 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     image[startY:endY, startX:endX] = blurred_roi
 
     # Save the modified image to a file
-    output_image_path = os.path.join(temp_dir, uuid.uuid4().hex + ".png")
-    print(f"Blurred Image is saved to: {output_image_path}")
+    output_image_path = os.path.join(blur_dir, uuid.uuid4().hex + ".png")
+    print(f"Blurred Image is saved to: {blur_dir}")
     cv2.imwrite(output_image_path, image)
-    print(f"Blurred Image saved to {output_image_path}")
+    print(f"Blurred Image saved to {blur_dir}")
 
     return output_image_path

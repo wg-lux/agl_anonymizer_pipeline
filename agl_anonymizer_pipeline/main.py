@@ -6,37 +6,64 @@ import fitz
 import tempfile
 from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
+import torch
+import logging
+from .temp_dir_setup import create_temp_directory
 
-'''
-The main function handles the processing by calling other functions from the pipeline. It can be called  with or without the validation parameter.
-This changes, if the image paths of the name images are returned.
-'''
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+def resize_image(image_path, max_width=1024, max_height=1024):
+    image = cv2.imread(image_path)
+    if image is None:
+        logger.error(f"Unable to read image for resizing: {image_path}")
+        return
+    height, width = image.shape[:2]
+    if width > max_width or height > max_height:
+        scaling_factor = min(max_width / width, max_height / height)
+        new_size = (int(width * scaling_factor), int(height * scaling_factor))
+        resized_image = cv2.resize(image, new_size, interpolation=cv2.INTER_AREA)
+        cv2.imwrite(image_path, resized_image)
+        logger.debug(f"Image resized to {new_size}")
+
+def clear_gpu_memory():
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        logger.debug("Cleared GPU memory.")
 
 def process_image(image_path, east_path, device, min_confidence, width, height, results_dir, temp_dir):
-    print(f"Processing file: {image_path}")
+    logger.info(f"Processing file: {image_path}")
     unique_id = str(uuid.uuid4())[:8]
     id = f"image_{unique_id}"
 
     original_image = cv2.imread(image_path)
     if original_image is None:
-        raise ValueError(f"Could not load image at {image_path}")
+        error_msg = f"Could not load image at {image_path}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
     try:
-        modified_images_map, result = process_images_with_OCR_and_NER(image_path, east_path, device, min_confidence, width, height)
-        print("Images processed")
-        print("Modified Images Map:", modified_images_map)
+        resize_image(image_path)  # Resize to manage memory
+        modified_images_map, result = process_images_with_OCR_and_NER(
+            image_path, east_path, device, min_confidence, width, height
+        )
+        logger.info("Images processed")
+        logger.debug(f"Modified Images Map: {modified_images_map}")
 
         reassembled_image_path = reassemble_image(modified_images_map, results_dir, id, image_path)
         return reassembled_image_path, result
     except Exception as e:
         error_message = f"Error in process_image: {e}, Image Path: {image_path}"
-        print(error_message)
+        logger.error(error_message)
         raise RuntimeError(error_message)
+    finally:
+        clear_gpu_memory()
 
 def get_image_paths(image_or_pdf_path, temp_dir):
     image_paths = []
 
-    if image_or_pdf_path.endswith('.pdf'):
+    if image_or_pdf_path.lower().endswith('.pdf'):
         doc = fitz.open(image_or_pdf_path)
         for i, page in enumerate(doc):
             img = convert_pdf_page_to_image(page)
@@ -49,17 +76,23 @@ def get_image_paths(image_or_pdf_path, temp_dir):
     return image_paths
 
 def main(image_or_pdf_path, east_path='frozen_east_text_detection.pb', device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
+    clear_gpu_memory()
+    temp_dir, base_dir, csv_dir = create_temp_directory()
+
+
     results_dir = os.path.join(os.path.dirname(image_or_pdf_path), "results")
     os.makedirs(results_dir, exist_ok=True)
     temp_dir = tempfile.mkdtemp()
     image_paths = get_image_paths(image_or_pdf_path, temp_dir)
 
-    processed_pdf_paths = []  # This will store paths of PDFs (either directly processed or converted from images)
+    processed_pdf_paths = []
     try:
         for img_path in image_paths:
             try:
-                processed_image_path, result = process_image(img_path, east_path, device, min_confidence, width, height, results_dir, temp_dir)
-                if image_or_pdf_path.endswith('.pdf'):
+                processed_image_path, result = process_image(
+                    img_path, east_path, device, min_confidence, width, height, results_dir, temp_dir
+                )
+                if image_or_pdf_path.lower().endswith('.pdf'):
                     temp_pdf_path = os.path.join(temp_dir, f"processed_{uuid.uuid4()}.pdf")
                     convert_image_to_pdf(processed_image_path, temp_pdf_path)
                     processed_pdf_paths.append(temp_pdf_path)
@@ -67,23 +100,31 @@ def main(image_or_pdf_path, east_path='frozen_east_text_detection.pb', device="o
                     processed_pdf_paths.append(processed_image_path)
             except Exception as e:
                 error_message = f"Error processing {img_path}: {e}"
-                print(error_message)
+                logger.error(error_message)
 
-        if image_or_pdf_path.endswith('.pdf'):
+        if image_or_pdf_path.lower().endswith('.pdf'):
             final_pdf_path = os.path.join(results_dir, "final_document.pdf")
             merge_pdfs(processed_pdf_paths, final_pdf_path)
             output_path = final_pdf_path
         else:
             output_path = processed_pdf_paths[0]
     finally:
+        # Clean up temporary directory
         for file in os.listdir(temp_dir):
-            os.remove(os.path.join(temp_dir, file))
-        os.rmdir(temp_dir)
-    print(f"Output Path:", output_path)
-    if validation==False:
-        return output_path # Return only the output path
+            try:
+                os.remove(os.path.join(temp_dir, file))
+            except Exception as e:
+                logger.warning(f"Failed to delete temp file {file}: {e}")
+        try:
+            os.rmdir(temp_dir)
+        except Exception as e:
+            logger.warning(f"Failed to delete temp directory {temp_dir}: {e}")
+
+    logger.info(f"Output Path: {output_path}")
+    if not validation:
+        return output_path  # Return only the output path
     else:
-        return output_path, result, img_path # Return the output path as well as information about the changes
+        return output_path, result, img_path  # Return additional info if validating
 
 if __name__ == "__main__":
     import argparse

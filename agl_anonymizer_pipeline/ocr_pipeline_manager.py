@@ -15,10 +15,13 @@ import uuid
 from .temp_dir_setup import create_temp_directory
 import csv
 import logging
+import torch
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
 
 def find_or_create_close_box(phrase_box, boxes, image_width, offset=60):
     (startX, startY, endX, endY) = phrase_box
@@ -62,11 +65,11 @@ def combine_boxes(text_with_boxes):
     return merged_text_with_boxes
 
 def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detection.pb', device="default", min_confidence=0.5, width=320, height=320):
-    print("Processing file:", file_path)
+    logger.info(f"Processing file: {file_path}")
     modified_images_map = {}
     combined_results = []
     names_detected = []
-    gender_pars = []  # Initialize as a list
+    gender_pars = []
 
     try:
         file_extension = file_path.split('.')[-1].lower()
@@ -94,15 +97,15 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 with fitz.open(stream=pdf_data, filetype="pdf") as doc:
                     extracted_text = " ".join([page.get_text() for page in doc])
 
-        temp_dir, base_dir = create_temp_directory()
+        temp_dir, base_dir, csv_dir = create_temp_directory()
         blurred_image_path = image_paths[0]
         for img_path in image_paths:
-            print("Processing image:", img_path)
+            logger.info(f"Processing image: {img_path}")
             try:
                 first_name_box, last_name_box = read_name_boxes(device)
                 background_color = read_background_color(device)
             except Exception as e:
-                print(f"Using default values for name replacement.")
+                logger.warning("Using default values for name replacement.")
                 first_name_box, last_name_box = None, None
                 background_color = (0, 0, 0)
 
@@ -114,7 +117,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
             tesseract_boxes, tesseract_confidences = tesseract_text_detection(img_path, min_confidence, width, height)
             combined_boxes = east_boxes + tesseract_boxes
 
-            print("Running OCR on boxes")
+            logger.info("Running OCR on boxes")
             trocr_results, trocr_confidences = trocr_on_boxes(img_path, combined_boxes)
             tesseract_results, tess_confidences = tesseract_on_boxes(img_path, combined_boxes)
 
@@ -131,7 +134,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 gender_pars.extend(genders)  # Assuming 'genders' is a list
 
         # Prepare CSV writing
-        csv_path = os.path.join(temp_dir, "ner_results.csv")
+        csv_path = os.path.join(csv_dir, f"ner_results{file_path}.csv")
         with open(csv_path, mode='w', newline='', encoding='utf-8') as csv_file:
             fieldnames = ['filename', 'startX', 'startY', 'endX', 'endY', 'ocr_confidence', 'entity_text', 'entity_tag']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -153,16 +156,16 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                         'entity_tag': entity_tag
                     })
 
-        print(f"NER results saved to {csv_path}")
+        logger.info(f"NER results saved to {csv_path}")
 
         result = {
             'filename': file_path,
             'file_type': file_type,
-            # 'extracted_text': extracted_text,
-            # 'names_detected': names_detected,
+            'extracted_text': extracted_text,
+            'names_detected': names_detected,
             'combined_results': combined_results,
             'modified_images_map': modified_images_map,
-            'genders': gender_pars
+            'gender_pars': gender_pars  # Consistent key name
         }
 
         if blurred_image_path is not None:
@@ -170,14 +173,16 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
             output_path = os.path.join(os.path.dirname(file_path), output_filename)
             final_image = cv2.imread(blurred_image_path)
             cv2.imwrite(output_path, final_image)
-            print(f"Final blurred image saved to: {output_path}")
+            logger.info(f"Final blurred image saved to: {output_path}")
 
-        print("Processing completed:", combined_results)
+        logger.info(f"Processing completed: {combined_results}")
         return modified_images_map, result
     except Exception as e:
         error_message = f"Error in process_images_with_OCR_and_NER: {e}, File Path: {file_path}"
-        print(error_message)
+        logger.error(error_message)
         raise RuntimeError(error_message)
+
+
 
 def process_text(extracted_text):
     cleaned_text = re.sub(r'\n{2,}', '\n', extracted_text)
@@ -236,7 +241,7 @@ def modify_image_for_name(image_path, phrase_box, combined_boxes):
     image_height, image_width, _ = image.shape  
     last_name_box = find_or_create_close_box(phrase_box, combined_boxes, image_width)
     
-    temp_dir, base_dir = create_temp_directory()
+    temp_dir, base_dir, csv_dir = create_temp_directory()
     temp_image_path = os.path.join(temp_dir, f"{uuid.uuid4()}.jpg")
     cv2.imwrite(temp_image_path, image)
     
