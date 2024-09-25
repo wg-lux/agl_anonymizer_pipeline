@@ -4,7 +4,16 @@ import os
 import cv2
 from .box_operations import make_box_from_device_list
 
+
+"""
+Functions used for reading the device lists parameter.
+
+
+"""
+
+
 def parse_color(color_str):
+    
     return tuple(map(int, color_str.strip('()').split(',')))
 
 # Font mapping

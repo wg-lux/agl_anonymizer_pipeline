@@ -5,6 +5,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+agl_anonymizer_pipeline/csv_files
+agl_anonymizer_pipeline/devices
+agl_anonymizer_pipeline/blurred_images
 
 # C extensions
 *.so

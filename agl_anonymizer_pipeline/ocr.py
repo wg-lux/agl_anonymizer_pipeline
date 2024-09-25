@@ -20,9 +20,9 @@ def preload_models():
     print(f"Using device: {device}")
 
     # Load processor, model, and tokenizer
-    processor = ViTImageProcessor.from_pretrained('microsoft/trocr-large-str')
-    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-str')
-    tokenizer = AutoTokenizer.from_pretrained('microsoft/trocr-large-str')
+    processor = ViTImageProcessor.from_pretrained('microsoft/trocr-base-str')
+    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-str')
+    tokenizer = AutoTokenizer.from_pretrained('microsoft/trocr-base-str')
 
     # Move the model to the appropriate device
     model.to(device)

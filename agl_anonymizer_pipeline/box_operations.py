@@ -50,6 +50,17 @@ def make_box_from_name(image, name, padding=10):
     return (startX, startY, endX, endY)
 
 def make_box_from_device_list(x,y,w,h):
+    """
+    This Function will read the x and y coordinates from the device list and generate box coordinates in a way
+    that OpenCV can use them.
+
+    Args:
+        x (Int): X-Coordinate
+        y (Int): Y-Coordinate
+        w (Int): Width
+        h (Int): Height
+
+    """
     startX=x 
     startY=y 
     endX=x+w 
@@ -57,6 +68,18 @@ def make_box_from_device_list(x,y,w,h):
     return startX, startY, endX, endY
 
 def extend_boxes_if_needed(image, boxes, extension_margin=10, color_threshold=30):
+    """
+    Extends the Box in one direction or the other. This ensures, that the Box coordinates fit over the names.
+    
+    Args:
+        image (_type_): NumPy Array representing the image (as used in cv2)
+        boxes (_type_): Array of the Box Coordinates, that were detected in the image
+        extension_margin (int, optional): _description_. Length, that will be added to the side of the box. Defaults to 10.
+        color_threshold (int, optional): _description_. The extension is decided based on if the name extends out of the side. This value decides, at what differentiation from the dominant color an extension will happen. Defaults to 30.
+
+    Returns:
+        _type_: _description_
+    """
     extended_boxes = []
     for box in boxes:
         (startX, startY, endX, endY) = box
