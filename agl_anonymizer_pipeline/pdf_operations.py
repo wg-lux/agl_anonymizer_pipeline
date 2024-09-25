@@ -1,6 +1,6 @@
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+#from reportlab.lib.pagesizes import letter
+#from reportlab.pdfgen import canvas
 import numpy as np
 from PIL import Image
 import fitz
