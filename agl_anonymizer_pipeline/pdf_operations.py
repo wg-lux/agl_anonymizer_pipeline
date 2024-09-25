@@ -31,6 +31,26 @@ def convert_image_to_pdf(image_path, pdf_path):
     c.showPage()
     c.save()
 
+def convert_image_to_pdf(image_path, pdf_path, letter_width=612, letter_height=792):
+    """Converts an image to a PDF with letter-sized pages."""
+    # Using fitz (PyMuPDF)
+    import fitz
+
+    # Letter size in points (1 point = 1/72 inch)
+    #letter_width, letter_height = 612, 792  # 8.5 x 11 inches
+
+    # Open a new PDF document
+    doc = fitz.open()
+    # Add a new page with letter size
+    page = doc.new_page(width=letter_width, height=letter_height)
+
+    # Load the image
+    img_rect = fitz.Rect(0, 0, letter_width, letter_height)
+    page.insert_image(img_rect, filename=image_path)
+
+    # Save the PDF
+    doc.save(pdf_path)    
+
 def convert_pdf_to_images(pdf_data):
     """Convert a PDF file to a list of images."""
     images = []
