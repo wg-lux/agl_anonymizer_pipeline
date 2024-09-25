@@ -14,19 +14,20 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-transformers = "^4.20.0"
-Pillow = "^9.0.0"
-PyMuPDF = "^1.20.0"
-numpy = "1.26.4"
-spacy = "^3.4.0"
 requests = "2.31.0"
 flair = "0.13.0"
 gender-guesser = "0.4.0"
-PyPDF2 = "3.0.1"
-reportlab = "4.1.0"
-torch = "^2.2.2" # torch = "^1.10.0"
 gensim = "^4.1.2"
+##
+PyPDF = "^5.0"
+reportlab = "4.1.0"
 pytesseract = "^0.3.9"
 opencv-python-headless = "^4.10.0.84"
+transformers = "^4.20.0"
+spacy = "^3.4.0"
+Pillow = "^9.0.0"
+torch = "^2.4.1"
+torchvision = "^0.19.1"
+torchaudio = "^2.4.1"
 
 
