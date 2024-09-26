@@ -30,6 +30,15 @@ bash
 Copy code
 python main.py --image images/lebron_james.jpg --east frozen_east_text_detection.pb 
 
+##
+main( 
+    "images/lebron_james.jpg", 
+    "frozen_east_text_detection.pb"
+    "olympus_cv_1500",
+    False, 0.5,320,320
+)
+##
+
 ## Modules
 
 AGL Anonymizer is comprised of several key modules:
