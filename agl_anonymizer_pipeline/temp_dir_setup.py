@@ -17,17 +17,17 @@ def create_temp_directory():
 
         # Create temp_dir if it doesn't exist
         if not os.path.exists(temp_dir):
-            os.makedirs(temp_dir)
-            print(f"Created temp directory at {temp_dir}")
+            #os.makedirs(temp_dir)
+            print(f"No directory at {temp_dir}")
         else:
-            print(f"Temp directory already exists at {temp_dir}")
+            print(f"Temp directory exists at {temp_dir}")
 
         # Create csv_dir if it doesn't exist
         if not os.path.exists(csv_dir):
-            os.makedirs(csv_dir)
-            print(f"Created csv directory at {csv_dir}")
+            #os.makedirs(csv_dir)
+            print(f"No directory at {csv_dir}")
         else:
-            print(f"CSV directory already exists at {csv_dir}")
+            print(f"CSV directory exists at {csv_dir}")
 
         return temp_dir, base_dir, csv_dir
 
@@ -53,8 +53,8 @@ def create_blur_directory():
 
         # Create temp_dir if it doesn't exist
         if not os.path.exists(blur):
-            os.makedirs(blur)
-            print(f"Created temp directory at {blur}")
+            #os.makedirs(blur)
+            print(f"No directory at {blur}")
         else:
             print(f"Blur directory already exists at {blur}")
 
