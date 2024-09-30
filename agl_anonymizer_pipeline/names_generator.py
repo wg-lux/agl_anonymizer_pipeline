@@ -10,7 +10,7 @@ temp_dir, temp_base_dir, csv_dir = create_temp_directory()
 # Use an environment variable to specify the base directory, with a fallback
 def get_base_dir():
     # Environment variable or fallback to correct base directory
-    return os.getenv('AGL_ANONYMIZER_BASE_DIR', './agl_anonymizer_pipeline')
+    return os.getenv('AGL_ANONYMIZER_BASE_DIR', './')
 
 base_dir = get_base_dir()
 print(f"Base directory of the application: {base_dir}")
