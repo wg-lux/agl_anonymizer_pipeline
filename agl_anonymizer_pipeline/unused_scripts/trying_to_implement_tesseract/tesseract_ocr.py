@@ -1,12 +1,12 @@
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
-import fitz
+# import fitz
+import pypdf
 import os
 import cv2
 import numpy as np
 import spacy
 import re
-import spacy
 from spacy.tokens import Doc
 import json
 
@@ -106,15 +106,17 @@ def process_image(image, use_mock=False):
     return image
 
 def convert_pdf_to_images(pdf_data):
-    doc = fitz.open(stream=pdf_data, filetype="pdf")
     images = []
 
-    for page in doc:
-        pix = page.get_pixmap()
-        img = Image.frombuffer("RGB", [pix.width, pix.height], pix.samples, "raw", "RGB", 0, 1)
+    with open(pdf_data, 'rb') as file:
+        reader = pypdf.PdfReader(file)
+        num_pages = len(reader.pages)
 
-        images.append(img)
-        
+        for i in range(num_pages):
+            page = reader.pages[i]
+            img = page.to_image(resolution=300)
+            images.append(img)
+
     return images
 
 def scale_coordinates(coords, image_size):

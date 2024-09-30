@@ -1,7 +1,6 @@
 from .ocr import trocr_on_boxes, tesseract_on_boxes
 from .flair_NER import NER_German
 from .names_generator import gender_and_handle_full_names, gender_and_handle_separate_names, gender_and_handle_device_names
-import fitz
 from .east_text_detection import east_text_detection
 import re
 from .pdf_operations import convert_pdf_to_images
@@ -16,6 +15,8 @@ from .temp_dir_setup import create_temp_directory
 import csv
 import logging
 import torch
+##### WARNING: CHANGED FROM FITZ TO pypdf
+import pypdf
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -93,9 +94,17 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
         if file_type == 'pdf':
             with open(file_path, 'rb') as pdf_file:
                 pdf_data = pdf_file.read()
-                image_paths = convert_pdf_to_images(pdf_data)
-                with fitz.open(stream=pdf_data, filetype="pdf") as doc:
-                    extracted_text = " ".join([page.get_text() for page in doc])
+                pdf_reader = pypdf.PdfFileReader(pdf_file)
+                num_pages = pdf_reader.numPages
+                image_paths = []
+                extracted_text = ""
+                for page_num in range(num_pages):
+                    page = pdf_reader.getPage(page_num)
+                    extracted_text += page.extract_text()
+                    image_path = f"{file_path}_page_{page_num}.jpg"
+                    # Convert the PDF page to an image using your preferred method
+                    # and save it to the image_paths list
+                    image_paths.append(image_path)
 
         temp_dir, base_dir, csv_dir = create_temp_directory()
         blurred_image_path = image_paths[0]

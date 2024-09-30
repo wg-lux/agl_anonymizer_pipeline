@@ -2,13 +2,15 @@ import cv2
 from .ocr_pipeline_manager import process_images_with_OCR_and_NER
 import uuid
 import os
-import fitz
+# import fitz
 import tempfile
 from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
 import torch
 import logging
 from .temp_dir_setup import create_temp_directory
+
+import pypdf
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -64,12 +66,16 @@ def get_image_paths(image_or_pdf_path, temp_dir):
     image_paths = []
 
     if image_or_pdf_path.lower().endswith('.pdf'):
-        doc = fitz.open(image_or_pdf_path)
-        for i, page in enumerate(doc):
-            img = convert_pdf_page_to_image(page)
-            temp_img_path = os.path.join(temp_dir, f"page_{i}.png")
-            cv2.imwrite(temp_img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-            image_paths.append(temp_img_path)
+        ########### WARNING: CHANGED FROM "fitz" to pypdf
+        with open(image_or_pdf_path, 'rb') as file:
+            pdf_reader = pypdf.PdfFileReader(file)
+            num_pages = pdf_reader.numPages
+            for i in range(num_pages):
+                page = pdf_reader.getPage(i)
+                img = convert_pdf_page_to_image(page)
+                temp_img_path = os.path.join(temp_dir, f"page_{i}.png")
+                cv2.imwrite(temp_img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+                image_paths.append(temp_img_path)
     else:
         image_paths.append(image_or_pdf_path)
 
