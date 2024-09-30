@@ -2,14 +2,14 @@ import os
 
 def create_temp_directory():
     """
-    Creates 'temp' and 'csv' directories within the base directory if they do not exist.
+    Creates 'temp' and 'csv' directories in a writable location (outside the Nix store).
     
     Returns:
         tuple: Paths to temp_dir, base_dir, and csv_dir.
     """
     try:
-        # Define the base directory (current directory of the script)
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Use a writable directory (e.g., /tmp or a user-provided path via an environment variable)
+        base_dir = os.getenv('AGL_ANONYMIZER_DATA_DIR', '/tmp/agl_anonymizer')
 
         # Define the paths to the temp and csv directories
         temp_dir = os.path.join(base_dir, 'temp')
@@ -35,33 +35,29 @@ def create_temp_directory():
         print(f"Error creating directories: {e}")
         raise  # Re-raise the exception after logging
 
-
-
 def create_blur_directory():
     """
-    Creates 'temp' and 'csv' directories within the base directory if they do not exist.
+    Creates 'blurred_images' directory in a writable location (outside the Nix store).
     
     Returns:
-        tuple: Paths to temp_dir, base_dir, and csv_dir.
+        string: Path to the blurred images directory.
     """
     try:
-        # Define the base directory (current directory of the script)
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Use a writable directory (e.g., /tmp or a user-provided path via an environment variable)
+        base_dir = os.getenv('AGL_ANONYMIZER_DATA_DIR', '/tmp/agl_anonymizer')
 
-        # Define the paths to the temp and csv directories
-        blur = os.path.join(base_dir, 'blurred_images')
+        # Define the path to the blurred images directory
+        blur_dir = os.path.join(base_dir, 'blurred_images')
 
-        # Create temp_dir if it doesn't exist
-        if not os.path.exists(blur):
-            os.makedirs(blur)
-            print(f"Created temp directory at {blur}")
+        # Create blur_dir if it doesn't exist
+        if not os.path.exists(blur_dir):
+            os.makedirs(blur_dir)
+            print(f"Created blur directory at {blur_dir}")
         else:
-            print(f"Blur directory already exists at {blur}")
+            print(f"Blur directory already exists at {blur_dir}")
 
-        return blur
+        return blur_dir
 
     except Exception as e:
         print(f"Error creating directories: {e}")
         raise  # Re-raise the exception after logging
-
-
