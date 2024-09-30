@@ -6,7 +6,12 @@ from .names_adder import add_name_to_image, add_full_name_to_image, add_device_n
 from .temp_dir_setup import create_temp_directory 
 
 
-temp_dir, base_dir, csv_dir = create_temp_directory()
+temp_dir, temp_base_dir, csv_dir = create_temp_directory()
+# Use an environment variable to specify the base directory, with a fallback
+def get_base_dir():
+    return os.getenv('AGL_ANONYMIZER_BASE_DIR', '/tmp/agl_anonymizer')
+
+base_dir = get_base_dir()
 
 # Define file paths
 female_names_file = os.path.join(base_dir, 'names_dict', 'first_and_last_names_female_ascii.txt')
