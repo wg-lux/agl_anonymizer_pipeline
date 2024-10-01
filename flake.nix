@@ -95,7 +95,7 @@
         python311Packages.torch-bin
         python311Packages.torchvision-bin
         python311Packages.torchaudio-bin
-        # python311Packages.pymupdf #broken
+        python311Packages.pymupdf
       ];
     };
     
