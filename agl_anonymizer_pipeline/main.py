@@ -1,16 +1,14 @@
 import cv2
-from .ocr_pipeline_manager import process_images_with_OCR_and_NER
 import uuid
 import os
-# import fitz
 import tempfile
+import logging
+from .ocr_pipeline_manager import process_images_with_OCR_and_NER
 from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
 import torch
-import logging
 from .temp_dir_setup import create_temp_directory
-
-import pypdf
+import fitz  # PyMuPDF
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,6 +31,22 @@ def clear_gpu_memory():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         logger.debug("Cleared GPU memory.")
+
+def get_image_paths(image_or_pdf_path, temp_dir):
+    image_paths = []
+
+    if image_or_pdf_path.lower().endswith('.pdf'):
+        doc = fitz.open(image_or_pdf_path)
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            pix = page.get_pixmap()
+            temp_img_path = os.path.join(temp_dir, f"page_{page_num}.png")
+            pix.save(temp_img_path)
+            image_paths.append(temp_img_path)
+    else:
+        image_paths.append(image_or_pdf_path)
+
+    return image_paths
 
 def process_image(image_path, east_path, device, min_confidence, width, height, results_dir, temp_dir):
     logger.info(f"Processing file: {image_path}")
@@ -62,36 +76,17 @@ def process_image(image_path, east_path, device, min_confidence, width, height, 
     finally:
         clear_gpu_memory()
 
-def get_image_paths(image_or_pdf_path, temp_dir):
-    image_paths = []
-
-    if image_or_pdf_path.lower().endswith('.pdf'):
-        ########### WARNING: CHANGED FROM "fitz" to pypdf
-        with open(image_or_pdf_path, 'rb') as file:
-            pdf_reader = pypdf.PdfFileReader(file)
-            num_pages = pdf_reader.numPages
-            for i in range(num_pages):
-                page = pdf_reader.getPage(i)
-                img = convert_pdf_page_to_image(page)
-                temp_img_path = os.path.join(temp_dir, f"page_{i}.png")
-                cv2.imwrite(temp_img_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-                image_paths.append(temp_img_path)
-    else:
-        image_paths.append(image_or_pdf_path)
-
-    return image_paths
-
 def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
     clear_gpu_memory()
     temp_dir, base_dir, csv_dir = create_temp_directory()
 
-
     results_dir = os.path.join(os.path.dirname(image_or_pdf_path), "results")
     os.makedirs(results_dir, exist_ok=True)
-    temp_dir = tempfile.mkdtemp()
+
     image_paths = get_image_paths(image_or_pdf_path, temp_dir)
 
     processed_pdf_paths = []
+    result = None
     try:
         for img_path in image_paths:
             try:
@@ -107,6 +102,11 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
             except Exception as e:
                 error_message = f"Error processing {img_path}: {e}"
                 logger.error(error_message)
+
+        if not processed_pdf_paths:
+            error_message = "No processed images were generated."
+            logger.error(error_message)
+            raise RuntimeError(error_message)
 
         if image_or_pdf_path.lower().endswith('.pdf'):
             final_pdf_path = os.path.join(results_dir, "final_document.pdf")
@@ -130,7 +130,7 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
     if not validation:
         return output_path  # Return only the output path
     else:
-        return output_path, result, img_path  # Return additional info if validating
+        return output_path, result, image_or_pdf_path  # Return additional info if validating
 
 if __name__ == "__main__":
     import argparse
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     ap.add_argument("-i", "--image", type=str, required=True, help="path to input image")
     ap.add_argument("-east", "--east", type=str, required=False, help="path to input EAST text detector")
     ap.add_argument("-d", "--device", type=str, default="olympus_cv_1500", help="device name is required to set the correct text settings")
-    ap.add_argument("-v", "--validation", type=bool, default=False, help="Boolean value representing if a validation through the AGL-Validator is required.")
+    ap.add_argument("-v", "--validation", type=bool, default=False, help="Boolean value representing if validation through the AGL-Validator is required.")
     ap.add_argument("-c", "--min-confidence", type=float, default=0.5, help="minimum probability required to inspect a region")
     ap.add_argument("-w", "--width", type=int, default=320, help="resized image width (should be multiple of 32)")
     ap.add_argument("-e", "--height", type=int, default=320, help="resized image height (should be multiple of 32)")

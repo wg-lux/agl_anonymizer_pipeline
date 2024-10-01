@@ -16,7 +16,7 @@ import csv
 import logging
 import torch
 ##### WARNING: CHANGED FROM FITZ TO pypdf
-import pypdf
+import fitz
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -66,6 +66,7 @@ def combine_boxes(text_with_boxes):
     return merged_text_with_boxes
 
 def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detection.pb', device="default", min_confidence=0.5, width=320, height=320):
+    temp_dir, base_dir, csv_dir = create_temp_directory()
     logger.info(f"Processing file: {file_path}")
     modified_images_map = {}
     combined_results = []
@@ -88,25 +89,29 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
         if file_type not in ['jpg', 'jpeg', 'png', 'tiff', 'pdf']:
             raise ValueError('Invalid file type.')
 
-        image_paths = [file_path]
+        image_paths = []
         extracted_text = ''
 
         if file_type == 'pdf':
-            with open(file_path, 'rb') as pdf_file:
-                pdf_data = pdf_file.read()
-                pdf_reader = pypdf.PdfFileReader(pdf_file)
-                num_pages = pdf_reader.numPages
-                image_paths = []
-                extracted_text = ""
-                for page_num in range(num_pages):
-                    page = pdf_reader.getPage(page_num)
-                    extracted_text += page.extract_text()
-                    image_path = f"{file_path}_page_{page_num}.jpg"
-                    # Convert the PDF page to an image using your preferred method
-                    # and save it to the image_paths list
-                    image_paths.append(image_path)
+            # Open PDF using PyMuPDF
+            doc = fitz.open(file_path)
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                text = page.get_text()
+                if text:
+                    extracted_text += text
+                pix = page.get_pixmap()
+                image_path = os.path.join(temp_dir, f"{uuid.uuid4()}_page_{page_num}.png")
+                pix.save(image_path)
+                image_paths.append(image_path)
+        else:
+            image_paths = [file_path]
 
-        temp_dir, base_dir, csv_dir = create_temp_directory()
+        if not image_paths:
+            error_message = "No images to process."
+            logger.error(error_message)
+            raise RuntimeError(error_message)
+
         blurred_image_path = image_paths[0]
         for img_path in image_paths:
             logger.info(f"Processing image: {img_path}")
@@ -143,7 +148,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 gender_pars.extend(genders)  # Assuming 'genders' is a list
 
         # Prepare CSV writing
-        csv_path = os.path.join(csv_dir, f"ner_results{file_path}.csv")
+        csv_path = os.path.join(csv_dir, f"ner_results_{uuid.uuid4()}.csv")
         with open(csv_path, mode='w', newline='', encoding='utf-8') as csv_file:
             fieldnames = ['filename', 'startX', 'startY', 'endX', 'endY', 'ocr_confidence', 'entity_text', 'entity_tag']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
