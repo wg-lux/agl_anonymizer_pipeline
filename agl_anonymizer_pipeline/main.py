@@ -8,7 +8,7 @@ from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image
 from .image_reassembly import reassemble_image
 import torch
 from .temp_dir_setup import create_temp_directory
-import fitz  # PyMuPDF
+import pymupdf  # PyMuPDF
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -36,7 +36,7 @@ def get_image_paths(image_or_pdf_path, temp_dir):
     image_paths = []
 
     if image_or_pdf_path.lower().endswith('.pdf'):
-        doc = fitz.open(image_or_pdf_path)
+        doc = pymupdf.open(image_or_pdf_path)
         for page_num in range(len(doc)):
             page = doc[page_num]
             pix = page.get_pixmap()

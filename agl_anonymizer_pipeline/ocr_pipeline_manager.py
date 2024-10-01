@@ -15,8 +15,8 @@ from .temp_dir_setup import create_temp_directory, create_blur_directory
 import csv
 import logging
 import torch
-##### WARNING: CHANGED FROM FITZ TO pypdf
-import fitz
+##### WARNING: CHANGED FROM pymupdf TO pypdf
+import pymupdf
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -94,7 +94,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
 
         if file_type == 'pdf':
             # Open PDF using PyMuPDF
-            doc = fitz.open(file_path)
+            doc = pymupdf.open(file_path)
             for page_num in range(len(doc)):
                 page = doc[page_num]
                 text = page.get_text()
