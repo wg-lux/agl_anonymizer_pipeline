@@ -11,7 +11,7 @@ import cv2
 import json
 import os
 import uuid
-from .temp_dir_setup import create_temp_directory
+from .temp_dir_setup import create_temp_directory, create_blur_directory
 import csv
 import logging
 import torch
@@ -179,7 +179,8 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
 
         if blurred_image_path is not None:
             output_filename = f"blurred_image_{uuid.uuid4()}.jpg"
-            output_path = os.path.join(os.path.dirname(file_path), output_filename)
+            blur_dir = create_blur_directory()
+            output_path = os.path.join(blur_dir, output_filename)
             final_image = cv2.imread(blurred_image_path)
             cv2.imwrite(output_path, final_image)
             logger.info(f"Final blurred image saved to: {output_path}")
