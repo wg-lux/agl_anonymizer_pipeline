@@ -81,7 +81,7 @@ def get_image_paths(image_or_pdf_path, temp_dir):
 
     return image_paths
 
-def main(image_or_pdf_path, east_path='frozen_east_text_detection.pb', device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
+def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
     clear_gpu_memory()
     temp_dir, base_dir, csv_dir = create_temp_directory()
 
