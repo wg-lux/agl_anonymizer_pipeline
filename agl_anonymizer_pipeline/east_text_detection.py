@@ -5,7 +5,7 @@ import time
 import cv2
 import json
 from .box_operations import extend_boxes_if_needed
-from .temp_directory import create_temp_directory
+from .temp_dir_setup import create_temp_directory
 import os
 
 '''
