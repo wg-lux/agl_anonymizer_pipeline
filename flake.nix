@@ -83,6 +83,12 @@
         })
       ) pypkgs-build-requirements
     );
+        # Pin spacy to version 3.7.6
+    spacy_override = poetry2nix.defaultPoetryOverrides.extend (final: prev: {
+      spacy = prev.spacy.overrideAttrs (old: {
+        version = "3.7.6";
+      });
+    });
 
     # Fetch mupdf from GitHub and ensure it's built with shared libraries
     mupdf-shared = pkgs.fetchFromGitHub {
@@ -116,13 +122,13 @@
         gccPkg.libc
         llvmPkgs.libstdcxxClang
         pkgs.opencv
-        mupdf
+        mupdf-headless
       ];
 
       # Install phase for linking mupdf libraries
       installPhase = ''
         echo "Linking mupdf libraries"
-        export LDFLAGS="$LDFLAGS -L${mupdf}/lib -lmupdf -lmupdfcpp"
+        export LDFLAGS="$LDFLAGS -L${mupdf}/lib -libmupdf -libmupdfcpp.so.24.9"
         export CFLAGS="$CFLAGS -I${mupdf}/include"
       '';
     };
