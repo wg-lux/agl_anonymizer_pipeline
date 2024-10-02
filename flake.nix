@@ -1,5 +1,5 @@
 {
-  description = "Flake for the Django-based `agl-anonymizer` service with CUDA support";
+  description = "Flake for the Django-based `agl-anonymizer` service with CUDA and C++ support";
 
   nixConfig = {
     substituters = [
@@ -43,6 +43,17 @@
         cudaSupport = true;
       };
     };
+
+    # Define the C++ toolchain
+    clangVersion = "16";
+    gccVersion = "13";
+    llvmPkgs = pkgs."llvmPackages_${clangVersion}";
+    gccPkg = pkgs."gcc${gccVersion}";
+
+    # Set up clang with libstdc++ from GCC
+    clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
+      gccForLibs = gccPkg;
+    });
 
     pypkgs-build-requirements = {
       gender-guesser = [ "setuptools" ];
@@ -95,7 +106,12 @@
         python311Packages.torch-bin
         python311Packages.torchvision-bin
         python311Packages.torchaudio-bin
-        # Removed python311Packages.pymupdf
+
+        # C++ dependencies
+        gccPkg.libc
+        llvmPkgs.libstdcxxClang
+        pkgs.opencv
+        mupdf
       ];
     };
 
@@ -113,9 +129,23 @@
     packages.x86_64-linux.poetryApp = poetryApp;
     packages.x86_64-linux.default = poetryApp;
 
-    devShells.x86_64-linux.default = pkgs.mkShell {
-      inputsFrom = [ self.packages.x86_64-linux.poetryApp ];
-      packages = [ pkgs.poetry ];
+    devShells.x86_64-linux.default = pkgs.mkShell.override {
+      stdenv = clangStdEnv;
+    } rec {
+      nativeBuildInputs = [
+        pkgs.python311Packages.poetry-core
+        gccPkg.libc
+        llvmPkgs.libstdcxxClang
+        pkgs.opencv
+        pkgs.mupdf
+      ];
+
+      shellHook = ''
+        export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
+        export CUDA_NVCC_FLAGS="--compiler-bindir=$(which gcc)"
+        export PATH="${pkgs.cudaPackages.cudatoolkit}/bin:$PATH"
+        export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [ gccPkg.libc llvmPkgs.libstdcxxClang ]}"
+      '';
     };
   };
 }
