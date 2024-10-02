@@ -111,9 +111,16 @@
         gccPkg.libc
         llvmPkgs.libstdcxxClang
         pkgs.opencv
-        mupdf
+        mupdf-shared  # Use shared mupdf
       ];
-    };
+
+      buildInputs = [ mupdf-shared ];  # Explicitly include mupdf-shared
+
+      installPhase = ''
+        echo "Adding mupdf libraries to --libs"
+        export LDFLAGS="$LDFLAGS -L${mupdf-shared}/lib -lmupdf -lmupdfcpp"
+        export CFLAGS="$CFLAGS -I${mupdf-shared}/include"
+      '';
 
   in {
     nixConfig = {
