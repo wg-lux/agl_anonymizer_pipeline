@@ -83,12 +83,7 @@
         })
       ) pypkgs-build-requirements
     );
-        # Pin spacy to version 3.7.6
-    spacy_override = poetry2nix.defaultPoetryOverrides.extend (final: prev: {
-      spacy = prev.spacy.overrideAttrs (old: {
-        version = "3.7.6";
-      });
-    });
+
 
     # Fetch mupdf from GitHub and ensure it's built with shared libraries
     mupdf-shared = pkgs.fetchFromGitHub {
@@ -155,7 +150,7 @@
     devShells.x86_64-linux.default = pkgs.mkShell {
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-      nativeBuildInputs = [ pkgs.cudaPackages.cudatoolkit_11_8 ];  # CUDA toolkit version for devShell
+      nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
     };
   };
 }
