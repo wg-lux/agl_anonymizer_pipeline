@@ -68,7 +68,6 @@
       django-flat-responsive = [ "setuptools" ];
     };
 
-    # Ensure we correctly refer to poetry2nix inputs without overriding within the outputs section
     lib = pkgs.lib;
     poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
@@ -153,7 +152,8 @@
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
       shellHook = ''
-         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+        print "Setting up development environment"
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
   '';
     };
   };
