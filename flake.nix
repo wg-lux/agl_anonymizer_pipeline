@@ -1,5 +1,5 @@
 {
-  description = "Flake for the Django-based `agl-anonymizer` service with CUDA support";
+  description = "Flake for the `agl_anonymizer_pipeline` service with CUDA support";
 
   # Configuration for binary caches and keys
   nixConfig = {
@@ -125,6 +125,7 @@
         echo "Linking mupdf libraries"
         export LDFLAGS="$LDFLAGS -L${mupdf}/lib -libmupdf -libmupdfcpp.so.24.9"
         export CFLAGS="$CFLAGS -I${mupdf}/include"
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Add libstdc++.so.6 path
       '';
     };
 
@@ -151,6 +152,9 @@
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
+      shellHook = ''
+         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+  '';
     };
   };
 }
