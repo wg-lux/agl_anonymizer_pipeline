@@ -125,7 +125,7 @@
         echo "Linking mupdf libraries"
         export LDFLAGS="$LDFLAGS -L${mupdf}/lib -libmupdf -libmupdfcpp.so.24.9"
         export CFLAGS="$CFLAGS -I${mupdf}/include"
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Add libstdc++.so.6 path
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Correct path for libstdc++.so.6
       '';
     };
 
