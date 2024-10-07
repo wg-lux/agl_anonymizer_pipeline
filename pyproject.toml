@@ -1,21 +1,10 @@
 [tool.poetry]
-
-[project
 name = "agl_anonymizer_pipeline"
 version = "0.1.6"
-description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future"
-authors = ["maxhild <58726316+maxhild@users.noreply.github.com>", "maddonix <t-l]
+description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future."
+authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-
-
-
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
-
 
 [build-system]
 requires = ["poetry-core"]
@@ -23,7 +12,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-
 flair = "^0.14.0"
 spacy = "=3.7.5"
 spacy-lookups-data = "^1.0.5"
@@ -34,17 +22,9 @@ pytesseract = "^0.3.13"
 numpy = "1.26.4"
 imutils = "^0.5.4"
 
-
-
 [tool.poetry.group.nixProvided.dependencies]
 torch = "^2.4.1"
 torchvision = "^0.19.1"
 torchaudio = "^2.4.1"
 PyMuPDF = "=1.23.26"
 opencv-python = "^4.10.0"
-
-
-
-
-
-# main( image = "images/lebron_james.jpg", east = "frozen_east_text_detection.pb")
