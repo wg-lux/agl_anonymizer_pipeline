@@ -28,6 +28,22 @@ To change the default installation paths, update these variables:
 directory = "/var/anonymizer"
 temp_directory = "var/tmp/agl_anonymizer"
 
+
+def create_directories(directories):
+    """
+    Creates a list of directories if they do not exist.
+    
+    Args:
+        directories (list): A list of directory paths to create.
+    """
+    for dir_path in directories:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+            print(f"Created directory: {dir_path}")
+        else:
+            print(f"Directory already exists: {dir_path}")
+
+
 def create_main_directory(directory="/var/agl_anonymizer"):
     """
     Creates the main directory in a writable location (outside the Nix store).
@@ -39,15 +55,14 @@ def create_main_directory(directory="/var/agl_anonymizer"):
         str: The path to the main directory.
     """
     try:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-            print(f"Created main directory at {directory}")
         main_directory = os.path.join(directory, 'main')
+        create_directories([main_directory])
         return main_directory
 
     except Exception as e:
         print(f"Error creating main directory at {directory}: {e}")
         raise
+
 
 def create_temp_directory(temp_directory="var/temp/agl_anonymizer", directory=None):
     """
@@ -66,16 +81,15 @@ def create_temp_directory(temp_directory="var/temp/agl_anonymizer", directory=No
             directory = create_main_directory()
 
         temp_dir = os.path.join(temp_directory, 'temp')
-        base_dir = directory
         csv_dir = os.path.join(directory, 'csv_training_data')
 
-        return temp_dir, base_dir, csv_dir
+        create_directories([temp_dir, csv_dir])
 
+        return temp_dir, directory, csv_dir
 
     except Exception as e:
         print(f"Error setting temp or base directory: {e}")
         raise
-
 
 
 def create_blur_directory(directory="/var/agl_anonymizer"):
@@ -93,11 +107,7 @@ def create_blur_directory(directory="/var/agl_anonymizer"):
         main_directory = create_main_directory(directory)
         blur_dir = os.path.join(main_directory, 'blurred_results')
 
-        if not os.path.exists(blur_dir):
-            os.makedirs(blur_dir)
-            print(f"Created blur directory at {blur_dir}")
-        else:
-            print(f"Blur directory already exists at {blur_dir}")
+        create_directories([blur_dir])
 
         return blur_dir
 
