@@ -6,7 +6,7 @@ import time
 import json
 import ast
 from .device_reader import read_device, read_text_formatting
-from .temp_dir_setup import create_temp_directory
+from .directory_setup import create_temp_directory
 from .box_operations import make_box_from_device_list, make_box_from_name, extend_boxes_if_needed
 
 # Create temporary directory

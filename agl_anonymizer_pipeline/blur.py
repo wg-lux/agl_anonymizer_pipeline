@@ -1,7 +1,7 @@
 import cv2
 import os
 import uuid
-from .temp_dir_setup import create_temp_directory, create_blur_directory
+from .directory_setup import create_temp_directory, create_blur_directory
 from .box_operations import get_dominant_color
 from .region_detector import expand_roi
 

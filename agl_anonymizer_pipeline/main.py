@@ -7,7 +7,7 @@ from .ocr_pipeline_manager import process_images_with_OCR_and_NER
 from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
 import torch
-from .temp_dir_setup import create_temp_directory
+from .directory_setup import create_temp_directory
 import pymupdf  # PyMuPDF
 
 # Configure logging

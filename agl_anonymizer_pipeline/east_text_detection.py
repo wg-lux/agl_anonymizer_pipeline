@@ -5,19 +5,19 @@ import time
 import cv2
 import json
 from .box_operations import extend_boxes_if_needed
-from .temp_dir_setup import create_temp_directory
+from .directory_setup import create_temp_directory
 import os
 
 '''
 This module implements argman's EAST Text Detection in a function. The model that's being used is specified by the east_path variable. This is the starting point for the anonymization pipeline.
 '''
 
-# Define the URL to download the EAST model
+# Define the URL to download the frozen EAST model from GitHub
 MODEL_URL = 'https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-OpenCV/raw/master/frozen_east_text_detection.pb'
 
-# Create the temp directory and define the model path
+# Create or use the existing temp directory and define the model path
 temp_dir, base_dir, csv_dir = create_temp_directory()
-east_model_path = os.path.join(base_dir, 'frozen_east_text_detection.pb')
+east_model_path = os.path.join(base_dir, '/models/frozen_east_text_detection.pb')
 
 # Download the model if it doesn't exist
 if not os.path.exists(east_model_path):

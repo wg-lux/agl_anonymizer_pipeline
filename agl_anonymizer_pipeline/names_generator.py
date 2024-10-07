@@ -3,7 +3,7 @@ import random
 import gender_guesser.detector as gender
 import os
 from .names_adder import add_name_to_image, add_full_name_to_image, add_device_name_to_image
-from .temp_dir_setup import create_temp_directory 
+from .directory_setup import create_temp_directory 
 
 
 temp_dir, temp_base_dir, csv_dir = create_temp_directory()

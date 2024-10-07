@@ -1,10 +1,21 @@
 [tool.poetry]
+
+[project
 name = "agl_anonymizer_pipeline"
 version = "0.1.6"
 description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future"
-authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
+authors = ["maxhild <58726316+maxhild@users.noreply.github.com>", "maddonix <t-l]
 license = "MIT"
 readme = "README.md"
+
+
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
 
 [build-system]
 requires = ["poetry-core"]

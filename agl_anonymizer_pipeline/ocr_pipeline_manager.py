@@ -11,7 +11,7 @@ import cv2
 import json
 import os
 import uuid
-from .temp_dir_setup import create_temp_directory, create_blur_directory
+from .directory_setup import create_temp_directory, create_blur_directory
 import csv
 import logging
 import torch
