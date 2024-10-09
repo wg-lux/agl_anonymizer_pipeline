@@ -31,11 +31,13 @@ default_temp_directory = os.environ.get("AGL_ANONYMIZER_TEMP_DIR", "etc/agl_anon
 
 def create_directories(directories):
     """
+    Helper function.
     Creates a list of directories if they do not exist.
     
     Args:
         directories (list): A list of directory paths to create.
     """
+    
     for dir_path in directories:
         try:
             if not os.path.exists(dir_path):
@@ -58,8 +60,7 @@ def create_main_directory(default_main_directory):
     Returns:
         str: The path to the main directory.
     """
-    if directory is None:
-        directory = default_main_directory
+    directory = default_main_directory
 
     try:
         main_directory = os.path.join(directory, 'main')
@@ -83,25 +84,25 @@ def create_temp_directory(default_temp_directory, default_main_directory):
     Returns:
         tuple: Paths to temp_dir, base_dir, and csv_dir.
     """
-    if temp_directory is None:
-        temp_directory = default_temp_directory
+    if default_temp_directory is None:
+        default_temp_directory = default_temp_directory
 
-    if main_directory is None:
-        main_directory = create_main_directory()
+    if default_main_directory is None:
+        default_main_directory = create_main_directory()
 
     try:
-        temp_dir = os.path.join(temp_directory, 'temp')
-        csv_dir = os.path.join(main_directory, 'csv_training_data')
+        temp_dir = os.path.join(default_temp_directory, 'temp')
+        csv_dir = os.path.join(default_main_directory, 'csv_training_data')
 
         create_directories([temp_dir, csv_dir])
 
-        return temp_dir, main_directory, csv_dir
+        return temp_dir, default_main_directory, csv_dir
     except Exception as e:
         print(f"Error setting temp or base directory: {e}")
         raise
 
 
-def create_blur_directory(default_temp_directory=None):
+def create_blur_directory(default_main_directory):
     """
     Creates 'blurred_images' directory in a writable location (outside the Nix store).
     
@@ -112,12 +113,11 @@ def create_blur_directory(default_temp_directory=None):
     Returns:
         str: Path to the blurred images directory.
     """
-    if directory is None:
-        directory = default_main_directory
+    if default_main_directory is None:
+        default_main_directory = default_temp_directory
 
     try:
-        main_directory = create_main_directory(directory)
-        blur_dir = os.path.join(main_directory, 'blurred_results')
+        blur_dir = os.path.join(default_main_directory, 'blurred_results')
 
         create_directories([blur_dir])
 
