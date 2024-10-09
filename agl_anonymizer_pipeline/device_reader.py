@@ -8,7 +8,6 @@ from .box_operations import make_box_from_device_list
 """
 Functions used for reading the device lists parameter.
 
-
 """
 
 

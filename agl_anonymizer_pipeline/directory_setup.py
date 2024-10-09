@@ -26,8 +26,8 @@ To change the default installation paths, update these variables:
 
 # Default directory paths for main and temp directories
 # The base directory can be overridden via environment variables
-default_main_directory = os.environ.get("AGL_MAIN_DIRECTORY", "/var/agl_anonymizer")
-default_temp_directory = os.environ.get("AGL_TEMP_DIRECTORY", tempfile.gettempdir())
+default_main_directory = os.environ.get("AGL_MAIN_DIRECTORY", "/etc/agl_anonymizer")
+default_temp_directory = os.environ.get("AGL_TEMP_DIRECTORY", "etc/agl_anonymizer-temp")
 
 def create_directories(directories):
     """
@@ -47,7 +47,7 @@ def create_directories(directories):
             print(f"Error creating directory {dir_path}: {e}")
             raise
 
-def create_main_directory(directory=None):
+def create_main_directory(default_main_directory):
     """
     Creates the main directory in a writable location (outside the Nix store).
     
@@ -70,7 +70,7 @@ def create_main_directory(directory=None):
         raise
 
 
-def create_temp_directory(temp_directory=None, main_directory=None):
+def create_temp_directory(default_temp_directory, default_main_directory):
     """
     Creates 'temp' and 'csv' directories in the given temp and main directories.
     
@@ -101,7 +101,7 @@ def create_temp_directory(temp_directory=None, main_directory=None):
         raise
 
 
-def create_blur_directory(directory=None):
+def create_blur_directory(default_temp_directory=None):
     """
     Creates 'blurred_images' directory in a writable location (outside the Nix store).
     
