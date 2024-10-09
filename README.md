@@ -3,13 +3,12 @@
 This Module is designed to work with the Django API AGL Anonymizer.
 
 
-The AGL Anonymizer Pipeline is a comprehensive Python module designed for image processing with specific functionalities for anonymization using common german names, saving, blurring, and OCR (Optical Character Recognition). This tool is particularly useful in scenarios where sensitive information needs to be redacted from images or documents while retaining the overall context and visual structure.
+The Submodule is used to provide automatic anonymization of sensitive information. It is a three step pipeline using Text Region Detection (EAST), OCR (Optical Character Recognition, Tesseract, TrOCR) and Named Entity Recognition (flair-ner, gender-guessr). This tool is particularly useful in scenarios where sensitive information needs to be removed or replaced from images or documents while retaining the overall context and visual structure.
 
 ## Features
 
 - **Text detection and anonymization**: Utilizes advanced OCR techniques to detect text in images and applies anonymizing to safeguard sensitive information.
 - **Blurring Functionality**: Offers customizable blurring options to obscure parts of an image, providing an additional layer of privacy.
-- **Image Saving**: Efficiently saves processed images in a desired format, maintaining high-quality output.
 - **Extensive Format Support**: Capable of handling various image and document formats for a wide range of applications.
 
 ## Installation
@@ -43,13 +42,11 @@ python main.py --image images/lebron_james.jpg --east frozen_east_text_detection
 
 AGL Anonymizer is comprised of several key modules:
 
-OCR Module: Detects and extracts text from images.
-Anonymizer Module: Applies anonymizing techniques to identified sensitive text regions.
+Text Region Detection: EAST and Tesseract are applied to find the text regions in the image.
+OCR Module: Detects and extracts text from images using Tesseract and TROCR
+Anonymizer Module: Applies Pseudonyms to the sensitive text regions identified. A custom names directory is provided.
 Blur Module: Provides functions to blur specific areas in the image.
 Save Module: Handles the saving of processed images in a chosen format.
-Customization
-
-You can customize the behavior of AGL Anonymize by modifying the parameters in the config.py file (if included). This includes adjusting the OCR sensitivity, blur intensity, and more.
 
 ## Contributing
 
@@ -57,9 +54,10 @@ Contributions to the AGL Anonymizer Pipeline are welcome! If you have suggestion
 
 TO DO:
 
-- UTF-8 Handling of Names
-- Improving the text region detection
-- Re-adding Tesseract OCR or adding Paddle OCR for improved full text document OCR.
+- UTF-8 Handling of Names - CV2 putText only works in ASCII
+- Improving the text region detection by Model Training
+- You can customize the behavior of AGL Anonymizer by modifying the parameters in the config.py file (if included). This includes adjusting the OCR sensitivity, blur intensity, and more.
+
 
 ## License
 
