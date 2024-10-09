@@ -26,8 +26,8 @@ To change the default installation paths, update these variables:
 
 # Default directory paths for main and temp directories
 # The base directory can be overridden via environment variables
-default_main_directory = os.environ.get("AGL_MAIN_DIRECTORY", "/etc/agl_anonymizer")
-default_temp_directory = os.environ.get("AGL_TEMP_DIRECTORY", "etc/agl_anonymizer-temp")
+default_main_directory = os.environ.get("AGL_ANONYMIZER_MAIN_DIR", "/etc/agl_anonymizer")
+default_temp_directory = os.environ.get("AGL_ANONYMIZER_TEMP_DIR", "etc/agl_anonymizer-temp")
 
 def create_directories(directories):
     """
