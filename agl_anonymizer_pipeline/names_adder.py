@@ -9,7 +9,7 @@ from .device_reader import read_device, read_text_formatting
 from .directory_setup import create_temp_directory
 from .box_operations import make_box_from_device_list, make_box_from_name, extend_boxes_if_needed
 
-# Create temporary directory
+# Create or read temporary directory
 temp_dir, base_dir, csv_dir = create_temp_directory()
 
 def format_name(name, format_string):
