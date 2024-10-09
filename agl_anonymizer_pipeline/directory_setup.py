@@ -38,6 +38,7 @@ def create_directories(directories):
         directories (list): A list of directory paths to create.
     """
     
+    
     for dir_path in directories:
         try:
             if not os.path.exists(dir_path):
@@ -60,15 +61,19 @@ def create_main_directory(default_main_directory):
     Returns:
         str: The path to the main directory.
     """
-    directory = default_main_directory
-
     try:
-        main_directory = os.path.join(directory, 'main')
-        create_directories([main_directory])
-        return main_directory
-    except Exception as e:
-        print(f"Error creating main directory at {directory}: {e}")
-        raise
+        directory = default_main_directory
+        print("Using default main directory settings")
+
+        return directory
+    except:
+        try:
+            main_directory = os.path.join(directory, 'main')
+            create_directories([main_directory])
+            return main_directory
+        except Exception as e:
+            print(f"Error creating main directory at {directory}: {e}")
+            raise
 
 
 def create_temp_directory(default_temp_directory, default_main_directory):
@@ -84,22 +89,32 @@ def create_temp_directory(default_temp_directory, default_main_directory):
     Returns:
         tuple: Paths to temp_dir, base_dir, and csv_dir.
     """
-    if default_temp_directory is None:
-        default_temp_directory = default_temp_directory
-
-    if default_main_directory is None:
-        default_main_directory = create_main_directory()
-
     try:
-        temp_dir = os.path.join(default_temp_directory, 'temp')
-        csv_dir = os.path.join(default_main_directory, 'csv_training_data')
+        set_temp_directory = default_temp_directory.join('temp')
+        set_csv_directory = default_main_directory.join('csv_training_data') 
+        
+        print("Using default temp and main directory settings")   
+        
+        return set_temp_directory, default_main_directory, set_csv_directory 
+    
+    except:
+        if default_temp_directory is None:
+            default_temp_directory = default_temp_directory
 
-        create_directories([temp_dir, csv_dir])
+        if default_main_directory is None:
+            default_main_directory = create_main_directory()
 
-        return temp_dir, default_main_directory, csv_dir
-    except Exception as e:
-        print(f"Error setting temp or base directory: {e}")
-        raise
+        try:
+            temp_dir = os.path.join(default_temp_directory, 'temp')
+            csv_dir = os.path.join(default_main_directory, 'csv_training_data')
+
+            create_directories([temp_dir, csv_dir])
+
+            return temp_dir, default_main_directory, csv_dir
+        except Exception as e:
+            print(f"Error setting temp or base directory: {e}")
+            raise
+
 
 
 def create_blur_directory(default_main_directory):
@@ -113,15 +128,22 @@ def create_blur_directory(default_main_directory):
     Returns:
         str: Path to the blurred images directory.
     """
-    if default_main_directory is None:
-        default_main_directory = default_temp_directory
-
     try:
-        blur_dir = os.path.join(default_main_directory, 'blurred_results')
-
-        create_directories([blur_dir])
-
+        blur_dir = default_main_directory.join('blurred_results')
         return blur_dir
-    except Exception as e:
-        print(f"Error creating blur directory at {blur_dir}: {e}")
-        raise
+    except:
+                
+        if default_main_directory is None:
+            default_main_directory = default_temp_directory
+        
+        
+            try:
+                blur_dir = os.path.join(default_main_directory, 'blurred_results')
+
+                create_directories([blur_dir])
+
+                return blur_dir
+            except Exception as e:
+                print(f"Error creating blur directory at {blur_dir}: {e}")
+                raise
+        
