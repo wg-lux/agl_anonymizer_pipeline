@@ -26,8 +26,8 @@ To change the default installation paths, update these variables:
 
 # Default directory paths for main and temp directories
 # The base directory can be overridden via environment variables
-default_main_directory = os.environ.get("AGL_ANONYMIZER_MAIN_DIR", "/etc/agl-anonymizer")
-default_temp_directory = os.environ.get("AGL_ANONYMIZER_TEMP_DIR", "etc/agl-anonymizer-temp")
+default_main_directory = os.environ.get("/etc/agl-anonymizer")
+default_temp_directory = os.environ.get("etc/agl-anonymizer-temp")
 
 def create_directories(directories):
     """
@@ -68,8 +68,10 @@ def create_main_directory(default_main_directory):
         return directory
     except:
         try:
+            print(f"Creating main directory, directory at {directory} not found")
             main_directory = os.path.join(directory, 'main')
             create_directories([main_directory])
+            print(f"Main directory created at {main_directory}")
             return main_directory
         except Exception as e:
             print(f"Error creating main directory at {directory}: {e}")
@@ -98,6 +100,7 @@ def create_temp_directory(default_temp_directory, default_main_directory):
         return set_temp_directory, default_main_directory, set_csv_directory 
     
     except:
+        print(f"Creating temp and csv directories, directories at {default_temp_directory} and {default_main_directory} not found")
         if default_temp_directory is None:
             default_temp_directory = default_temp_directory
 
@@ -109,6 +112,7 @@ def create_temp_directory(default_temp_directory, default_main_directory):
             csv_dir = os.path.join(default_main_directory, 'csv_training_data')
 
             create_directories([temp_dir, csv_dir])
+            print(f"Temp and csv directories created at {temp_dir} and {csv_dir}")
 
             return temp_dir, default_main_directory, csv_dir
         except Exception as e:
@@ -130,20 +134,24 @@ def create_blur_directory(default_main_directory):
     """
     try:
         blur_dir = default_main_directory.join('blurred_results')
+        print("Using default blur directory settings")
         return blur_dir
     except:
+        print(f"Creating blur directory, directory at {default_main_directory} not found")
                 
         if default_main_directory is None:
             default_main_directory = default_temp_directory
         
         
-            try:
-                blur_dir = os.path.join(default_main_directory, 'blurred_results')
+        try:
+            blur_dir = os.path.join(default_main_directory, 'blurred_results')
 
-                create_directories([blur_dir])
+            create_directories([blur_dir])
+            print(f"Blur directory created at {blur_dir}")
 
-                return blur_dir
-            except Exception as e:
-                print(f"Error creating blur directory at {blur_dir}: {e}")
-                raise
+            return blur_dir
+        except Exception as e:
+            print(f"Error creating blur directory at {blur_dir}: {e}")
+            raise
+        
         
