@@ -170,7 +170,7 @@ modified_images_map, result = process_images_with_OCR_and_NER(
 )
 for res in result['combined_results']:
     print(res)
-
+```
 
 ## Names Generator Module
 
