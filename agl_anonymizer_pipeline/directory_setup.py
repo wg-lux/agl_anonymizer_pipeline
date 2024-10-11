@@ -69,10 +69,9 @@ def create_main_directory(default_main_directory):
     except:
         try:
             print(f"Creating main directory, directory at {directory} not found")
-            main_directory = os.path.directory
-            create_directories([main_directory])
-            print(f"Main directory created at {main_directory}")
-            return main_directory
+            create_directories([default_main_directory])
+            print(f"Main directory created at {default_main_directory}")
+            return default_main_directory
         except Exception as e:
             print(f"Error creating main directory at {directory}: {e}")
             raise
