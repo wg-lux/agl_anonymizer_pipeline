@@ -26,8 +26,8 @@ To change the default installation paths, update these variables:
 
 # Default directory paths for main and temp directories
 # The base directory can be overridden via environment variables
-default_main_directory = os.environ.get("/etc/agl-anonymizer")
-default_temp_directory = os.environ.get("etc/agl-anonymizer-temp")
+default_main_directory = os.environ.get("AGL_ANONYMIZER_DEFAULT_MAIN_DIR","/etc/agl-anonymizer")
+default_temp_directory = os.environ.get("AGL_ANONYMIZER_DEFAULT_TEMP_DIR", "/etc/agl-anonymizer-temp")
 
 def create_directories(directories):
     """
@@ -69,7 +69,7 @@ def create_main_directory(default_main_directory):
     except:
         try:
             print(f"Creating main directory, directory at {directory} not found")
-            main_directory = os.path.join(directory, 'main')
+            main_directory = os.path.directory
             create_directories([main_directory])
             print(f"Main directory created at {main_directory}")
             return main_directory
@@ -92,8 +92,8 @@ def create_temp_directory(default_temp_directory, default_main_directory):
         tuple: Paths to temp_dir, base_dir, and csv_dir.
     """
     try:
-        set_temp_directory = default_temp_directory.join('temp')
-        set_csv_directory = default_main_directory.join('csv_training_data') 
+        set_temp_directory = default_temp_directory.join('/temp')
+        set_csv_directory = default_main_directory.join('/csv_training_data') 
         
         print("Using default temp and main directory settings")   
         
@@ -108,8 +108,8 @@ def create_temp_directory(default_temp_directory, default_main_directory):
             default_main_directory = create_main_directory()
 
         try:
-            temp_dir = os.path.join(default_temp_directory, 'temp')
-            csv_dir = os.path.join(default_main_directory, 'csv_training_data')
+            temp_dir = os.path.join(default_temp_directory, '/temp')
+            csv_dir = os.path.join(default_main_directory, '/csv_training_data')
 
             create_directories([temp_dir, csv_dir])
             print(f"Temp and csv directories created at {temp_dir} and {csv_dir}")
@@ -133,7 +133,7 @@ def create_blur_directory(default_main_directory):
         str: Path to the blurred images directory.
     """
     try:
-        blur_dir = default_main_directory.join('blurred_results')
+        blur_dir = default_main_directory.join('/blurred_results')
         print("Using default blur directory settings")
         return blur_dir
     except:
@@ -144,7 +144,7 @@ def create_blur_directory(default_main_directory):
         
         
         try:
-            blur_dir = os.path.join(default_main_directory, 'blurred_results')
+            blur_dir = os.path.join(default_main_directory, '/blurred_results')
 
             create_directories([blur_dir])
             print(f"Blur directory created at {blur_dir}")
