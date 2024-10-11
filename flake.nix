@@ -126,9 +126,6 @@
         export CFLAGS="$CFLAGS -I${mupdf}/include"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Correct path for libstdc++.so.6
 
-        echo "setting up directories"
-        export AGL_ANONYMIZER_TEMP_DIR=$HOME/agl_anonymizer_temp
-
       '';
     };
 
