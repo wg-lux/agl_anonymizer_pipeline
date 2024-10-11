@@ -42,7 +42,7 @@ def create_directories(directories):
     for dir_path in directories:
         try:
             if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
+                os.makedirs(dir_path, exist_ok=True)
                 print(f"Created directory: {dir_path}")
             else:
                 print(f"Directory already exists: {dir_path}")
@@ -91,8 +91,9 @@ def create_temp_directory(default_temp_directory, default_main_directory):
         tuple: Paths to temp_dir, base_dir, and csv_dir.
     """
     try:
-        set_temp_directory = default_temp_directory.join('/temp')
-        set_csv_directory = default_main_directory.join('/csv_training_data') 
+
+        set_temp_directory = default_temp_directory + '/temp'
+        set_csv_directory = default_main_directory + '/csv_training_data' 
         
         print("Using default temp and main directory settings")   
         
@@ -107,8 +108,11 @@ def create_temp_directory(default_temp_directory, default_main_directory):
             default_main_directory = create_main_directory()
 
         try:
-            temp_dir = os.path.join(default_temp_directory, '/temp')
-            csv_dir = os.path.join(default_main_directory, '/csv_training_data')
+            # temp_dir = os.path.join(default_temp_directory, '/temp')
+            # csv_dir = os.path.join(default_main_directory, '/csv_training_data')
+            
+            temp_dir = "/etc/agl-anonymizer-temp/temp"
+            csv_dir = "/etc/agl-anonymizer/csv_training_data"
 
             create_directories([temp_dir, csv_dir])
             print(f"Temp and csv directories created at {temp_dir} and {csv_dir}")
