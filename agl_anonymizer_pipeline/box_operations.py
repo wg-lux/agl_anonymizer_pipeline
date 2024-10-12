@@ -1,5 +1,17 @@
 import numpy as np
 import cv2
+from custom_logger import get_logger
+
+logger = get_logger(__name__)
+
+'''
+Box Operations
+
+The functions in this script define operations on coordinate 
+bounding boxes in images.
+
+
+'''
 
 def get_dominant_color(image, box):
     """
@@ -20,6 +32,8 @@ def get_dominant_color(image, box):
     _, counts = np.unique(labels, return_counts=True)
     
     dominant = palette[np.argmax(counts)]
+    
+    logger.debug(f"Found dominant color: {dominant}")
     return tuple(map(int, dominant))
 
 def make_box_from_name(image, name, padding=10):
@@ -46,7 +60,7 @@ def make_box_from_name(image, name, padding=10):
     startY = max(0, text_size[1] - padding)
     endX = min(image.shape[1], text_size[0] + padding)
     endY = min(image.shape[0], text_size[1] + padding)
-
+    logger.debug(f"Created bounding box for name '{name}': ({startX}, {startY}, {endX}, {endY})")
     return (startX, startY, endX, endY)
 
 def make_box_from_device_list(x,y,w,h):
@@ -65,6 +79,7 @@ def make_box_from_device_list(x,y,w,h):
     startY=y 
     endX=x+w 
     endY=y+h
+    logger.debug(f"Created bounding box from device list: ({startX}, {startY}, {endX}, {endY})")
     return startX, startY, endX, endY
 
 def extend_boxes_if_needed(image, boxes, extension_margin=10, color_threshold=30):
@@ -80,6 +95,7 @@ def extend_boxes_if_needed(image, boxes, extension_margin=10, color_threshold=30
     Returns:
         _type_: _description_
     """
+    logger.debug(f"Starting box extension to make room for names.")
     extended_boxes = []
     for box in boxes:
         (startX, startY, endX, endY) = box
@@ -115,4 +131,5 @@ def extend_boxes_if_needed(image, boxes, extension_margin=10, color_threshold=30
         # Add the possibly extended box to the list
         extended_boxes.append((startX, startY, endX, endY))
 
+    logger.debug(f"Extended boxes to make rrom for names.")
     return extended_boxes

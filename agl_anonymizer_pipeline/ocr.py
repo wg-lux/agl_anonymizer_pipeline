@@ -9,15 +9,18 @@ from transformers import (
 import torch
 import pytesseract
 import numpy as np
+from custom_logger import get_logger
+
+logger = get_logger(__name__)
 
 def preload_models():
     global processor, model, tokenizer, device
 
-    print("Preloading models...")
+    logger.info("Preloading models...")
 
     # Determine the device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     # Load processor, model, and tokenizer
     processor = ViTImageProcessor.from_pretrained('microsoft/trocr-base-str')
@@ -38,7 +41,7 @@ def preload_models():
     #     device=0 if torch.cuda.is_available() else -1
     # )
 
-    print("Models preloaded successfully.")
+    logger.info("Models preloaded successfully.")
     return processor, model, tokenizer, device
 
 def trocr_on_boxes(image_path, boxes):
@@ -49,7 +52,7 @@ def trocr_on_boxes(image_path, boxes):
     # Ensure models are loaded
     processor, model, tokenizer, device = preload_models()
 
-    print("Processing image with TrOCR")
+    logger.debug("Processing image with TrOCR")
 
     for idx, box in enumerate(boxes):
         try:
@@ -100,14 +103,14 @@ def trocr_on_boxes(image_path, boxes):
             extracted_text_with_boxes.append((generated_text.strip(), expanded_box))
             confidences.append(confidence_score)
 
-            print(f"Processed box {idx + 1}/{len(boxes)}: '{generated_text.strip()}' with confidence {confidence_score:.4f}")
+            logger.info(f"Processed box {idx + 1}/{len(boxes)}: '{generated_text.strip()}' with confidence {confidence_score:.4f}")
 
         except Exception as e:
-            print(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
+            logger.info(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
             extracted_text_with_boxes.append(("", box))
             confidences.append(0.0)
 
-    print("TrOCR processing complete")
+    logger.debug("TrOCR processing complete")
     return extracted_text_with_boxes, confidences
 
 def tesseract_on_boxes(image_path, boxes):
@@ -115,7 +118,7 @@ def tesseract_on_boxes(image_path, boxes):
     extracted_text_with_boxes = []
     confidences = []
 
-    print("Processing image with Tesseract OCR")
+    logger.debug("Processing image with Tesseract OCR")
 
     for idx, box in enumerate(boxes):
         try:
@@ -147,14 +150,14 @@ def tesseract_on_boxes(image_path, boxes):
             extracted_text_with_boxes.append((ocr_result.strip(), expanded_box))
             confidences.append(confidence_score)
 
-            print(f"Processed box {idx + 1}/{len(boxes)}: '{ocr_result.strip()}' with confidence {confidence_score:.2f}")
+            logger.debug(f"Processed box {idx + 1}/{len(boxes)}: '{ocr_result.strip()}' with confidence {confidence_score:.2f}")
 
         except Exception as e:
-            print(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
+            logger.info(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
             extracted_text_with_boxes.append(("", box))
             confidences.append(0.0)
 
-    print("Tesseract OCR processing complete")
+    logger.info("Tesseract OCR processing complete")
     return extracted_text_with_boxes, confidences
 
 if __name__ == "__main__":
@@ -172,10 +175,10 @@ if __name__ == "__main__":
     
     # Perform OCR using TrOCR
     trocr_results, trocr_confidences = trocr_on_boxes(image_path, boxes)
-    print("TrOCR Results:", trocr_results)
-    print("TrOCR Confidences:", trocr_confidences)
+    logger.debug("TrOCR Results:", trocr_results)
+    logger.debug("TrOCR Confidences:", trocr_confidences)
     
     # Perform OCR using Tesseract
     tesseract_results, tesseract_confidences = tesseract_on_boxes(image_path, boxes)
-    print("Tesseract Results:", tesseract_results)
-    print("Tesseract Confidences:", tesseract_confidences)
+    logger.debug("Tesseract Results:", tesseract_results)
+    logger.debug("Tesseract Confidences:", tesseract_confidences)

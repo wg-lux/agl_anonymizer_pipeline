@@ -1,21 +1,20 @@
 import cv2
 import uuid
-import os
-import tempfile
-import logging
+from .custom_logger import get_logger
 from .ocr_pipeline_manager import process_images_with_OCR_and_NER
-from .pdf_operations import convert_pdf_page_to_image, merge_pdfs, convert_image_to_pdf
+from .pdf_operations import merge_pdfs, convert_image_to_pdf
 from .image_reassembly import reassemble_image
 import torch
-from .directory_setup import create_temp_directory
+from .directory_setup import create_temp_directory, create_results_directory
 import pymupdf  # PyMuPDF
+from pathlib import Path
+
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
-def resize_image(image_path, max_width=1024, max_height=1024):
-    image = cv2.imread(image_path)
+def resize_image(image_path: Path, max_width=1024, max_height=1024):
+    image = cv2.imread(str(image_path))  # OpenCV expects a string
     if image is None:
         logger.error(f"Unable to read image for resizing: {image_path}")
         return
@@ -24,7 +23,7 @@ def resize_image(image_path, max_width=1024, max_height=1024):
         scaling_factor = min(max_width / width, max_height / height)
         new_size = (int(width * scaling_factor), int(height * scaling_factor))
         resized_image = cv2.resize(image, new_size, interpolation=cv2.INTER_AREA)
-        cv2.imwrite(image_path, resized_image)
+        cv2.imwrite(str(image_path), resized_image)  # Saving image
         logger.debug(f"Image resized to {new_size}")
 
 def clear_gpu_memory():
@@ -32,28 +31,36 @@ def clear_gpu_memory():
         torch.cuda.empty_cache()
         logger.debug("Cleared GPU memory.")
 
-def get_image_paths(image_or_pdf_path, temp_dir):
+def get_image_paths(image_or_pdf_path: Path, temp_dir: Path):
     image_paths = []
 
-    if image_or_pdf_path.lower().endswith('.pdf'):
-        doc = pymupdf.open(image_or_pdf_path)
-        for page_num in range(len(doc)):
-            page = doc[page_num]
-            pix = page.get_pixmap()
-            temp_img_path = os.path.join(temp_dir, f"page_{page_num}.png")
-            pix.save(temp_img_path)
-            image_paths.append(temp_img_path)
+    if not temp_dir.exists() or not temp_dir.is_dir():
+        raise ValueError(f"Temporary directory {temp_dir} does not exist or is not a directory.")
+
+    if image_or_pdf_path.suffix.lower() == '.pdf':
+        try:
+            doc = pymupdf.open(str(image_or_pdf_path))  # pymupdf expects a string
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                pix = page.get_pixmap()
+                temp_img_path = temp_dir / f"page_{page_num}.png"
+                pix.save(str(temp_img_path))  # pymupdf requires a string path
+                image_paths.append(temp_img_path)
+        except Exception as e:
+            raise RuntimeError(f"Error processing PDF {image_or_pdf_path}: {e}")
     else:
+        if not image_or_pdf_path.exists():
+            raise FileNotFoundError(f"The file {image_or_pdf_path} does not exist.")
         image_paths.append(image_or_pdf_path)
 
     return image_paths
 
-def process_image(image_path, east_path, device, min_confidence, width, height, results_dir, temp_dir):
+def process_image(image_path: Path, east_path, device, min_confidence, width, height, results_dir: Path, temp_dir: Path):
     logger.info(f"Processing file: {image_path}")
     unique_id = str(uuid.uuid4())[:8]
     id = f"image_{unique_id}"
 
-    original_image = cv2.imread(image_path)
+    original_image = cv2.imread(str(image_path))  # OpenCV requires a string path
     if original_image is None:
         error_msg = f"Could not load image at {image_path}"
         logger.error(error_msg)
@@ -80,10 +87,9 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
     clear_gpu_memory()
     temp_dir, base_dir, csv_dir = create_temp_directory()
 
-    results_dir = os.path.join(os.path.dirname(image_or_pdf_path), "results")
-    os.makedirs(results_dir, exist_ok=True)
+    results_dir = create_results_directory()
 
-    image_paths = get_image_paths(image_or_pdf_path, temp_dir)
+    image_paths = get_image_paths(Path(image_or_pdf_path), Path(temp_dir))  # Ensure Path usage
 
     processed_pdf_paths = []
     result = None
@@ -91,10 +97,10 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
         for img_path in image_paths:
             try:
                 processed_image_path, result = process_image(
-                    img_path, east_path, device, min_confidence, width, height, results_dir, temp_dir
+                    img_path, east_path, device, min_confidence, width, height, Path(results_dir), Path(temp_dir)
                 )
                 if image_or_pdf_path.lower().endswith('.pdf'):
-                    temp_pdf_path = os.path.join(temp_dir, f"processed_{uuid.uuid4()}.pdf")
+                    temp_pdf_path = Path(temp_dir) / f"temporary_pdf_{uuid.uuid4()}.pdf"
                     convert_image_to_pdf(processed_image_path, temp_pdf_path)
                     processed_pdf_paths.append(temp_pdf_path)
                 else:
@@ -109,29 +115,26 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
             raise RuntimeError(error_message)
 
         if image_or_pdf_path.lower().endswith('.pdf'):
-            final_pdf_path = os.path.join(results_dir, "final_document.pdf")
+            final_pdf_path = Path(results_dir) / f"final_document_{uuid.uuid4()}.pdf"
             merge_pdfs(processed_pdf_paths, final_pdf_path)
             output_path = final_pdf_path
         else:
             output_path = processed_pdf_paths[0]
     finally:
         # Clean up temporary directory
-        for file in os.listdir(temp_dir):
-            try:
-                os.remove(os.path.join(temp_dir, file))
-            except Exception as e:
-                logger.warning(f"Failed to delete temp file {file}: {e}")
-        try:
-            os.rmdir(temp_dir)
-        except Exception as e:
-            logger.warning(f"Failed to delete temp directory {temp_dir}: {e}")
+        temp_dir_path = Path(temp_dir)  # Ensure temp_dir is a Path object
+        if temp_dir_path.exists() and temp_dir_path.is_dir():
+            for file in temp_dir_path.iterdir():
+                try:
+                    file.unlink()  # Use unlink() to remove the file
+                except Exception as e:
+                    logger.warning(f"Failed to delete temp file {file}: {e}")
 
     logger.info(f"Output Path: {output_path}")
     if not validation:
         return output_path  # Return only the output path
     else:
         return output_path, result, image_or_pdf_path  # Return additional info if validating
-
 if __name__ == "__main__":
     import argparse
 
@@ -146,3 +149,4 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     main(args["image"], args["east"], args["device"], args["validation"], args["min_confidence"], args["width"], args["height"])
+

@@ -3,6 +3,7 @@ import pytesseract
 from pytesseract import Output
 import json
 from .box_operations import extend_boxes_if_needed
+from .custom_logger import logger
 
 def tesseract_text_detection(image_path, min_confidence=0.5, width=320, height=320):
     """
@@ -16,8 +17,8 @@ def tesseract_text_detection(image_path, min_confidence=0.5, width=320, height=3
     :return: List of bounding boxes (x, y, w, h) of detected text regions.
     """
     # Load the input image
-    image = cv2.imread(image_path)
-    print("loading tesseract text detection")
+    image = cv2.imread(str(image_path))
+    logger.debug("loading tesseract text detection")
     if image is None:
         raise ValueError("Could not open or find the image.")
     
@@ -63,7 +64,7 @@ def tesseract_text_detection(image_path, min_confidence=0.5, width=320, height=3
     output_boxes = extend_boxes_if_needed(orig, output_boxes)
 
     # Return both the scaled bounding boxes and the confidence scores in JSON format
-    print("tesseract text detection done")
+    logger.info("tesseract text detection complete")
     return output_boxes, json.dumps(output_confidences)
 
 def sort_boxes(boxes):
@@ -91,5 +92,5 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     boxes, confidences = tesseract_text_detection(args["image"], args["min_confidence"], args["width"], args["height"])
-    print("Detected boxes:", boxes)
-    print("Confidence scores:", confidences)
+    logger.debug("Detected boxes:", boxes)
+    logger.debug("Confidence scores:", confidences)

@@ -7,6 +7,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Load the NER tagger once at module level
+
+'''
+Flair NER Tagger
+
+This script loads a Flair Named Entity Recognition (NER) tagger for German text.
+The Text is searched for entities and the entities are returned, when a PER, 
+or Person Tag is found.
+
+input: text (str) - The text to be analyzed for entities.
+output: entities (List) - A list of entities found in the text.
+
+'''
 try:
     logger.info("Loading Flair German NER tagger...")
     tagger = SequenceTagger.load("flair/ner-german")  # Use the correct model name

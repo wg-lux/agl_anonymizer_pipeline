@@ -5,8 +5,8 @@ import time
 import cv2
 import json
 from .box_operations import extend_boxes_if_needed
-from .directory_setup import create_temp_directory
-import os
+from .directory_setup import create_temp_directory, _str_to_path
+import urllib.request
 
 '''
 This module implements argman's EAST Text Detection in a function. The model that's being used is specified by the east_path variable. This is the starting point for the anonymization pipeline.
@@ -17,14 +17,15 @@ MODEL_URL = 'https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-
 
 # Create or use the existing temp directory and define the model path
 temp_dir, base_dir, csv_dir = create_temp_directory()
-east_model_path = os.path.join(base_dir, '/models/frozen_east_text_detection.pb')
+
+east_model_path = base_dir.joinpath('models', 'frozen_east_text_detection.pb')  # Correct joinpath usage
 
 # Download the model if it doesn't exist
-if not os.path.exists(east_model_path):
+if not east_model_path.exists():
     try:
         import urllib.request
         print(f"Downloading EAST model to {east_model_path}...")
-        urllib.request.urlretrieve(MODEL_URL, east_model_path)
+        urllib.request.urlretrieve(MODEL_URL, east_model_path.as_posix())
         print("Download complete.")
     except Exception as e:
         print(f"Error downloading the model: {e}")
@@ -64,10 +65,13 @@ def east_text_detection(image_path, east_path=None, min_confidence=0.5, width=32
 
     blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
                                  (123.68, 116.78, 103.94), swapRB=True, crop=False)
-    start = time.time()
+    
+    #start = time.time()
+    
     net.setInput(blob)
     (scores, geometry) = net.forward(layerNames)
-    end = time.time()
+    
+    #end = time.time()
 
     # Grab the number of rows and columns from the scores volume
     (numRows, numCols) = scores.shape[2:4]

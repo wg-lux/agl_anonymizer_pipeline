@@ -8,9 +8,13 @@ import ast
 from .device_reader import read_device, read_text_formatting
 from .directory_setup import create_temp_directory
 from .box_operations import make_box_from_device_list, make_box_from_name, extend_boxes_if_needed
+from .custom_logger import getLogger
+
+logger = getLogger(__name__)
 
 # Create or read temporary directory
 temp_dir, base_dir, csv_dir = create_temp_directory()
+
 
 def format_name(name, format_string):
     names = name.split()
@@ -23,8 +27,10 @@ def format_name(name, format_string):
 
 def validate_coordinates(coords):
     if not isinstance(coords, tuple) or len(coords) != 4:
+        logger.error(f"Invalid coordinates format. Expected a tuple of four elements.")
         raise ValueError("Invalid coordinates format. Expected a tuple of four elements.")
     if not all(isinstance(coord, int) and coord >= 0 for coord in coords):
+        logger.error(f"Coordinates must be non-negative integers.")
         raise ValueError("Coordinates must be non-negative integers.")
 
 def draw_text_with_line_break(text, font, font_scale, font_color, font_thickness, background_color, first_name_coords, last_name_coords, line_spacing=20):
@@ -110,6 +116,7 @@ def add_device_name_to_image(name, gender_par, device=None, font=None, font_size
     try:
         device_config = read_device(device)
         if device_config is None:
+            logger.error(f"No configuration found for device: {device}")
             raise ValueError(f"No configuration found for device: {device}")
         
         (background_color, font_color, font, font_scale, font_thickness, text_formatting, 
@@ -122,7 +129,7 @@ def add_device_name_to_image(name, gender_par, device=None, font=None, font_size
         first_name_coords = (first_name_x, first_name_y, first_name_width, first_name_height)
         last_name_coords = (last_name_x, last_name_y, last_name_width, last_name_height)
     except (FileNotFoundError, KeyError, ValueError) as e:
-        print(f"Error reading device configuration: {e}. Using default parameters.")
+        logger.error(f"Error reading device configuration: {e}. Using default parameters.")
         background_color = (0, 0, 0)
         font_color = (255, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -141,9 +148,9 @@ def add_device_name_to_image(name, gender_par, device=None, font=None, font_size
 
     unique_id = str(uuid.uuid4())[:8]
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = os.path.join(base_dir, "temp", output_filename)
-    cv2.imwrite(output_image_path, text_img)
-    print(f"Image saved to {output_image_path}")
+    output_image_path = temp_dir / output_filename
+    cv2.imwrite(str(output_image_path), text_img)
+    logger.debug(f"Temporary name image from device config saved to {output_image_path}")
 
     return output_image_path
 
@@ -167,8 +174,13 @@ def draw_text_to_fit(text, font, box, font_color, font_thickness, background_col
     # Calculate the position to start the text
     text_x = 0  # Start at the beginning of the box (left side)
     text_y = (box_height + text_size[1]) // 2
+    
+    logger.debug(f"Function: draw_text_to_fit Text coordinates: Text size: {text_size}, Text position: ({text_x}, {text_y}), Font scale: {font_scale}")  
 
     cv2.putText(text_img, text, (text_x, text_y), font, font_scale, font_color, font_thickness)
+    
+    logger.info(f"Text drawn in new image to fit the new name size to the box.")
+
     return text_img
 
 
@@ -203,6 +215,7 @@ def calculate_text_size(text, font_scale, font_thickness):
             size = cv2.getTextSize(char, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
             width += size[0]
             height = max(height, size[1])
+    logger.debug(f"Text size calculated by calculate_text_size: ({width}, {height})")
     return width, height
 
 def enlarge_box(box, required_width, required_height, padding=10):
@@ -217,6 +230,8 @@ def enlarge_box(box, required_width, required_height, padding=10):
     new_startY = startY - (new_height - current_height) // 2
     new_endX = new_startX + new_width
     new_endY = new_startY + new_height
+    
+    logger.debug(f"Changed box coordinates from start_x:{startX}, start_y: {startY}, end_x: {endX}, end_y: {endY} to new measurements: staart_x:{new_startX}, start_y: {new_startY}, end_x: {new_endX}, end_y: {new_endY})")
 
     return new_startX, new_startY, new_endX, new_endY
 
@@ -237,24 +252,29 @@ def draw_text_centered(text, font, font_scale, font_color, font_thickness, backg
 
     # Draw text
     cv2.putText(text_img, text, (text_x, text_y), font, font_scale, font_color, font_thickness)
+    
+    
+    logger.debug(f"Text drawn centrally: Text size: {text_width}, {text_height}, Text position: ({text_x}, {text_y}), Font scale: {font_scale}")
 
     return text_img
 
 
 def add_name_to_image(first_name, last_name, gender_par, first_name_box, last_name_box, device=None, font=None, font_size=100, background_color="(255, 255, 255)", font_color="(0, 0, 0)", text_formatting="first_name last_name", line_spacing=40, font_scale=1, font_thickness=2):
-    print(f"Adding name to image: {first_name} {last_name}")
+    
+    logger.info(f"Adding name to image: {first_name} {last_name}")
     try:
         config = read_text_formatting(device)
         
         if config is None:
+            logger.error(f"No text formatting configuration found for device: {device}")
             raise ValueError(f"No text formatting configuration found for device: {device}")
         
         background_color, font_color, font, font_scale, font_thickness, text_formatting = config
-        print(f"{background_color}, {font_color}, {font}, {font_scale}, {font_thickness}, {text_formatting}")
+        logger.debug(f"Name formatting: {background_color}, {font_color}, {font}, {font_scale}, {font_thickness}, {text_formatting}")
         background_color = ast.literal_eval(background_color) if isinstance(background_color, str) else background_color
         font_color = ast.literal_eval(font_color) if isinstance(font_color, str) else font_color
     except (FileNotFoundError, KeyError, ValueError) as e:
-        print(f"Error reading device configuration: {e}. Using default parameters.")
+        logger.debug(f"Error reading device configuration: {e}. Using default parameters.")
         background_color = (255, 255, 255)  # Default to white
         font_color = (0, 0, 0)  # Default to black
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -263,18 +283,21 @@ def add_name_to_image(first_name, last_name, gender_par, first_name_box, last_na
         text_formatting = "first_name last_name"
 
     formatted_name = format_name(f"{first_name} {last_name}", text_formatting)
-    print(f"Formatted name: {formatted_name}")
+
+    logger.info(f"Formatted name: {formatted_name}")
     
     # Ensure boxes are not None
     if first_name_box is None or last_name_box is None:
-        print("Error: Name boxes cannot be None")
+        logger.warning("Error: Name boxes cannot be None")
         return None
 
     first_name_coords = (first_name_box[0], first_name_box[1], first_name_box[2], first_name_box[3])
     last_name_coords = (last_name_box[0], last_name_box[1], last_name_box[2], last_name_box[3])
     
-    print(f"First name coords: {first_name_coords[0]}, {first_name_coords[1]}, {first_name_coords[2]}, {first_name_coords[3]}")
-    print(f"Last name coords: {last_name_coords[0]}, {last_name_coords[1]}, {last_name_coords[2]}, {last_name_coords[3]}")
+    logger.debug(f"First name coords: {first_name_coords[0]}, {first_name_coords[1]}, {first_name_coords[2]}, {first_name_coords[3]}")
+    logger.debug(f"Last name coords: {last_name_coords[0]}, {last_name_coords[1]}, {last_name_coords[2]}, {last_name_coords[3]}")
+    #print(f"First name coords: {first_name_coords[0]}, {first_name_coords[1]}, {first_name_coords[2]}, {first_name_coords[3]}")
+    #print(f"Last name coords: {last_name_coords[0]}, {last_name_coords[1]}, {last_name_coords[2]}, {last_name_coords[3]}")
 
     # Draw the text on the image    
     text_img_fn = draw_text_to_fit(first_name, font, first_name_box, font_color, font_thickness, background_color)
@@ -286,9 +309,10 @@ def add_name_to_image(first_name, last_name, gender_par, first_name_box, last_na
 
     unique_id = str(uuid.uuid4())
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = os.path.join(base_dir, "temp", output_filename)
-    cv2.imwrite(output_image_path, text_img)
-    print(f"Image saved to {output_image_path}")
+    output_image_path = temp_dir / output_filename
+    cv2.imwrite(str(output_image_path), text_img)
+    logger.debug(f"Name added to image. Image saved to {output_image_path}")
+    logger.info(f"Image saved to {output_image_path}")
 
     return output_image_path
 
@@ -330,8 +354,8 @@ def add_full_name_to_image(name, gender_par, box, font=None, font_size=100, back
     # Generate the output filename and save the image
     unique_id = str(uuid.uuid4())[:8]
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = os.path.join(base_dir, "temp", output_filename)
-    cv2.imwrite(output_image_path, text_img)
-    print(f"Image saved to {output_image_path}")
+    output_image_path = temp_dir / output_filename
+    cv2.imwrite(str(output_image_path), text_img)
+    logger.info(f"Image saved to {output_image_path}")
 
     return output_image_path

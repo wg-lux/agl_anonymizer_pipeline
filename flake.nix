@@ -115,7 +115,7 @@
         python311Packages.torchaudio-bin
         gccPkg.libc
         llvmPkgs.libstdcxxClang
-        pkgs.opencv
+        # opencv
         mupdf-headless
       ];
 
@@ -154,7 +154,7 @@
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Add OpenCV library path
   '';
     };
   };

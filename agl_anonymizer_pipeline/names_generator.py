@@ -1,25 +1,32 @@
-import os
 import random
 import gender_guesser.detector as gender
 import os
 from .names_adder import add_name_to_image, add_full_name_to_image, add_device_name_to_image
 from .directory_setup import create_temp_directory 
+from custom_logger import get_logger
+from pathlib import Path
 
 
-temp_dir, temp_base_dir, csv_dir = create_temp_directory()
+logger = get_logger(__name__)
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-print(f"Base directory of the application: {base_dir}")
+
+temp_dir, data_base_dir, csv_dir = create_temp_directory()
+
+
+# Define the parent directory
+parent_dir = Path(__file__).resolve().parent
 
 # Define file paths
-female_names_file = os.path.join(base_dir, 'names_dict', 'first_and_last_names_female_ascii.txt')
-male_names_file = os.path.join(base_dir, 'names_dict', 'first_and_last_names_male_ascii.txt')
-female_first_names_file = os.path.join(base_dir, 'names_dict', 'first_names_female_ascii.txt')
-female_last_names_file = os.path.join(base_dir, 'names_dict', 'last_names_female_ascii.txt')
-neutral_first_names_file = os.path.join(base_dir, 'names_dict', 'first_names_neutral_ascii.txt')
-neutral_last_names_file = os.path.join(base_dir, 'names_dict', 'last_names_neutral_ascii.txt')
-male_first_names_file = os.path.join(base_dir, 'names_dict', 'first_names_male_ascii.txt')
-male_last_names_file = os.path.join(base_dir, 'names_dict', 'last_names_male_ascii.txt')
+names_dict_dir = parent_dir / 'names_dict'
+female_names_file = names_dict_dir / 'first_and_last_names_female_ascii.txt'
+male_names_file = names_dict_dir / 'first_and_last_names_male_ascii.txt'
+female_first_names_file = names_dict_dir / 'first_names_female_ascii.txt'
+female_last_names_file = names_dict_dir / 'last_names_female_ascii.txt'
+neutral_first_names_file = names_dict_dir / 'first_names_neutral_ascii.txt'
+neutral_last_names_file = names_dict_dir / 'last_names_neutral_ascii.txt'
+male_first_names_file = names_dict_dir / 'first_names_male_ascii.txt'
+male_last_names_file = names_dict_dir / 'last_names_male_ascii.txt'
+
 
 # Load names from files
 def load_names(file_path):
@@ -43,7 +50,7 @@ def getindex(file):
     return index
 
 def gender_and_handle_full_names(words, box, image_path, device="olympus_cv_1500"):
-    print("Finding out Gender and Name of full Name")
+    logger.info("Finding out Gender and Name of full Name")
     first_name = words[0]
 
     d = gender.Detector()
@@ -66,7 +73,7 @@ def gender_and_handle_full_names(words, box, image_path, device="olympus_cv_1500
     return box_to_image_map, gender_guess
 
 def gender_and_handle_separate_names(words, first_name_box, last_name_box, image_path, device):
-    print("Finding out gender and name of separate names")
+    logger.info("Finding out gender and name of separate names")
     first_name = words[0]
 
     d = gender.Detector()
@@ -74,7 +81,7 @@ def gender_and_handle_separate_names(words, first_name_box, last_name_box, image
     box_to_image_map = {}
 
     if gender_guess in ['male', 'mostly_male']:
-        print("Male gender")
+        logger.info("Male gender")
         with open(male_first_names_file, 'r') as file:
             index = getindex(file)
             male_first_name = male_first_names[index]
@@ -84,7 +91,7 @@ def gender_and_handle_separate_names(words, first_name_box, last_name_box, image
         name = f"{male_first_name} {male_last_name}"
         output_image_path = add_name_to_image(male_first_name, male_last_name, "male", first_name_box, last_name_box, device)
     elif gender_guess in ['female', 'mostly_female']:
-        print("Female gender")
+        logger.info("Female gender")
         with open(female_first_names_file, 'r') as file:
             index = getindex(file)
             female_first_name = female_first_names[index]
@@ -94,7 +101,7 @@ def gender_and_handle_separate_names(words, first_name_box, last_name_box, image
         name = f"{female_first_name} {female_last_name}"
         output_image_path = add_name_to_image(male_last_name, female_last_name, "female", first_name_box, last_name_box, device)
     else:  # 'unknown' or 'andy'
-        print("Neutral or unknown gender")
+        logger.infont("Neutral or unknown gender")
         with open(neutral_first_names_file, 'r') as file:
             index = getindex(file)
             neutral_first_name = neutral_first_names[index]
@@ -114,7 +121,7 @@ def gender_and_handle_separate_names(words, first_name_box, last_name_box, image
     return box_to_image_map, gender_guess
 
 def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_1500"):
-    print("Finding out gender and name of device specified patient names")
+    logger.info("Finding out gender and name of device specified patient names")
     first_name = words[0]
 
     d = gender.Detector()
@@ -122,7 +129,7 @@ def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_15
     box_to_image_map = {}
 
     if gender_guess in ['male', 'mostly_male']:
-        print("Male gender")
+        logger.info("Male gender")
         with open(male_first_names_file, 'r') as file:
             index = getindex(file)
             male_first_name = male_first_names[index]
@@ -132,7 +139,7 @@ def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_15
         name = f"{male_first_name} {male_last_name}"
         output_image_path = add_device_name_to_image(name, "male", device)
     elif gender_guess in ['female', 'mostly_female']:
-        print("Female gender")
+        logger.info("Female gender")
         with open(female_first_names_file, 'r') as file:
             index = getindex(file)
             female_first_name = female_first_names[index]
@@ -142,7 +149,7 @@ def gender_and_handle_device_names(words, box, image_path, device="olympus_cv_15
         name = f"{female_first_name} {female_last_name}"
         output_image_path = add_device_name_to_image(name, "female", device)
     else:  # 'unknown' or 'andy'
-        print("Neutral or unknown gender")
+        logger.info("Neutral or unknown gender")
         with open(neutral_first_names_file, 'r') as file:
             index = getindex(file)
             neutral_first_name = neutral_first_names[index]

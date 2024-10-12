@@ -9,7 +9,7 @@ from .device_reader import read_name_boxes, read_background_color
 from .tesseract_text_detection import tesseract_text_detection
 import cv2
 import json
-import os
+from pathlib import Path
 import uuid
 from .directory_setup import create_temp_directory, create_blur_directory
 import csv
@@ -101,7 +101,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 if text:
                     extracted_text += text
                 pix = page.get_pixmap()
-                image_path = os.path.join(temp_dir, f"{uuid.uuid4()}_page_{page_num}.png")
+                image_path = temp_dir / f"{uuid.uuid4()}_page_{page_num}.png")
                 pix.save(image_path)
                 image_paths.append(image_path)
         else:
@@ -148,7 +148,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 gender_pars.extend(genders)  # Assuming 'genders' is a list
 
         # Prepare CSV writing
-        csv_path = os.path.join(csv_dir, f"ner_results_{uuid.uuid4()}.csv")
+        csv_path = csv_dir / f"name_anonymization_data_i{Path(file_path).stem}{uuid.uuid4()}.csv"
         with open(csv_path, mode='w', newline='', encoding='utf-8') as csv_file:
             fieldnames = ['filename', 'startX', 'startY', 'endX', 'endY', 'ocr_confidence', 'entity_text', 'entity_tag']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -185,9 +185,9 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
         if blurred_image_path is not None:
             output_filename = f"blurred_image_{uuid.uuid4()}.jpg"
             blur_dir = create_blur_directory()
-            output_path = os.path.join(blur_dir, output_filename)
-            final_image = cv2.imread(blurred_image_path)
-            cv2.imwrite(output_path, final_image)
+            output_path = blur_dir / output_filename
+            final_image = cv2.imread(str(blurred_image_path))
+            cv2.imwrite(str(output_path), final_image)
             logger.info(f"Final blurred image saved to: {output_path}")
 
         logger.info(f"Processing completed: {combined_results}")
@@ -221,7 +221,7 @@ def process_ocr_results(
 ) -> Tuple[str, Dict[Tuple[str, str], str], List[Tuple[str, Tuple[int, int, int, int], float, List[Tuple[str, str]]]], List[str]]:
     processed_text = process_text(phrase)
     entities = split_and_check(processed_text)
-    print(f"Entities detected: {entities}")
+    logger.info(f"Entities detected: {entities}")
     
     box_to_image_map = {}
     gender_pars = []  # Changed from {} to []
@@ -252,13 +252,13 @@ def close_to_box(name_box, phrase_box):
     return abs(name_box[0] - startX) <= 10 and abs(name_box[1] - startY) <= 10
 
 def modify_image_for_name(image_path, phrase_box, combined_boxes):
-    image = cv2.imread(image_path)
+    image = cv2.imread(str(image_path))
     image_height, image_width, _ = image.shape  
     last_name_box = find_or_create_close_box(phrase_box, combined_boxes, image_width)
     
     temp_dir, base_dir, csv_dir = create_temp_directory()
-    temp_image_path = os.path.join(temp_dir, f"{uuid.uuid4()}.jpg")
-    cv2.imwrite(temp_image_path, image)
+    temp_image_path = temp_dir / f"{uuid.uuid4()}.jpg")
+    cv2.imwrite(str(temp_image_path), image)
     
     return blur_function(temp_image_path, phrase_box), last_name_box
 
@@ -278,4 +278,4 @@ if __name__ == "__main__":
     file_path = "your_file_path.jpg"
     modified_images_map, result = process_images_with_OCR_and_NER(file_path)
     for res in result['combined_results']:
-        print(res)
+        logger.info(res)

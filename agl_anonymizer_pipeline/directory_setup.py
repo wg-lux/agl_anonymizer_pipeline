@@ -1,5 +1,9 @@
+from pathlib import Path
+import logging
+from .custom_logger import get_logger
 import os
-import tempfile
+
+logger = logging.getLogger(__name__)
 
 '''
 Main Directory Setup
@@ -12,6 +16,9 @@ Functions:
 - create_main_directory:
   - The main directory stores the final anonymized results as well as structured study and training data ready for export.
   
+- create_results_directory:
+    - The results directory stores the final anonymized images. This directory is cleaned up regularly.
+    
 - create_temp_directory:
   - The temp directory stores intermediate results during the anonymization process. It is cleaned up regularly.
   
@@ -24,15 +31,25 @@ To change the default installation paths, update these variables:
 - temp_directory
 '''
 
-from pathlib import Path
 
 # Default directory paths for main and temp directories
-# The base directory can be overridden via environment variables
-# default_main_directory = os.environ.get("AGL_ANONYMIZER_DEFAULT_MAIN_DIR","/etc/agl-anonymizer")
-# default_temp_directory = os.environ.get("AGL_ANONYMIZER_DEFAULT_TEMP_DIR", "/etc/agl-anonymizer-temp")
+# 
+# CHANGE THIS IF YOU WANT TO USE A DIFFERENT DIRECTORY
 
-MAIN_DIR = Path("/etc/agl-anonymizer")
-TEMP_DIR_ROOT = Path("/etc/agl-anonymizer-temp")
+default_main_directory = Path("/etc/agl-anonymizer")
+default_temp_directory = Path("/etc/agl-anonymizer-temp")
+
+# Check if environment variables are set and override if available
+
+if os.getenv("AGL_ANONYMIZER_DEFAULT_MAIN_DIR"):
+    MAIN_DIR = Path(os.getenv("AGL_ANONYMIZER_DEFAULT_MAIN_DIR"))
+else:
+    MAIN_DIR = default_main_directory
+
+if os.getenv("AGL_ANONYMIZER_DEFAULT_TEMP_DIR"):
+    TEMP_DIR_ROOT = Path(os.getenv("AGL_ANONYMIZER_DEFAULT_TEMP_DIR"))
+else:
+    TEMP_DIR_ROOT = default_temp_directory
 
 from typing import List
 
@@ -64,9 +81,9 @@ def create_directories(directories:List[Path]=None)->List[Path]:
         if dir_path.exists():
             dir_path.mkdir(parents = True, exist_ok=True)
             
-            print(f"Created directory: {dir_path}")
+            logger.info(f"Created directory: {dir_path}")
         else:
-            print(f"Directory already exists: {dir_path}")
+            logger.info(f"Directory already exists: {dir_path}")
             
     return directories
             
@@ -90,14 +107,46 @@ def create_main_directory(default_main_directory:Path = None):
         default_main_directory = _str_to_path(default_main_directory)
     
     if default_main_directory.exists():
-        print(f"Using default main directory: {default_main_directory.as_posix()}")
+        logger.debug(f"Using default main directory: {default_main_directory.as_posix()}")
 
     else:
-        print(f"Creating main directory, directory at {default_main_directory} not found")
+        logger.debug(f"Creating main directory, directory at {default_main_directory} not found")
         create_directories([default_main_directory])
-        print(f"Main directory created at {default_main_directory}")
+        logger.info(f"Main directory created at {default_main_directory}")
 
     return default_main_directory
+
+def create_results_directory(default_main_directory:Path=None) -> Path:
+    """
+    Creates 'blurred_images' directory in a writable location (outside the Nix store).
+    
+    Args:
+        directory (str): The path where the blurred images directory will be created.
+                         Defaults to `default_main_directory`.
+    
+    Returns:
+        str: Path to the blurred images directory.
+    """
+    
+    if not default_main_directory:
+        default_main_directory = MAIN_DIR
+    else:
+        default_main_directory = _str_to_path(default_main_directory)
+    
+    
+    results_dir = default_main_directory / 'results'
+    if results_dir.exists():
+        logger.debug("Using default blur directory settings")
+  
+    else:
+        logger.info(f"Creating blur directory, directory at {results_dir} not found")
+        results_dir = default_main_directory / '/results'
+        results_dir = Path(results_dir)
+
+        create_directories([results_dir])
+        logger.debug(f"Anonymization results directory created at {results_dir}")
+
+        return results_dir
 
 def create_temp_directory(default_temp_directory:Path=None, default_main_directory:Path=None):
     """
@@ -132,13 +181,10 @@ def create_temp_directory(default_temp_directory:Path=None, default_main_directo
         return temp_dir, default_main_directory, csv_dir 
     
     else:
-        print(f"Creating temp and csv directories, directories at {temp_dir} and {csv_dir} not found")
+        logger.debug(f"Creating temp and csv directories, directories at {temp_dir} and {csv_dir} not found")
         create_directories([temp_dir, csv_dir])
-        print(f"Temp and csv directories created at {temp_dir} and {csv_dir}")
+        logger.info(f"Temp and csv directories created at {temp_dir} and {csv_dir}")
         return temp_dir, default_main_directory, csv_dir
-
-
-
 
 def create_blur_directory(default_main_directory:Path=None) -> Path:
     """
@@ -158,16 +204,17 @@ def create_blur_directory(default_main_directory:Path=None) -> Path:
         default_main_directory = _str_to_path(default_main_directory)
     
     
-    blur_dir = default_main_directory.joinpath('blurred_results')
+    blur_dir = default_main_directory / 'blurred_results'
     if blur_dir.exists():
-        print("Using default blur directory settings")
+        logger.info(f"Using default blur directory settings at {blur_dir}")
   
     else:
-        print(f"Creating blur directory, directory at {blur_dir} not found")
-        blur_dir = os.path.join(default_main_directory, '/blurred_results')
+        logger.debug(f"Creating blur directory, directory at {blur_dir} not found")
+        blur_dir = default_main_directory / '/blurred_results'
+        blur_dir = Path(blur_dir)
 
         create_directories([blur_dir])
-        print(f"Blur directory created at {blur_dir}")
+        logger.info(f"Blur directory created at {blur_dir}")
 
         return blur_dir
 
