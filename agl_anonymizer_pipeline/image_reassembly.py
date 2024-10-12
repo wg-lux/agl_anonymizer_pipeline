@@ -1,10 +1,9 @@
 import cv2
 from pathlib import Path
 import uuid
-import logging
-
+from .custom_logger import get_logger
 # Configure logger
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 def reassemble_image(modified_images_map, output_dir, id, original_image_path=None):

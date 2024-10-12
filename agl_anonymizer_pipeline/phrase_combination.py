@@ -35,5 +35,7 @@ def create_combined_phrases(ocr_texts_with_boxes):
     # Append the final phrase and its box after the loop
     if phrase:
         combined_phrases.append((phrase, combined_box))
+    
+    logger.debug(f"Combined {len(ocr_texts_with_boxes)} phrases into {len(combined_phrases)}")
 
     return combined_phrases

@@ -9,7 +9,7 @@ from transformers import (
 import torch
 import pytesseract
 import numpy as np
-from custom_logger import get_logger
+from .custom_logger import get_logger
 
 logger = get_logger(__name__)
 

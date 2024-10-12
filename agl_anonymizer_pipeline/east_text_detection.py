@@ -8,6 +8,7 @@ from .box_operations import extend_boxes_if_needed
 from .directory_setup import create_temp_directory, _str_to_path
 import urllib.request
 
+
 '''
 This module implements argman's EAST Text Detection in a function. The model that's being used is specified by the east_path variable. This is the starting point for the anonymization pipeline.
 '''

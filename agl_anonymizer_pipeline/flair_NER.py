@@ -2,9 +2,8 @@
 
 from flair.data import Sentence
 from flair.models import SequenceTagger
-import logging
-
-logger = logging.getLogger(__name__)
+from .custom_logger import get_logger
+logger = getLogger(__name__)
 
 # Load the NER tagger once at module level
 

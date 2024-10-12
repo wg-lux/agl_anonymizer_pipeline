@@ -13,14 +13,13 @@ from pathlib import Path
 import uuid
 from .directory_setup import create_temp_directory, create_blur_directory
 import csv
-import logging
+from .custom_logger import get_logger
 import torch
 ##### WARNING: CHANGED FROM pymupdf TO pypdf
 import pymupdf
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 
