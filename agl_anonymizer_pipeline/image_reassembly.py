@@ -3,7 +3,7 @@ from pathlib import Path
 import uuid
 from .custom_logger import get_logger
 # Configure logger
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def reassemble_image(modified_images_map, output_dir, id, original_image_path=None):

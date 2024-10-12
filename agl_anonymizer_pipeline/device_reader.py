@@ -3,6 +3,9 @@ import json
 import cv2
 from .box_operations import make_box_from_device_list
 from pathlib import Path
+from custom_logger import get_logger
+
+logger=get_logger(__name__)
 
 
 """
@@ -16,7 +19,7 @@ the functions will use the device parameters.
 
 
 def parse_color(color_str):
-    
+    logger.debug("parsing color")
     return tuple(map(int, color_str.strip('()').split(',')))
 
 # Font mapping
@@ -34,7 +37,7 @@ FONT_MAP = {
 base_dir = Path(__file__).resolve().parent
 
 def read_device(device):
-    print(f"reading device config for {device}")
+    logger.debug(f"reading device config for {device}")
     device_file_path = base_dir / 'devices' / f'{device}.json'
     with open(device_file_path) as json_parameters:
         data = json.load(json_parameters)
@@ -67,7 +70,7 @@ def read_device(device):
                     if font_key in FONT_MAP:
                         font = FONT_MAP[font_key]
                     else:
-                        print(f"Warning: Font '{font_key}' not recognized. Using default font.")
+                        logger.debug(f"Warning: Font '{font_key}' not recognized. Using default font.")
                         font = cv2.FONT_HERSHEY_SIMPLEX
                 elif key == "font_size":
                     font_size = data["fields"][key]
@@ -95,14 +98,14 @@ def read_device(device):
         return background_color, font_color, font, font_scale, font_thickness, text_formatting, first_name_x, first_name_y, first_name_width, first_name_height, last_name_x, last_name_y, last_name_width, last_name_height
 
 def read_name_boxes(device, first_name_x = 0, first_name_y = 0, first_name_width = 100, first_name_height = 20, last_name_x = 100, last_name_y = 0, last_name_width = 100, last_name_height = 20, parameter=False):
-    print(f"reading device patient name config for {device}")
+    logger.debug(f"reading device patient name config for {device}")
     if parameter==True:
         return None, None
         
     device_file_path = base_dir / 'devices' / f'{device}.json'
     
     with open(device_file_path) as json_parameters:
-        print(f"device file path opened:{device_file_path}")
+        logger.debug(f"device file path opened:{device_file_path}")
         data = json.load(json_parameters)
         
         keys_to_check = ["patient_first_name_x", "patient_first_name_y", "patient_first_name_width", "patient_first_name_height", "patient_last_name_x", "patient_last_name_y", "patient_last_name_width", "patient_last_name_height"]
@@ -136,7 +139,7 @@ def read_name_boxes(device, first_name_x = 0, first_name_y = 0, first_name_width
         
 def read_background_color(device):
     device_file_path = base_dir / 'devices' / f'{device}.json'
-    print(f"reading device background color config for {device}")
+    logger.debug(f"reading device background color config for {device}")
     with open(device_file_path) as json_parameters:
         data = json.load(json_parameters)
         
@@ -176,7 +179,7 @@ def read_text_formatting(device):
                     if font_key in FONT_MAP:
                         font = FONT_MAP[font_key]
                     else:
-                        print(f"Warning: Font '{font_key}' not recognized. Using default font.")
+                        logger.debug(f"Warning: Font '{font_key}' not recognized. Using default font.")
                         font = cv2.FONT_HERSHEY_SIMPLEX
                 if key == "font_size":
                     font_size = data["fields"][key]

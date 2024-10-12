@@ -7,6 +7,9 @@ import json
 from .box_operations import extend_boxes_if_needed
 from .directory_setup import create_temp_directory, _str_to_path
 import urllib.request
+from custom_logger import get_logger
+
+logger = get_logger(__name__)
 
 
 '''
@@ -25,14 +28,14 @@ east_model_path = base_dir.joinpath('models', 'frozen_east_text_detection.pb')  
 if not east_model_path.exists():
     try:
         import urllib.request
-        print(f"Downloading EAST model to {east_model_path}...")
+        logger.debug(f"Downloading EAST model to {east_model_path}...")
         urllib.request.urlretrieve(MODEL_URL, east_model_path.as_posix())
-        print("Download complete.")
+        logger.debug("Download complete.")
     except Exception as e:
-        print(f"Error downloading the model: {e}")
+        logger.debug(f"Error downloading the model: {e}")
         raise
 else:
-    print(f"EAST model already exists at {east_model_path}")
+    logger.debug(f"EAST model already exists at {east_model_path}")
 
 def east_text_detection(image_path, east_path=None, min_confidence=0.5, width=320, height=320):
     # If east_path is not provided, use the downloaded model path
@@ -61,7 +64,7 @@ def east_text_detection(image_path, east_path=None, min_confidence=0.5, width=32
     ]
 
     # Load the pre-trained EAST text detector
-    print("[INFO] Loading EAST text detector...")
+    logger.debug("[INFO] Loading EAST text detector...")
     net = cv2.dnn.readNet(east_path)
 
     blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
