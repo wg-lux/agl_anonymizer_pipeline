@@ -148,6 +148,29 @@ def create_results_directory(default_main_directory:Path=None) -> Path:
 
         return results_dir
 
+def create_model_directory(default_main_directory:Path=None) -> Path:
+    """_summary_
+
+    Args:
+        default_main_directory (Path, optional): _description_. Defaults to None.
+
+    Returns:
+        Path: _description_
+    """
+    if not default_main_directory:
+        default_main_directory = MAIN_DIR
+    else:
+        default_main_directory = _str_to_path(default_main_directory)
+        
+    models_dir = default_main_directory / 'models'
+    
+    if models_dir.exists():
+        logger.debug(f"found models directory at:{models_dir}")
+        return models_dir
+
+    else:
+        logger.debug(f"Creating models directory, directory at {models_dir} not found")
+
 def create_temp_directory(default_temp_directory:Path=None, default_main_directory:Path=None):
     """
     Creates 'temp' and 'csv' directories in the given temp and main directories.
