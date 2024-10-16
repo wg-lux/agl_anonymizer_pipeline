@@ -34,9 +34,8 @@ share/python-wheels/
 MANIFEST
 EAST/
 .venv/
-.direnv/
+.*.direnv/
 .github/workflows/
-.direnv
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
