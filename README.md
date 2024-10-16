@@ -76,6 +76,12 @@ For any inquiries or assistance with AGL Anonymizer, please contact Max Hild at 
 
 To get started with AGL anonymizer, clone this repository and install the required dependencies. Nix and Poetry should install the dependencies automatically.
 
+## Features
+
+- **Text detection and anonymization**: Utilizes advanced OCR techniques to detect text in images and applies anonymizing to safeguard sensitive information.
+- **Blurring Functionality**: Offers customizable blurring options to obscure parts of an image, providing an additional layer of privacy.
+- **Extensive Format Support**: Capable of handling various image and document formats for a wide range of applications.
+
 
 ## Usage
 
@@ -364,96 +370,6 @@ The **Directory Setup Module** defines and manages the storage locations for ano
   - If an error occurs during the creation, logs the error and raises an exception.
 - **Returns**: The path to the 'blurred_images' directory.
 
-## OCR Pipeline Manager Module
-
-The **OCR Pipeline Manager** module coordinates the Optical Character Recognition (OCR) and Named Entity Recognition (NER) processes for images and PDFs. It uses multiple OCR techniques (such as Tesseract and TrOCR), applies NER for detecting sensitive information, and replaces detected names with pseudonyms using the names generator. This module is essential for extracting and anonymizing text from input files.
-
-### Key Components
-
-1. **OCR and NER Functions**:
-   - **`trocr_on_boxes(img_path, boxes)`**:  
-     Uses the TrOCR model for OCR on specific regions (boxes) in the image.
-   - **`tesseract_on_boxes(img_path, boxes)`**:  
-     Uses Tesseract OCR for detecting text within the provided boxes.
-   - **`NER_German(text)`**:  
-     Applies Named Entity Recognition (NER) on the extracted text to identify entities such as names (tagged as `PER` for persons).
-
-2. **Text Detection**:
-   - **`east_text_detection(img_path, east_path, min_confidence, width, height)`**:  
-     Uses the EAST text detection model to identify potential text regions in the image.
-   - **`tesseract_text_detection(img_path, min_confidence, width, height)`**:  
-     Uses Tesseract's built-in text detection to identify text regions in the image.
-
-3. **Name Handling**:
-   - **`gender_and_handle_full_names(words, box, image_path, device)`**:  
-     Replaces full names in detected text with pseudonyms based on gender predictions.
-   - **`gender_and_handle_separate_names(words, first_name_box, last_name_box, image_path, device)`**:  
-     Handles cases where first and last names are detected separately in the image.
-   - **`gender_and_handle_device_names(words, box, image_path, device)`**:  
-     Handles the names associated with specific medical devices.
-
-4. **Image Processing**:
-   - **`blur_function(image_path, box, background_color)`**:  
-     Blurs specific regions (text boxes) in an image, typically for anonymization.
-   - **`convert_pdf_to_images(pdf_path)`**:  
-     Converts a PDF document into individual images for processing.
-
-5. **Combining Text Boxes**:
-   - **`combine_boxes(text_with_boxes)`**:  
-     Merges adjacent text boxes if they belong to the same line and are close together.
-
-6. **Helper Functions**:
-   - **`find_or_create_close_box(phrase_box, boxes, image_width, offset=60)`**:  
-     Finds or creates a bounding box that is close to the existing text box, useful when handling names or phrases that may extend beyond the detected region.
-   - **`process_text(extracted_text)`**:  
-     Cleans up extracted text, removing excess line breaks and spaces.
-
-### Main Functionality
-
-#### `process_images_with_OCR_and_NER(file_path, east_path, device, min_confidence, width, height)`
-
-This is the core function of the module, which handles the entire OCR and NER pipeline for a given file (image or PDF). It performs the following steps:
-- Detects and reads text from the file using EAST and Tesseract models.
-- Applies OCR (TrOCR and Tesseract) to the detected text regions.
-- Uses NER to identify sensitive information (e.g., names) in the text.
-- Replaces detected names with pseudonyms using the names generator.
-- Optionally blurs specified regions in the image, such as detected names.
-- Outputs a modified version of the image with anonymized text and a CSV file containing the NER results.
-
-##### Parameters:
-- **`file_path`** (`str`): The path to the input image or PDF file.
-- **`east_path`** (`str`, optional): The path to the EAST model used for text detection.
-- **`device`** (`str`, optional): Specifies the device configuration for text handling and name pseudonymization. Defaults to `"default"`.
-- **`min_confidence`** (`float`, optional): The minimum confidence level required for text detection. Defaults to `0.5`.
-- **`width`** (`int`, optional): The width to resize the image for text detection. Defaults to `320`.
-- **`height`** (`int`, optional): The height to resize the image for text detection. Defaults to `320`.
-
-##### Returns:
-- **`modified_images_map`** (`dict`): A map of the modified images with replaced text.
-- **`result`** (`dict`): Contains detailed results of the OCR and NER processes, including:
-  - `filename`: The original file name.
-  - `file_type`: The type of the file (image or PDF).
-  - `extracted_text`: The raw extracted text from the file.
-  - `names_detected`: A list of detected names.
-  - `combined_results`: The OCR and NER results.
-  - `modified_images_map`: A map of modified images with pseudonymized text.
-  - `gender_pars`: List of gender classifications used in the pseudonymization process.
-
-### Example Usage
-
-```python
-file_path = "your_file_path.jpg"
-modified_images_map, result = process_images_with_OCR_and_NER(
-    file_path, 
-    east_path="path/to/frozen_east_text_detection.pb",
-    device="default", 
-    min_confidence=0.6, 
-    width=640, 
-    height=640
-)
-for res in result['combined_results']:
-    print(res)
-```
 
 ## Text Detection Module
 
