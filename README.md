@@ -3,8 +3,6 @@
 agl_anonymizer_pipeline is a comprehensive Python API designed for image processing with specific functionalities for anonymizing, saving, blurring, and OCR (Optical Character Recognition). This tool is particularly useful in scenarios where sensitive information needs to be redacted from images or documents while retaining the overall context and visual structure.
 
 
-The AGL Anonymizer Pipeline is a comprehensive Python module designed for image processing with specific functionalities for anonymization using common german names, saving, blurring, and OCR (Optical Character Recognition). This tool is particularly useful in scenarios where sensitive information needs to be redacted from images or documents while retaining the overall context and visual structure.
-
 ## Features
 
 - **Text detection and anonymization**: Utilizes advanced OCR techniques to detect text in images and applies anonymizing to safeguard sensitive information.
@@ -18,8 +16,16 @@ To get started with AGL Anonymizer, clone this repository and install the requir
 
 git clone https://github.com/maxhild/agl_anonymizer_pipeline.git
 cd agl_anonymizer_pipeline
+nix build
 nix develop
-dowload a text detection model like frozen_east_text_detection.pb and place it inside the agl_anonymizer_pipeline folder.
+
+AGL Anonymizer uses a nix based setup. Therefore after running nix develop a development environment will be opened. Here, the pipeline cann now be called in python through the main function (details in the modules and usage section). On the first call, this function will download various machine learning models in the background and set up the default directories.
+
+The package is also available on pip through:
+
+pip install agl_anonymizer_pipeline
+
+git clone https://github.com/wg-lux/agl_anonymizer_pipeline.git
 
 
 ## Usage
@@ -27,17 +33,19 @@ dowload a text detection model like frozen_east_text_detection.pb and place it i
 To use AGL Anonymizer Pipeline, follow these steps:
 
 Prepare Your Images: Place the images you want to process in the designated folder.
+The path will be used in the call.
+
 Configure Settings: Adjust the settings in the configuration file (if applicable) to suit your anonymizing and blurring needs.
 Run the Module: Execute the main script from the command line to process the images.
 bash
 
 code:
 
-python main.py --image images/your_image.jpg --east frozen_east_text_detection.pb 
+python main.py --image images/your_image.jpg
 
 example:
 
-python main.py --image images/lebron_james.jpg --east frozen_east_text_detection.pb 
+python main.py --image images/lebron_james.jpg
 
 ## Modules
 
@@ -68,11 +76,6 @@ For any inquiries or assistance with AGL Anonymizer, please contact Max Hild at 
 
 To get started with AGL anonymizer, clone this repository and install the required dependencies. Nix and Poetry should install the dependencies automatically.
 
-The package is also available on pip through:
-
-pip install agl_anonymizer_pipeline
-
-git clone https://github.com/wg-lux/agl_anonymizer_pipeline.git
 
 ## Usage
 
@@ -83,7 +86,7 @@ Configure Settings: Adjust the settings in the configuration file (if applicable
 Run the Module: Execute the main script to process the images.
 
 ```bash
-python main.py --image images/lebron_james.jpg --east frozen_east_text_detection.pb 
+python main.py --image images/your_image.jpg
 ```
 
 ## Parameters of the `main` function
@@ -124,13 +127,18 @@ main(
 )
 ```
 
+### Adding Names to the Pseudonymizatiion
+
+The Names get combined in names_generator.py by the script from the names_dict. Names can be written in two seperate lines, as well as in one line. This means, that the Names get pulled from the names_dict. Here, Names from around the world are stored.
+
 # Modules
 
 AGL Anonymizer is comprised of several key modules:
 
+
 ## OCR Pipeline Manager Module
 
-The **OCR Pipeline Manager** module coordinates the Optical Character Recognition (OCR) and Named Entity Recognition (NER) processes for images and PDFs. It uses multiple OCR techniques (such as Tesseract and TrOCR), applies NER for detecting sensitive information, and replaces detected names with pseudonyms using the names generator. This module is essential for extracting and anonymizing text from input files.
+The **OCR Pipeline Manager** module coordinates the Optical Character Recognition (OCR) and Named Entity Recognition (NER) processes for images and PDFs. It uses multiple OCR techniques (such as Tesseract and TrOCR), applies NER for detecting sensitive information, and replaces detected names with pseudonyms using the names generator included. This module is essential for extracting and anonymizing text from input files.
 
 ### Key Components
 

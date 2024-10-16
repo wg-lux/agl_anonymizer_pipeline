@@ -37,6 +37,7 @@
         cudaSupport = true;  # Enable CUDA support in the configuration
         allowBroken = true;  # Allow broken packages for development
       };
+      # Overriding the mupdf package and the pymupdf build to include necessary clang environment in the build.
       overlays = [
         (final: prev: {
           mupdf = prev.mupdf.overrideAttrs (old: {
@@ -55,7 +56,6 @@
               prev.freeglut
               prev.libGLU
               prev.libjpeg_turbo
-              # Add tesseract if needed
               prev.tesseract
             ];
             makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
@@ -140,7 +140,7 @@
         python311Packages.torchaudio-bin
         gccPkg.libc
         mupdf
-        python311Packages.pymupdf       # opencv
+        python311Packages.pymupdf       
       ];
 
 
@@ -173,7 +173,6 @@
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
       shellHook = ''
-        print "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
   '';
     };

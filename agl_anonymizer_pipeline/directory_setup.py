@@ -3,7 +3,7 @@ import logging
 from .custom_logger import get_logger
 import os
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 '''
 Main Directory Setup
@@ -79,12 +79,12 @@ def create_directories(directories:List[Path]=None)->List[Path]:
 
     for dir_path in directories:
         if dir_path.exists():
-            dir_path.mkdir(parents = True, exist_ok=True)
-            
-            logger.info(f"Created directory: {dir_path}")
-        else:
             logger.info(f"Directory already exists: {dir_path}")
-            
+
+        else:
+            dir_path.mkdir(parents = True, exist_ok=True)
+            logger.info(f"Created directory: {dir_path}")
+           
     return directories
             
 def create_main_directory(default_main_directory:Path = None):
@@ -236,7 +236,7 @@ def create_blur_directory(default_main_directory:Path=None) -> Path:
   
     else:
         logger.debug(f"Creating blur directory, directory at {blur_dir} not found")
-        blur_dir = default_main_directory / '/blurred_results'
+        blur_dir = default_main_directory / 'blurred_results'
         blur_dir = Path(blur_dir)
 
         create_directories([blur_dir])

@@ -27,8 +27,9 @@ MODEL_URL = 'https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-
 
 # Create or use the existing temp directory and define the model path
 temp_dir, base_dir, csv_dir = create_temp_directory()
+model_dir = create_model_directory()
 
-east_model_path = Path(base_dir) / 'models' / 'frozen_east_text_detection.pb'  # Correct joinpath usage
+east_model_path = Path(model_dir)  # Correct joinpath usage
 
 # Download the model if it doesn't exist
 if not east_model_path.exists():
