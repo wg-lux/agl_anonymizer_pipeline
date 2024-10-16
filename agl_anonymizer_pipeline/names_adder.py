@@ -1,16 +1,15 @@
 import cv2
 import numpy as np
 import uuid
-import os
+from pathlib import Path
 import time
-import json
 import ast
 from .device_reader import read_device, read_text_formatting
 from .directory_setup import create_temp_directory
 from .box_operations import make_box_from_device_list, make_box_from_name, extend_boxes_if_needed
-from .custom_logger import getLogger
+from .custom_logger import get_logger
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 # Create or read temporary directory
 temp_dir, base_dir, csv_dir = create_temp_directory()
@@ -148,7 +147,7 @@ def add_device_name_to_image(name, gender_par, device=None, font=None, font_size
 
     unique_id = str(uuid.uuid4())[:8]
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = temp_dir / output_filename
+    output_image_path = Path(temp_dir) / output_filename
     cv2.imwrite(str(output_image_path), text_img)
     logger.debug(f"Temporary name image from device config saved to {output_image_path}")
 
@@ -309,7 +308,7 @@ def add_name_to_image(first_name, last_name, gender_par, first_name_box, last_na
 
     unique_id = str(uuid.uuid4())
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = temp_dir / output_filename
+    output_image_path = Path(temp_dir) / output_filename
     cv2.imwrite(str(output_image_path), text_img)
     logger.debug(f"Name added to image. Image saved to {output_image_path}")
     logger.info(f"Image saved to {output_image_path}")
@@ -354,7 +353,7 @@ def add_full_name_to_image(name, gender_par, box, font=None, font_size=100, back
     # Generate the output filename and save the image
     unique_id = str(uuid.uuid4())[:8]
     output_filename = f"{gender_par}_{int(time.time())}_{unique_id}.png"
-    output_image_path = temp_dir / output_filename
+    output_image_path = Path(temp_dir) / output_filename
     cv2.imwrite(str(output_image_path), text_img)
     logger.info(f"Image saved to {output_image_path}")
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "agl_anonymizer_pipeline"
-version = "0.1.10"
+version = "0.1.11"
 description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future."
 authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
 license = "MIT"
@@ -23,9 +23,11 @@ numpy = "1.26.4"
 imutils = "^0.5.4"
 opencv-python = "^4.9.0.80"
 
+
 [tool.poetry.group.nixProvided.dependencies]
 torch = "^2.4.1"
 torchvision = "^0.19.1"
 torchaudio = "^2.4.1"
-PyMuPDF = "=1.23.26"
 # opencv-python = "^4.10.0"
+PyMuPDF = "=1.24.11"
+

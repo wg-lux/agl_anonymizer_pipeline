@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path, PosixPath
 import logging
 from .custom_logger import get_logger
 import os
@@ -17,7 +17,7 @@ Functions:
   - The main directory stores the final anonymized results as well as structured study and training data ready for export.
   
 - create_results_directory:
-    - The results directory stores the final anonymized images. This directory is cleaned up regularly.
+    - The results directory stores the final anonymized images. This directory is cleaned up manually.
     
 - create_temp_directory:
   - The temp directory stores intermediate results during the anonymization process. It is cleaned up regularly.
@@ -134,13 +134,13 @@ def create_results_directory(default_main_directory:Path=None) -> Path:
         default_main_directory = _str_to_path(default_main_directory)
     
     
-    results_dir = default_main_directory / 'results'
+    results_dir = Path(default_main_directory) / 'results'
     if results_dir.exists():
         logger.debug("Using default blur directory settings")
   
     else:
         logger.info(f"Creating blur directory, directory at {results_dir} not found")
-        results_dir = default_main_directory / '/results'
+        results_dir = Path(default_main_directory) / 'results'
         results_dir = Path(results_dir)
 
         create_directories([results_dir])
@@ -162,7 +162,7 @@ def create_model_directory(default_main_directory:Path=None) -> Path:
     else:
         default_main_directory = _str_to_path(default_main_directory)
         
-    models_dir = default_main_directory / 'models'
+    models_dir = Path(default_main_directory) / 'models'
     
     if models_dir.exists():
         logger.debug(f"found models directory at:{models_dir}")
@@ -170,6 +170,9 @@ def create_model_directory(default_main_directory:Path=None) -> Path:
 
     else:
         logger.debug(f"Creating models directory, directory at {models_dir} not found")
+        create_directories([models_dir])
+        logger.info(f"Models directory created at {models_dir}")
+        return models_dir
 
 def create_temp_directory(default_temp_directory:Path=None, default_main_directory:Path=None):
     """
@@ -196,8 +199,8 @@ def create_temp_directory(default_temp_directory:Path=None, default_main_directo
         default_main_directory = _str_to_path(default_main_directory)    
     
     
-    temp_dir = default_temp_directory.joinpath('temp')
-    csv_dir = default_main_directory.joinpath('csv_training_data')
+    temp_dir = Path(default_temp_directory) / 'temp'
+    csv_dir = Path(default_main_directory) / 'csv_training_data'
     # print("Using default temp and main directory settings")   
     
     if temp_dir.exists() and csv_dir.exists():
@@ -227,7 +230,7 @@ def create_blur_directory(default_main_directory:Path=None) -> Path:
         default_main_directory = _str_to_path(default_main_directory)
     
     
-    blur_dir = default_main_directory / 'blurred_results'
+    blur_dir = Path(default_main_directory) / 'blurred_results'
     if blur_dir.exists():
         logger.info(f"Using default blur directory settings at {blur_dir}")
   

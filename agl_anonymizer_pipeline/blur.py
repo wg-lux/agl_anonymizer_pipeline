@@ -68,7 +68,7 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     image[startY:endY, startX:endX] = blurred_roi
 
     # Save the modified image to a file
-    output_image_path = blur_dir / uuid.uuid4().hex / ".png"
+    output_image_path = Path(blur_dir)/ f"{uuid.uuid4().hex}.png"
     logger.debug(f"Blurred Image will be saved to: {blur_dir}")
     cv2.imwrite(str(output_image_path), image)
     logger.info(f"Blurred Image saved to {blur_dir}")

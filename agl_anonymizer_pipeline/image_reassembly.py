@@ -67,7 +67,7 @@ def reassemble_image(modified_images_map, output_dir, id, original_image_path=No
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Save the final reassembled image
-    final_image_path = output_dir / f"reassembled_image_{id}_{uuid.uuid4()}.jpg"
+    final_image_path = Path(output_dir) / f"reassembled_image_{id}_{uuid.uuid4()}.jpg"
     success = cv2.imwrite(str(final_image_path), curr_image)  # cv2.imwrite expects a string path
 
     if success:

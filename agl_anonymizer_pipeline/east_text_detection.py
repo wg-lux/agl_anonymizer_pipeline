@@ -7,15 +7,15 @@ import json
 from .box_operations import extend_boxes_if_needed
 from .directory_setup import create_temp_directory, create_model_directory
 import urllib.request
-from custom_logger import get_logger
-
+from .custom_logger import get_logger
+from pathlib import Path
 logger = get_logger(__name__)
 
 
 '''
 This module implements argman's EAST Text Detection in a function. 
 The model that's being used is specified by the east_path variable. 
-This is the starting point for the anonymization pipeline.
+The text region detection provides the starting point for the anonymization pipeline.
 
 TO-DO
 
@@ -28,15 +28,14 @@ MODEL_URL = 'https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-
 # Create or use the existing temp directory and define the model path
 temp_dir, base_dir, csv_dir = create_temp_directory()
 
-east_model_path = base_dir / 'models' / 'frozen_east_text_detection.pb'  # Correct joinpath usage
+east_model_path = Path(base_dir) / 'models' / 'frozen_east_text_detection.pb'  # Correct joinpath usage
 
 # Download the model if it doesn't exist
 if not east_model_path.exists():
     try:
         import urllib.request
-        east_model_path = create_model_directory(east_model_path)
-        logger.info(f"Model not found. Downloading EAST model to {east_model_path}...")
-        urllib.request.urlretrieve(MODEL_URL, east_model_path.as_posix())
+        logger.info(f"Model not found. Downloading EAST model to {str(east_model_path)}...")
+        urllib.request.urlretrieve(MODEL_URL, str(east_model_path))
         logger.debug("Download complete.")
     except Exception as e:
         logger.debug(f"Error downloading the model: {e}")

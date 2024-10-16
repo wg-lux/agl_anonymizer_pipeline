@@ -17,15 +17,15 @@ temp_dir, data_base_dir, csv_dir = create_temp_directory()
 parent_dir = Path(__file__).resolve().parent
 
 # Define file paths
-names_dict_dir = parent_dir / 'names_dict'
-female_names_file = names_dict_dir / 'first_and_last_names_female_ascii.txt'
-male_names_file = names_dict_dir / 'first_and_last_names_male_ascii.txt'
-female_first_names_file = names_dict_dir / 'first_names_female_ascii.txt'
-female_last_names_file = names_dict_dir / 'last_names_female_ascii.txt'
-neutral_first_names_file = names_dict_dir / 'first_names_neutral_ascii.txt'
-neutral_last_names_file = names_dict_dir / 'last_names_neutral_ascii.txt'
-male_first_names_file = names_dict_dir / 'first_names_male_ascii.txt'
-male_last_names_file = names_dict_dir / 'last_names_male_ascii.txt'
+names_dict_dir = Path(parent_dir) / 'names_dict'
+female_names_file = Path(names_dict_dir) / 'first_and_last_names_female_ascii.txt'
+male_names_file = Path(names_dict_dir) / 'first_and_last_names_male_ascii.txt'
+female_first_names_file = Path(names_dict_dir) / 'first_names_female_ascii.txt'
+female_last_names_file = Path(names_dict_dir) / 'last_names_female_ascii.txt'
+neutral_first_names_file = Path(names_dict_dir) / 'first_names_neutral_ascii.txt'
+neutral_last_names_file = Path(names_dict_dir) / 'last_names_neutral_ascii.txt'
+male_first_names_file = Path(names_dict_dir) / 'first_names_male_ascii.txt'
+male_last_names_file = Path(names_dict_dir) / 'last_names_male_ascii.txt'
 
 
 # Load names from files

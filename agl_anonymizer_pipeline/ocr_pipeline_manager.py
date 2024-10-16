@@ -19,7 +19,7 @@ import torch
 import pymupdf
 
 # Configure logging
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 
@@ -100,7 +100,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
                 if text:
                     extracted_text += text
                 pix = page.get_pixmap()
-                image_path = temp_dir / f"{uuid.uuid4()}_page_{page_num}.png")
+                image_path = Path(temp_dir) / f"{uuid.uuid4()}_page_{page_num}.png"
                 pix.save(image_path)
                 image_paths.append(image_path)
         else:
@@ -184,7 +184,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
         if blurred_image_path is not None:
             output_filename = f"blurred_image_{uuid.uuid4()}.jpg"
             blur_dir = create_blur_directory()
-            output_path = blur_dir / output_filename
+            output_path = Path(blur_dir) / output_filename
             final_image = cv2.imread(str(blurred_image_path))
             cv2.imwrite(str(output_path), final_image)
             logger.info(f"Final blurred image saved to: {output_path}")
@@ -256,7 +256,7 @@ def modify_image_for_name(image_path, phrase_box, combined_boxes):
     last_name_box = find_or_create_close_box(phrase_box, combined_boxes, image_width)
     
     temp_dir, base_dir, csv_dir = create_temp_directory()
-    temp_image_path = temp_dir / f"{uuid.uuid4()}.jpg")
+    temp_image_path = Path(temp_dir) / f"{uuid.uuid4()}.jpg"
     cv2.imwrite(str(temp_image_path), image)
     
     return blur_function(temp_image_path, phrase_box), last_name_box

@@ -9,6 +9,43 @@ from .directory_setup import create_temp_directory, create_results_directory
 import pymupdf  # PyMuPDF
 from pathlib import Path
 
+'''
+Main Function
+
+Run by calling main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320)
+
+Or in the directory python main.py -i /path/to/image.png -east /path/to/east_detector.pb -d olympus_cv_1500 -c 0.5 -w 320 -e 320
+
+Disclaimer: The Pipeline is easier to run with the Agl-Anonymizer-Flake API.
+
+Parameters:
+- image_or_pdf_path: str
+    The path to the image or PDF file to process.
+- east_path: str
+    The path to the EAST text detector model. Default is None.
+- device: str
+    The device name to set the correct text settings. Default is "olympus_cv_1500".
+- validation: bool
+    A boolean value representing if validation through the AGL-Validator is required. Default is False.
+- min_confidence: float
+    The minimum probability required to inspect a region. Default is 0.5.
+- width: int
+    The resized image width (should be a multiple of 32). Default is 320.
+- height: int
+    The resized image height (should be a multiple of 32). Default is 320.
+
+Returns:
+- str
+    The path to the output image or PDF file.
+- tuple
+    A tuple containing the path to the output image or PDF file, the result, and the original image or PDF file path.
+
+Directory Setup:
+
+You can change the default path for the base directory as well as the temporary directory 
+by changing the values specified in the directory_setup.py file.
+'''
+
 
 # Configure logging
 logger = get_logger(__name__)
@@ -43,7 +80,7 @@ def get_image_paths(image_or_pdf_path: Path, temp_dir: Path):
             for page_num in range(len(doc)):
                 page = doc[page_num]
                 pix = page.get_pixmap()
-                temp_img_path = temp_dir / f"page_{page_num}.png"
+                temp_img_path = Path(temp_dir) / f"page_{page_num}.png"
                 pix.save(str(temp_img_path))  # pymupdf requires a string path
                 image_paths.append(temp_img_path)
         except Exception as e:

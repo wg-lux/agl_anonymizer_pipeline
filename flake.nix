@@ -1,5 +1,5 @@
 {
-  description = "Flake for the `agl_anonymizer_pipeline` service with CUDA support";
+  description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
 
   # Configuration for binary caches and keys
   nixConfig = {
@@ -35,7 +35,46 @@
       config = {
         allowUnfree = true;
         cudaSupport = true;  # Enable CUDA support in the configuration
+        allowBroken = true;  # Allow broken packages for development
       };
+      overlays = [
+        (final: prev: {
+          mupdf = prev.mupdf.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.pkg-config
+              final.libclang
+            ];
+            buildInputs = old.buildInputs or [] ++ [
+              # Include necessary dependencies
+              prev.autoPatchelfHook
+              prev.openjpeg
+              prev.jbig2dec
+              prev.freetype
+              prev.harfbuzz
+              prev.gumbo
+              prev.freeglut
+              prev.libGLU
+              prev.libjpeg_turbo
+              # Add tesseract if needed
+              prev.tesseract
+            ];
+            makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
+          });
+
+          pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.mupdf
+              final.pkg-config
+              final.libclang
+            ];
+            postInstall = ''
+              echo "Linking mupdf libraries"
+              export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
+              find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
+            '';
+          });
+        })
+      ];
     };
 
     # Use cachix to cache NVIDIA-related packages
@@ -83,21 +122,6 @@
       ) pypkgs-build-requirements
     );
 
-
-    # Fetch mupdf from GitHub and ensure it's built with shared libraries
-    mupdf-shared = pkgs.fetchFromGitHub {
-      owner = "ArtifexSoftware";
-      repo = "mupdf";
-      rev = "b382877";  # Example commit hash for mupdf version
-      sha256 = "d7ff4e572669d9f6f604aab03c01df26d9c83e17ed3604e891f9242254e3a578";  # SHA256 hash of the tarball
-    };
-
-    # Build mupdf with shared libraries
-    mupdf = pkgs.mupdf.overrideAttrs (old: {
-      configureFlags = old.configureFlags or [] ++ [ "--enable-shared" ];
-      NIX_CFLAGS_COMPILE = "${old.NIX_CFLAGS_COMPILE or ""} -fPIC";
-    });
-
     # Poetry application setup
     poetryApp = poetry2nixProcessed.mkPoetryApplication {
       python = pkgs.python311;
@@ -105,6 +129,7 @@
       src = lib.cleanSource ./.;  # Clean the source code
       overrides = p2n-overrides;  # Apply package overrides for special requirements
       preferWheels = true;  # Prefer binary wheels for performance
+
 
       # Native build inputs for dependencies (e.g., C++ dependencies)
       nativeBuildInputs = with pkgs; [
@@ -114,20 +139,14 @@
         python311Packages.torchvision-bin
         python311Packages.torchaudio-bin
         gccPkg.libc
-        llvmPkgs.libstdcxxClang
-        # opencv
-        mupdf-headless
+        mupdf
+        python311Packages.pymupdf       # opencv
       ];
 
-      # Install phase for linking mupdf libraries
-      installPhase = ''
-        echo "Linking mupdf libraries"
-        export LDFLAGS="$LDFLAGS -L${mupdf}/lib -libmupdf -libmupdfcpp.so.24.9"
-        export CFLAGS="$CFLAGS -I${mupdf}/include"
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Correct path for libstdc++.so.6
 
-      '';
-    };
+
+      };
+
 
   in {
     # Configuration for Nix binary caches and CUDA support
@@ -140,6 +159,7 @@
       ];
       cudaSupport = true;  # Enable CUDA support in the Nix environment
     };
+
 
     # Package definition for building the poetry application
     packages.x86_64-linux.poetryApp = poetryApp;
@@ -154,7 +174,7 @@
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"  # Add OpenCV library path
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
   '';
     };
   };

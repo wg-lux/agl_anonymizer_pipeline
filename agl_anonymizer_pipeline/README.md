@@ -5,6 +5,19 @@ This Module is designed to work with the Django API AGL Anonymizer.
 
 The Submodule is used to provide automatic anonymization of sensitive information. It is a three step pipeline using Text Region Detection (EAST), OCR (Optical Character Recognition, Tesseract, TrOCR) and Named Entity Recognition (flair-ner, gender-guessr). This tool is particularly useful in scenarios where sensitive information needs to be removed or replaced from images or documents while retaining the overall context and visual structure.
 
+##
+
+For testing abd development:
+
+run
+
+nix build
+nix develop
+
+use the pipeline by providing:
+
+python -m agl_anonymizer_pipeline.main -i /your_image.png -d olympus_cv_1500 -c 0.5 -w 320 -e 320
+
 ## Features
 
 - **Text detection and anonymization**: Utilizes advanced OCR techniques to detect text in images and applies anonymizing to safeguard sensitive information.
