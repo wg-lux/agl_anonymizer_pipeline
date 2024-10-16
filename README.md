@@ -133,9 +133,6 @@ main(
 )
 ```
 
-### Adding Names to the Pseudonymizatiion
-
-The Names get combined in names_generator.py by the script from the names_dict. Names can be written in two seperate lines, as well as in one line. This means, that the Names get pulled from the names_dict. Here, Names from around the world are stored.
 
 # Modules
 
