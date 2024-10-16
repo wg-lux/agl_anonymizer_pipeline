@@ -8,6 +8,7 @@ __pycache__/
 agl_anonymizer_pipeline/csv_files
 agl_anonymizer_pipeline/devices
 agl_anonymizer_pipeline/blurred_images
+.pymu311flake.txt
 
 # C extensions
 *.so
