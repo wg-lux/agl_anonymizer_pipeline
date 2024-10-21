@@ -27,7 +27,7 @@
   };
 
   # Outputs: Define the packages, devShell, and configurations
-  outputs = { self, nixpkgs, poetry2nix, cachix }:
+  outputs = { self, nixpkgs, poetry2nix, cachix }:  
   let
     system = "x86_64-linux";  # Define the system architecture
     pkgs = import nixpkgs {
@@ -35,16 +35,20 @@
       config = {
         allowUnfree = true;
         cudaSupport = true;  # Enable CUDA support in the configuration
+        allowBroken = true;  # Allow broken packages for development
       };
       # Overriding the mupdf package and the pymupdf build to include necessary clang environment in the build.
       overlays = [
         (final: prev: {
-          mupdf = prev.mupdf.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+          mupdf = prev.mupdf.overrideAttrs (oldAttrs: {
+            nativeBuildInputs = oldAttrs.nativeBuildInputs or [] ++ [
               final.pkg-config
               final.libclang
+              final.stdenv
             ];
-            buildInputs = (old.buildInputs or []) ++ [
+            makeFlags = [ "CC=${pkgs.stdenv.cc.targetPrefix}cc" "CC=${pkgs.clang}" "CXX=${pkgs.cxxopts}" ];  # Set the C++ compiler to Clang
+
+            buildInputs = oldAttrs.buildInputs or [] ++ [
               # Include necessary dependencies
               prev.autoPatchelfHook
               prev.openjpeg
@@ -57,14 +61,15 @@
               prev.libjpeg_turbo
               prev.tesseract
             ];
-            makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
           });
 
           pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.mupdf
               final.pkg-config
               final.libclang
+              final.stdenv
             ];
             postInstall = ''
               echo "Linking mupdf libraries"
@@ -107,35 +112,20 @@
     };
 
     lib = pkgs.lib;
-
-    # Create a custom mkPoetryApplication function that uses our pkgs
-    inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
-
-    # Create an instance of poetry2nix with our pkgs
     poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-    # Define the overrides
-    p2n-overrides = poetry2nixProcessed.overrides.withDefaults (final: prev:
-      let
-        pkgOverrides = lib.genAttrs (lib.attrNames pypkgs-build-requirements) (package:
-          prev.${package}.overridePythonAttrs (oldAttrs: {
-            buildInputs = (oldAttrs.buildInputs or []) ++ (builtins.map (pkg: prev.${pkg}) (pypkgs-build-requirements.${package}));
-          })
-        );
-      in
-        pkgOverrides // {
-          # Override tokenizers to include Rust toolchain
-          tokenizers = if prev ? tokenizers then
-            prev.tokenizers.overridePythonAttrs (oldAttrs: {
-              nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [
-                pkgs.rustc
-                pkgs.cargo
-                pkgs.setuptools-rust
-              ];
-            })
-          else
-            null;
-        }
+    p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
+      builtins.mapAttrs (package: build-requirements:
+        (builtins.getAttr package prev).overridePythonAttrs (old: {
+          buildInputs = (old.buildInputs or [ ]) ++ (
+            builtins.map (pkg:
+              if builtins.isString pkg then builtins.getAttr pkg prev else pkg
+            ) build-requirements
+          );
+        })
+      ) 
+      pypkgs-build-requirements
+
     );
 
     # Poetry application setup
@@ -148,6 +138,8 @@
 
       # Native build inputs for dependencies (e.g., C++ dependencies)
       nativeBuildInputs = with pkgs; [
+        gcc
+        llvmPkgs.clang
         python311Packages.pip
         python311Packages.setuptools
         python311Packages.torch-bin
@@ -155,9 +147,11 @@
         python311Packages.torchaudio-bin
         gccPkg.libc
         mupdf
-        pymupdf
+        python311Packages.pymupdf  
+        python311Packages.tokenizers
       ];
-    };
+      };
+
 
   in {
     # Configuration for Nix binary caches and CUDA support
@@ -171,30 +165,27 @@
       cudaSupport = true;  # Enable CUDA support in the Nix environment
     };
 
+    # Package definition for building the poetry application
+    packages.x86_64-linux.poetryApp = poetryApp;
 
     # Default package points to the poetry application
-    packages.${system}.default = poetryApp;
-
-    # Define the application entry point
-    apps.${system}.default = {
-      type = "app";
-      # Replace <script> with the name in the [tool.poetry.scripts] section of your pyproject.toml
-      program = "${poetryApp}/bin/agl_anonymizer_pipeline";
-    };
+    packages.x86_64-linux.default = poetryApp;
 
     # Development shell for setting up the environment
-    devShells.${system}.default = pkgs.mkShell {
-      inputsFrom = [ self.packages.${system}.poetryApp ];  # Include poetryApp in the dev environment
-      packages = with pkgs; [
-        poetry
-        rustc
-        cargo
-        setuptools-rust
-      ];  # Install necessary tools in the devShell for development
+    devShells.x86_64-linux.default = pkgs.mkShell {
+      inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
+      packages = [ pkgs.poetry  ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
+
+      
       shellHook = ''
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+        # Set LD_LIBRARY_PATH to include Nix-provided libraries
+        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:${pkgs.mupdf}/lib:${pkgs.python311Packages.pymupdf}/lib:$LD_LIBRARY_PATH"
+
+        # Set PYTHONPATH to include Nix-provided Python libraries
+        export PYTHONPATH="${pkgs.python311Packages.tokenizers}/lib/python3.11/site-packages:${pkgs.python311Packages.torch}/lib/python3.11/site-packages:${pkgs.python311Packages.torchvision}/lib/python3.11/site-packages:${pkgs.python311Packages.torchaudio}/lib/python3.11/site-packages:$PYTHONPATH"
       '';
     };
+
   };
 }
