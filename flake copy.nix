@@ -96,8 +96,6 @@
       gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
     });
 
-    inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
-
     # Poetry to Nix package translation with specific build requirements
     pypkgs-build-requirements = {
       gender-guesser = [ "setuptools" ];
@@ -112,6 +110,20 @@
     lib = pkgs.lib;
     poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
+    p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
+      builtins.mapAttrs (package: build-requirements:
+        if package == "tokenizers" then
+          prev.${package}
+        else
+          (builtins.getAttr package prev).overridePythonAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ (
+              builtins.map (pkg:
+                if builtins.isString pkg then builtins.getAttr pkg prev else pkg
+              ) build-requirements
+            );
+          })
+      ) pypkgs-build-requirements
+    );
 
     myEnv = pkgs.poetry2nix.mkPoetryEnv {
         projectDir = ./.;  # Points to your project directory
@@ -128,9 +140,11 @@
 
 
     # Poetry application setup
-    poetryApp = mkPoetryApplication {
+    poetryApp = poetry2nixProcessed.mkPoetryApplication {
       python = pkgs.python311;
       projectDir = ./.;  # Points to the project directory
+      src = lib.cleanSource ./.;  # Clean the source code
+      overrides = p2n-overrides;  # Apply package overrides for special requirements
 
 
       # Native build inputs for dependencies (e.g., C++ dependencies)

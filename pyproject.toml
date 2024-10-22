@@ -6,22 +6,25 @@ authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
 
+[project.scripts]
+cli = "app.main:main"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-flair = "^0.14.0"
 spacy = "=3.7.5"
 spacy-lookups-data = "^1.0.5"
-transformers = "^4.45.0"
 gender-guesser = "^0.4.0"
 gensim = "^4.3.3"
 pytesseract = "^0.3.13"
 numpy = "1.26.4"
 imutils = "^0.5.4"
-opencv-python = "^4.9.0.80"
+opencv-python-headless = "^4.9.0.80"
+flair = "^0.14.0"
+transformers = "^4.45.0"
 
 
 [tool.poetry.group.nixProvided.dependencies]
@@ -30,4 +33,6 @@ torchvision = "^0.19.1"
 torchaudio = "^2.4.1"
 # opencv-python = "^4.10.0"
 PyMuPDF = "=1.23.26"
+
+
 
