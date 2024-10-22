@@ -15,74 +15,82 @@
     extra-trusted-public-keys = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=";
   };
 
-  # Inputs: Define where Nix packages, poetry2nix, and cachix are sourced
+  # Inputs: Define where Nix packages and mach-nix are sourced
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    poetry2nix.url = "github:nix-community/poetry2nix";
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs"; # Ensure poetry2nix follows nixpkgs for consistency
-    cachix = {
-      url = "github:cachix/cachix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    mach-nix.url = "github:DavHau/mach-nix";
   };
 
   # Outputs: Define the packages, devShell, and configurations
-  outputs = { self, nixpkgs, poetry2nix, cachix }:  
+  outputs = { self, nixpkgs, mach-nix }:  
   let
     system = "x86_64-linux";  # Define the system architecture
+
+    # Custom overlays for mupdf and pymupdf
+    overlays = [
+      (final: prev: {
+        mupdf = prev.mupdf.overrideAttrs (old: {
+          nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+            final.pkg-config
+            final.libclang
+          ];
+          buildInputs = (old.buildInputs or []) ++ [
+            # Include necessary dependencies
+            prev.autoPatchelfHook
+            prev.openjpeg
+            prev.jbig2dec
+            prev.freetype
+            prev.harfbuzz
+            prev.gumbo
+            prev.freeglut
+            prev.libGLU
+            prev.libjpeg_turbo
+            # Add tesseract if needed
+            prev.tesseract
+          ];
+          makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
+        });
+
+        pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
+          nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+            final.mupdf
+            final.pkg-config
+            final.libclang
+          ];
+          postInstall = ''
+            echo "Linking mupdf libraries"
+            export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
+            find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
+          '';
+        });
+      })
+    ];
+
     pkgs = import nixpkgs {
       inherit system;
+      overlays = overlays;
       config = {
         allowUnfree = true;
         cudaSupport = true;  # Enable CUDA support in the configuration
-        allowBroken = true;  # Allow broken packages for development
       };
-      overlays = [
-        (final: prev: {
-          mupdf = prev.mupdf.overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.pkg-config
-              final.libclang
-            ];
-            buildInputs = old.buildInputs or [] ++ [
-              # Include necessary dependencies
-              prev.autoPatchelfHook
-              prev.openjpeg
-              prev.jbig2dec
-              prev.freetype
-              prev.harfbuzz
-              prev.gumbo
-              prev.freeglut
-              prev.libGLU
-              prev.libjpeg_turbo
-              # Add tesseract if needed
-              prev.tesseract
-            ];
-            makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
-          });
-
-          pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.mupdf
-              final.pkg-config
-              final.libclang
-            ];
-            postInstall = ''
-              echo "Linking mupdf libraries"
-              export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
-              find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
-            '';
-          });
-        })
-      ];
     };
 
-    # Use cachix to cache NVIDIA-related packages
-    nvidiaCache = cachix.lib.mkCachixCache {
-      inherit (pkgs) lib;
-      name = "nvidia";
-      publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
-      secretKey = null;  # Not needed for pulling from the cache
+    # Import mach-nix by passing pkgs
+    machNix = import mach-nix {
+      inherit pkgs;
+    };
+
+    # Define the Python environment using machNix
+    pythonEnv = machNix.mkPython {
+      python = pkgs.python311;  # Specify Python version
+      requirements = builtins.readFile ./requirements.txt;
+      providers = {
+        _default = "wheel,sdist,nixpkgs";  # Prefer wheels first for speed
+      };
+      packagesExtra = with pkgs.python311Packages; [
+        pymupdf
+        # Add other custom packages if necessary
+      ];
     };
 
     # Define the C++ toolchain with Clang and GCC
@@ -96,87 +104,29 @@
       gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
     });
 
-    inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
-
-    # Poetry to Nix package translation with specific build requirements
-    pypkgs-build-requirements = {
-      gender-guesser = [ "setuptools" ];
-      conllu = [ "setuptools" ];
-      janome = [ "setuptools" ];
-      pptree = [ "setuptools" ];
-      wikipedia-api = [ "setuptools" ];
-      django-flat-theme = [ "setuptools" ];
-      django-flat-responsive = [ "setuptools" ];
-    };
-
-    lib = pkgs.lib;
-    poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-
-
-    myEnv = pkgs.poetry2nix.mkPoetryEnv {
-        projectDir = ./.;  # Points to your project directory
-        overrides = poetry2nix.overrides.withDefaults (final: prev: {
-          # Handle setuptools and setuptools-scm to dodge infinite recursion
-          setuptools = prev.setuptools.overridePythonAttrs (old: {
-            buildInputs = old.buildInputs or [] ++ [ final.python311Packages.pip ];
-          });
-          setuptools-scm = prev.setuptools-scm.overridePythonAttrs (old: {
-            buildInputs = old.buildInputs or [] ++ [ final.python311Packages.tomli ];
-          });
-        });
-      };
-
-
-    # Poetry application setup
-    poetryApp = mkPoetryApplication {
-      python = pkgs.python311;
-      projectDir = ./.;  # Points to the project directory
-
-
-      # Native build inputs for dependencies (e.g., C++ dependencies)
-      nativeBuildInputs = with pkgs; [
-        python311Packages.pip
-        python311Packages.setuptools
-        python311Packages.torch-bin
-        python311Packages.torchvision-bin
-        python311Packages.torchaudio-bin
-        gccPkg.libc
-        mupdf
-        pymupdf   
-
-      ];
-      };
-
-
   in {
     # Configuration for Nix binary caches and CUDA support
     nixConfig = {
       binary-caches = [
-        nvidiaCache.binaryCachePublicUrl
+        "https://cuda-maintainers.cachix.org"
       ];
       binary-cache-public-keys = [
-        nvidiaCache.publicKey
+        "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
       ];
       cudaSupport = true;  # Enable CUDA support in the Nix environment
     };
 
-
-    # Package definition for building the poetry application
-    packages.x86_64-linux.poetryApp = poetryApp;
-
-    # Default package points to the poetry application
-    packages.x86_64-linux.default = poetryApp;
+    # Default package points to the mach nix application
+    packages.${system}.default = pythonEnv;
 
     # Development shell for setting up the environment
-    devShells.x86_64-linux.default = pkgs.mkShell {
-      inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
-      packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
+    devShells.${system}.default = pkgs.mkShell {
       nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
-      buildInputs = [ myEnv ];  # Include cuDNN in the devShell
+      buildInputs = [ pythonEnv ];
       shellHook = ''
-        print "Setting up development environment"
+        echo "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
-  '';
+      '';
     };
   };
 }
