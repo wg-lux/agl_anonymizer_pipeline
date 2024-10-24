@@ -32,7 +32,7 @@
               (final: prev: {
                 ghostpdl = final.fetchurl {
                   url = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10040/ghostpdl-10.04.0.tar.gz";
-                  hash = "01f2dlqhqpqxjljkf5wp65cvmfpnxras4w42h5pkh3p0cyq985cb";
+                  sha256 = "01f2dlqhqpqxjljkf5wp65cvmfpnxras4w42h5pkh3p0cyq985cb";
                 };
 
                 mupdf = prev.mupdf.overrideAttrs (old: {
