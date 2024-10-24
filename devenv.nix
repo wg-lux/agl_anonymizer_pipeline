@@ -19,6 +19,21 @@
     pkgs.python311Packages.spacy
     pkgs.python311Packages.spacy-lookups-data
     pkgs.python311Packages.opencv-python-headless
+    pkgs.harfbuzz
+    pkgs.freetype
+    pkgs.libclang
+    pkgs.pkg-config
+    pkgs.autoPatchelfHook
+    pkgs.openjpeg
+    pkgs.jbig2dec
+    pkgs.gumbo
+    pkgs.freeglut
+    pkgs.libGLU
+    pkgs.libjpeg_turbo
+    pkgs.tesseract
+    pkgs.mupdf
+    pkgs.pymupdf
+
     ];
 
   # https://devenv.sh/languages/
