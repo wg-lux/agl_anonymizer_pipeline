@@ -22,41 +22,65 @@
 
       devShells = forEachSystem (system:
         let
+          # Fetching MuPDF from GitHub
+
           # Adding the overlays to the nixpkgs import
           pkgs = import nixpkgs {
             inherit system;
             overlays = [
+
               (final: prev: {
+                ghostpdl = final.fetchurl {
+                  url = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10040/ghostpdl-10.04.0.tar.gz";
+                  hash = "01f2dlqhqpqxjljkf5wp65cvmfpnxras4w42h5pkh3p0cyq985cb";
+                };
+
                 mupdf = prev.mupdf.overrideAttrs (old: {
+                  preInstall = ''
+                    tar -xzf ${final.ghostpdl}
+                  '';
+
                   nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                     final.pkg-config
                     final.libclang
-                    final.harfbuzz
-                    final.freetype
+                    final.ghostpdl
                   ];
+
                   buildInputs = old.buildInputs or [] ++ [
+                    # Include necessary dependencies
                     prev.autoPatchelfHook
                     prev.openjpeg
                     prev.jbig2dec
+                    prev.freetype
+                    prev.harfbuzz
                     prev.gumbo
                     prev.freeglut
                     prev.libGLU
                     prev.libjpeg_turbo
+                    # Add tesseract if needed
                     prev.tesseract
                   ];
-                  makeFlags = old.makeFlags or [];
+                  src = prev.fetchFromGitHub {
+                    owner = "ArtifexSoftware";
+                    repo = "mupdf";
+                    rev = "master";  # You can specify a specific commit or tag
+                    sha256 = "0vyjzm5pgscb6xxlp862mclykd5qvywcwdp3pahlmg17p6cx4234";  # Use 'nix-prefetch-git' to get the actual hash
+                  };
+                  patches = [];
+                  makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
                 });
 
-                pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
+                pymupdf = prev.python312Packages.pymupdf.overrideAttrs (old: {
                   nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                     final.mupdf
                     final.pkg-config
                     final.libclang
+                    final.python312Packages.setuptools
                   ];
                   postInstall = ''
                     echo "Linking mupdf libraries"
                     export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
-                    find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
+                    find $out/lib/python3.12/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
                   '';
                 });
               })

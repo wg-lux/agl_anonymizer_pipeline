@@ -7,18 +7,18 @@
   # https://devenv.sh/packages/
   packages = [ 
     pkgs.git
-    pkgs.python311
+    pkgs.python312
     pkgs.gccPkg.libc
-    pkgs.python311Packages.setuptools
-    pkgs.python311Packages.numpy
-    pkgs.python311Packages.importlib_metadata
-    pkgs.python311Packages.transformers
-    pkgs.python311Packages.torch
-    pkgs.python311Packages.torchvision
-    pkgs.python311Packages.torchaudio
-    pkgs.python311Packages.spacy
-    pkgs.python311Packages.spacy-lookups-data
-    pkgs.python311Packages.opencv-python-headless
+    pkgs.python312Packages.setuptools
+    pkgs.python312Packages.numpy
+    pkgs.python312Packages.importlib_metadata
+    pkgs.python312Packages.transformers
+    pkgs.python312Packages.torch
+    pkgs.python312Packages.torchvision
+    pkgs.python312Packages.torchaudio
+    pkgs.python312Packages.spacy
+    pkgs.python312Packages.spacy-lookups-data
+    pkgs.python312Packages.opencv-python-headless
     pkgs.harfbuzz
     pkgs.freetype
     pkgs.libclang
@@ -31,9 +31,8 @@
     pkgs.libGLU
     pkgs.libjpeg_turbo
     pkgs.tesseract
-    pkgs.mupdf
-    pkgs.pymupdf
-
+    pkgs.clang-tools
+    
     ];
 
   # https://devenv.sh/languages/
