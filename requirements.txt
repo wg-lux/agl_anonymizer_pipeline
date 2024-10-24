@@ -1,4 +1,5 @@
 python == "3.11"
+importlib_metadata = "4.8.1"
 spacy = "3.7.5"
 spacy-lookups-data = "1.0.5"
 gender-guesser = "0.4.0"

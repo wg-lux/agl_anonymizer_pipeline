@@ -66,3 +66,21 @@ cover/
 agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
 agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.whl
 agl_anonymizer_pipeline/agl_anonymizer_pipeline/dist/*.tar.gz
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
