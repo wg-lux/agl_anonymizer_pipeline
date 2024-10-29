@@ -6,19 +6,20 @@
 
   # https://devenv.sh/packages/
   packages = [ 
+    pkgs.devenv
     pkgs.git
-    pkgs.python312
-    pkgs.gccPkg.libc
-    pkgs.python312Packages.setuptools
-    pkgs.python312Packages.numpy
-    pkgs.python312Packages.importlib_metadata
-    pkgs.python312Packages.transformers
-    pkgs.python312Packages.torch
-    pkgs.python312Packages.torchvision
-    pkgs.python312Packages.torchaudio
-    pkgs.python312Packages.spacy
-    pkgs.python312Packages.spacy-lookups-data
-    pkgs.python312Packages.opencv-python-headless
+    pkgs.python311
+    pkgs.libcxx
+    pkgs.python311Packages.setuptools
+    pkgs.python311Packages.pathtools
+    pkgs.python311Packages.numpy
+    pkgs.python311Packages.transformers
+    pkgs.python311Packages.torch
+    pkgs.python311Packages.torchvision
+    pkgs.python311Packages.torchaudio
+    pkgs.python311Packages.spacy
+    pkgs.python311Packages.spacy-lookups-data
+    pkgs.python311Packages.opencv4
     pkgs.harfbuzz
     pkgs.freetype
     pkgs.libclang
@@ -32,6 +33,9 @@
     pkgs.libjpeg_turbo
     pkgs.tesseract
     pkgs.clang-tools
+    pkgs.stdenv
+    pkgs.lcms2
+    pkgs.python311Packages.pymupdf
     
     ];
 

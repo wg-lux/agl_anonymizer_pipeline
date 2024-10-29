@@ -1,108 +1,55 @@
 {
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    systems.url = "github:nix-systems/default";
-    devenv.url = "github:cachix/devenv";
-    devenv.inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    devenv.url = "github:cachix/devenv/9b6566c51efa2fdd6c6e6053308bc3a1c6817d31";
   };
 
-  nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
-  };
-
-  outputs = { self, nixpkgs, devenv, systems, ... } @ inputs:
+  outputs = { self, nixpkgs, devenv, ... } @ inputs:
     let
-      forEachSystem = nixpkgs.lib.genAttrs (import systems);
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      packages.x86_64-linux.default = pkgs;
+
     in
     {
-      packages = forEachSystem (system: {
-        devenv-up = self.devShells.${system}.default.config.procfileScript;
-      });
-
-      devShells = forEachSystem (system:
-        let
-          # Fetching MuPDF from GitHub
-
-          # Adding the overlays to the nixpkgs import
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [
-
-              (final: prev: {
-                ghostpdl = final.fetchurl {
-                  url = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10040/ghostpdl-10.04.0.tar.gz";
-                  sha256 = "01f2dlqhqpqxjljkf5wp65cvmfpnxras4w42h5pkh3p0cyq985cb";
-                };
-
-                mupdf = prev.mupdf.overrideAttrs (old: {
-                  preInstall = ''
-                    tar -xzf ${final.ghostpdl}
-                  '';
-
-                  nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                    final.pkg-config
-                    final.libclang
-                    final.ghostpdl
-                  ];
-
-                  buildInputs = old.buildInputs or [] ++ [
-                    # Include necessary dependencies
-                    prev.autoPatchelfHook
-                    prev.openjpeg
-                    prev.jbig2dec
-                    prev.freetype
-                    prev.harfbuzz
-                    prev.gumbo
-                    prev.freeglut
-                    prev.libGLU
-                    prev.libjpeg_turbo
-                    # Add tesseract if needed
-                    prev.tesseract
-                  ];
-                  src = prev.fetchFromGitHub {
-                    owner = "ArtifexSoftware";
-                    repo = "mupdf";
-                    rev = "master";  # You can specify a specific commit or tag
-                    sha256 = "0vyjzm5pgscb6xxlp862mclykd5qvywcwdp3pahlmg17p6cx4234";  # Use 'nix-prefetch-git' to get the actual hash
-                  };
-                  patches = [];
-                  makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
-                });
-
-                pymupdf = prev.python312Packages.pymupdf.overrideAttrs (old: {
-                  nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                    final.mupdf
-                    final.pkg-config
-                    final.libclang
-                    final.python312Packages.setuptools
-                  ];
-                  postInstall = ''
-                    echo "Linking mupdf libraries"
-                    export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
-                    find $out/lib/python3.12/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
-                  '';
-                });
-              })
+      # Combine devenv outputs under the same `devShells.${system}.default` package
+      devShells.${system}.default = devenv.lib.mkShell {
+        inherit pkgs;
+        modules = [
+          {
+            packages = [
+              pkgs.python311     
+              pkgs.git
+              pkgs.libcxx
+              pkgs.python311Packages.numpy
+              pkgs.python311Packages.transformers
+              pkgs.python311Packages.torch
+              pkgs.python311Packages.torchvision
+              pkgs.python311Packages.torchaudio
+              pkgs.python311Packages.spacy
+              pkgs.python311Packages.spacy-lookups-data
+              pkgs.python311Packages.opencv4
+              pkgs.tesseract
+              pkgs.python311Packages.pymupdf
             ];
-          };
-        in
-        {
-          default = devenv.lib.mkShell {
-            inherit inputs pkgs;
-            modules = [
-              {
-                # https://devenv.sh/reference/options/
-                packages = [ pkgs.hello pkgs.mupdf pkgs.pymupdf ];
 
-                enterShell = ''
-                  hello
-                '';
+            env = {
+              GREET = "devenv";
+              PROJECT_DIR = "${toString ./agl_anonymizer_pipeline}";
+            };
 
-                processes.hello.exec = "hello";
-              }
-            ];
-          };
-        });
+            enterShell = ''
+              echo "Entering shell for $PROJECT_DIR"
+              git --version
+            '';
+
+            # Add devenv-up and devenv-test as scripts if needed
+            scripts = {
+              "devenv-up".exec = "echo devenv-up executed";
+              "devenv-test".exec = "echo devenv-test executed";
+            };
+          }
+        ];
+      };
     };
 }
