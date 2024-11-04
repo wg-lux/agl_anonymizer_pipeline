@@ -191,6 +191,7 @@
         pkgs.cudaPackages.cudatoolkit
         pkgs.cudaPackages.saxpy
         pkgs.python311Packages.hatchling
+        pkgs.python311Packages.maturin
        ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
