@@ -183,7 +183,7 @@
         mupdf
         pymupdf   
         python311Packages.hatchling
-        python311Packages.maturin
+        maturin
         python311Packages.safetensors
 
         python311Packages.tokenizers
@@ -222,7 +222,7 @@
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ 
         pkgs.python311Packages.hatchling
-        pkgs.python311Packages.maturin
+        pkgs.maturin
         pkgs.python311Packages.safetensors
         pkgs.cargo
         pkgs.rustc
