@@ -77,7 +77,7 @@
             '';
           });
 
-          
+
 
         })
 
@@ -148,10 +148,8 @@
       # Native build inputs for dependencies (e.g., C++ dependencies)
       nativeBuildInputs = with pkgs; [
         cudaPackages.saxpy
+        cudaPackages.cudatoolkit
         python311Packages.pip
-        python311Packages.torch-bin
-        python311Packages.torchvision-bin
-        python311Packages.torchaudio-bin
         python311Packages.spacy
         python311Packages.spacy-lookups-data
         gccPkg.libc
