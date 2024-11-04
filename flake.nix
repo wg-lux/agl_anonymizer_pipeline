@@ -24,10 +24,14 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
   };
+
 
   # Outputs: Define the packages, devShell, and configurations
   outputs = { self, nixpkgs, poetry2nix, cachix }:  
+
+  
   let
     system = "x86_64-linux";  # Define the system architecture
     pkgs = import nixpkgs {
@@ -82,12 +86,7 @@
         })
 
       ];
-        setupEnv = ''
-          echo "Setting up environment variables"
-          export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
-          export CARGO_HOME="/tmp/.cargo"
-          export SETUPTOOLS_USE_DISTUTILS=stdlib
-        '';
+
 
     };
 
@@ -138,13 +137,7 @@
               final.libclang
             ];
           })
-          prev.cargo.overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.cargo
-              final.rustc
-              final.libclang
-            ];
-          })
+
         else
           (builtins.getAttr package prev).overridePythonAttrs (old: {
             buildInputs = (old.buildInputs or [ ]) ++ (
@@ -169,6 +162,7 @@
       nativeBuildInputs = with pkgs; [
         cudaPackages.saxpy
         cudaPackages.cudatoolkit
+        cudnn
         python311Packages.pip
         gccPkg.libc
         cargo
@@ -177,10 +171,6 @@
         pymupdf   
       ];
 
-      shellHook = ''
-        echo "Setting up disutils for setuptools"
-        export SETUPTOOLS_USE_DISTUTILS=stdlib;
-        '';
       };
 
 
@@ -205,11 +195,14 @@
 
     # Development shell for setting up the environment
     devShells.x86_64-linux.default = pkgs.mkShell {
+      preShellHook = ''
+        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.cudnn.lib}:$LD_LIBRARY_PATH"
+
+      '';  # Set the LD_LIBRARY_PATH for CUDA libraries
+
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ 
-        pkgs.cudaPackages.cudatoolkit
-        pkgs.cudaPackages.saxpy
         pkgs.python311Packages.hatchling
         pkgs.python311Packages.maturin
         pkgs.python311Packages.safetensors
@@ -217,9 +210,10 @@
         pkgs.rustc
         pkgs.libclang
        ];  # CUDA toolkit version for devShell
-      postShellHook = + ''
+      postShellHook =  ''
+
         poetry install  # Install the poetry application in the devShell
-  '';
+      '';
     };
   };
 }
