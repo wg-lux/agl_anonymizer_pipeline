@@ -39,6 +39,11 @@
       };
       overlays = [
         (final: prev: {
+          buildInputs = prev.buildInputs or [] ++ [
+            # Include necessary dependencies
+            prev.cudaPackages.cudatoolkit
+            prev.cudaPackages.saxpy
+          ];
 
           mupdf = prev.mupdf.overrideAttrs (old: {
             dontStrip = false;
@@ -187,7 +192,7 @@
     devShells.x86_64-linux.default = pkgs.mkShell {
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-      nativeBuildInputs = [ pkgs.cudaPackages ];  # CUDA toolkit version for devShell
+      nativeBuildInputs = [ pkgs.cudaPackages.cudatoolkit ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
