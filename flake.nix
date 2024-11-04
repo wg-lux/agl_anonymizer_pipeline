@@ -82,6 +82,13 @@
         })
 
       ];
+        setupEnv = ''
+          echo "Setting up environment variables"
+          export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+          export CARGO_HOME="/tmp/.cargo"
+          export SETUPTOOLS_USE_DISTUTILS=stdlib
+        '';
+
     };
 
 
@@ -210,13 +217,8 @@
         pkgs.rustc
         pkgs.libclang
        ];  # CUDA toolkit version for devShell
-      shellHook = ''
-        print "Setting up development environment"
-        export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
-        export CARGO_HOME="/tmp/.cargo"
-        export SETUPTOOLS_USE_DISTUTILS=stdlib;
-        poetry install
-        echo "Environment variables set for tokenizers build"
+      postShellHook = + ''
+        poetry install  # Install the poetry application in the devShell
   '';
     };
   };
