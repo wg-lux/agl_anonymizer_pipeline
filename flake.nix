@@ -134,19 +134,6 @@
       ) pypkgs-build-requirements
     );
 
-    myEnv = pkgs.poetry2nix.mkPoetryEnv {
-        projectDir = ./.;  # Points to your project directory
-        overrides = poetry2nix.overrides.withDefaults (final: prev: {
-          # Handle setuptools and setuptools-scm to dodge infinite recursion
-          setuptools = prev.setuptools.overridePythonAttrs (old: {
-            buildInputs = old.buildInputs or [] ++ [ final.python311Packages.pip ];
-          });
-          setuptools-scm = prev.setuptools-scm.overridePythonAttrs (old: {
-            buildInputs = old.buildInputs or [] ++ [ final.python311Packages.tomli ];
-          });
-        });
-      };
-
 
     # Poetry application setup
     poetryApp = poetry2nixProcessed.mkPoetryApplication {
