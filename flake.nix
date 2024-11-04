@@ -86,6 +86,8 @@
               final.cargo
               final.rustc
               final.libclang
+              final.python311Packages.hatchling
+              final.python311Packages.setuptools
             ];
             postInstall = ''
               echo "Linking tokenizers libraries"
@@ -128,10 +130,13 @@
 
     # Poetry to Nix package translation with specific build requirements
     pypkgs-build-requirements = {
+      gender-guesser = [ "setuptools" ];
       conllu = [ "setuptools" ];
       janome = [ "setuptools" ];
       pptree = [ "setuptools" ];
       wikipedia-api = [ "setuptools" ];
+      django-flat-theme = [ "setuptools" ];
+      django-flat-responsive = [ "setuptools" ];
     };
 
     lib = pkgs.lib;
