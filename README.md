@@ -5,7 +5,8 @@ agl_anonymizer_pipeline is a comprehensive Python API designed for image process
 
 ## Features
 
-- **Text Detection And Pseudonymization**: Utilizes advanced OCR techniques to detect text in images and applies anonymizing to safeguard sensitive information.
+- **Text Detection And Pseudonymization**: Utilizes advanced OCR techniques to detect text in images. It can also apply pseudonymization through cv2 generated images overlaying the blurred areas, where names have been detected. This is done to safeguard sensitive information.
+- **Validation Interface** by setting the argument validation=true in the call to main.
 - **Blurring Functionality**: Offers customizable blurring options to obscure parts of an image, providing an additional layer of privacy.
 - **Image Saving**: Efficiently saves processed images in a desired format, maintaining high-quality output.
 - **Extensive Format Support**: Capable of handling various image and document formats for a wide range of applications.
@@ -46,6 +47,10 @@ python main.py --image images/your_image.jpg
 example:
 
 python main.py --image images/lebron_james.jpg
+
+## Packaging
+
+One working flake as well as two experimental alternative approaches are provided.
 
 ## Modules
 
@@ -92,8 +97,11 @@ Configure Settings: Adjust the settings in the configuration file (if applicable
 Run the Module: Execute the main script to process the images.
 
 ```bash
-python main.py --image images/your_image.jpg
+python main.py --image images/your_image.jpg --east_path=None --device="lympus_cv_1500" --validation=true --min_confidence=0.5 --width=320 --height=320
 ```
+
+Arguments can be set to call the function with different settings.
+
 
 ## Parameters of the `main` function
 

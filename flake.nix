@@ -39,6 +39,12 @@
       };
       overlays = [
         (final: prev: {
+          numpy = prev.numpy.overrideAttrs (old: {
+            version = "1.26.4";  # Specify the compatible version
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.emacsPackages.msvc
+            ];
+          });
           mupdf = prev.mupdf.overrideAttrs (old: {
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.pkg-config
@@ -74,10 +80,8 @@
             '';
           });
 
-          python311Packages.setuptools = prev.setuptools.overridePythonAttrs (old: rec {
-            version = "73.0.1";  # specify the compatible version if using Python <3.13
-          });
         })
+
       ];
     };
 
@@ -155,17 +159,21 @@
       nativeBuildInputs = with pkgs; [
         python311Packages.pip
         python311Packages.setuptools
+        python311Packages.numpy
         python311Packages.torch-bin
         python311Packages.torchvision-bin
         python311Packages.torchaudio-bin
-        python311Packages.numpy
         python311Packages.spacy
         python311Packages.spacy-lookups-data
         gccPkg.libc
         mupdf
         pymupdf   
-
       ];
+
+      shellHook = ''
+        echo "Setting up disutils for setuptools"
+        export SETUPTOOLS_USE_DISTUTILS=stdlib;
+        '';
       };
 
 
