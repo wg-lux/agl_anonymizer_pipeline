@@ -126,16 +126,7 @@
     });
     
 
-    # Poetry to Nix package translation with specific build requirements
-    pypkgs-build-requirements = {
-      gender-guesser = [ "setuptools" ];
-      conllu = [ "setuptools" ];
-      janome = [ "setuptools" ];
-      pptree = [ "setuptools" ];
-      wikipedia-api = [ "setuptools" ];
-      django-flat-theme = [ "setuptools" ];
-      django-flat-responsive = [ "setuptools" ];
-    };
+
 
     lib = pkgs.lib;
     poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
