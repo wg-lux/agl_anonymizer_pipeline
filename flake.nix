@@ -200,8 +200,7 @@
     devShells.x86_64-linux.default = pkgs.mkShell {
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-      nativeBuildInputs = [ pkgs.cudaPackages_11.cudatoolkit ];  # CUDA toolkit version for devShell
-      buildInputs = [ myEnv ];  # Include cuDNN in the devShell
+      nativeBuildInputs = [ pkgs.cudaPackages ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
