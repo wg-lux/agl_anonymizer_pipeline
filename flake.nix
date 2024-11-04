@@ -124,7 +124,20 @@
     p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
       builtins.mapAttrs (package: build-requirements:
         if package == "tokenizers" then
-          prev.${package}
+          prev.rustc.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.cargo
+              final.rustc
+              final.libclang
+            ];
+          })
+          prev.cargo.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.cargo
+              final.rustc
+              final.libclang
+            ];
+          })
         else
           (builtins.getAttr package prev).overridePythonAttrs (old: {
             buildInputs = (old.buildInputs or [ ]) ++ (
