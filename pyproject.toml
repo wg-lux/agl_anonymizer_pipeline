@@ -16,7 +16,6 @@ build-backend = "setuptools.build_meta"
 [tool.poetry.dependencies]
 python = "3.11.9"
 numpy = "2.1.3"
-tokenizers = "0.13.2"
 spacy = "=3.4.2"
 spacy-lookups-data = "1.0.0"
 gender-guesser = "0.4.0"
@@ -25,15 +24,16 @@ pytesseract = "0.3.13"
 imutils = "0.5.4"
 opencv-python-headless = "4.9.0.80"
 flair = "0.14.0"
-transformers = "4.26.0"
+transformers = "4.43.0"
 torch = "2.1.0"
 torchvision = "0.16.0"
 torchaudio = "2.1.0"
 
 
 [tool.poetry.group.nixProvided.dependencies]
-# opencv-python = "^4.10.0"
-PyMuPDF = "=1.23.26"
+# opencv-python = "4.10.0"
+PyMuPDF = "1.23.26"
+tokenizers = "0.19.1"
 
 
 

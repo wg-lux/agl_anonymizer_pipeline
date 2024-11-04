@@ -81,6 +81,19 @@
             '';
           });
 
+          tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.cargo
+              final.rustc
+              final.libclang
+            ];
+            postInstall = ''
+              echo "Linking tokenizers libraries"
+              export LD_LIBRARY_PATH="${final.cudatoolkit}/lib:$LD_LIBRARY_PATH"
+              find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib {} \;
+            '';
+          });
+
 
 
         })
@@ -169,6 +182,7 @@
         rustc
         mupdf
         pymupdf   
+        python311Packages.tokenizers
       ];
 
       };
