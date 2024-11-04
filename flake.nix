@@ -182,8 +182,6 @@
         rustc
         mupdf
         pymupdf   
-        hatchling
-        safetensors
         python311Packages.hatchling
         python311Packages.maturin
         python311Packages.safetensors
