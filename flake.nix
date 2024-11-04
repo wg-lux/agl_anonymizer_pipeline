@@ -151,6 +151,8 @@
         cudaPackages.cudatoolkit
         python311Packages.pip
         gccPkg.libc
+        cargo
+        rustc
         mupdf
         pymupdf   
       ];
