@@ -193,7 +193,8 @@
         pkgs.python311Packages.hatchling
         pkgs.python311Packages.maturin
         pkgs.python311Packages.safetensors
-        pkgs.poetry
+        pkgs.cargo
+        pkgs.rustc
        ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
