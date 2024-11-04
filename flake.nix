@@ -150,8 +150,6 @@
         cudaPackages.saxpy
         cudaPackages.cudatoolkit
         python311Packages.pip
-        python311Packages.spacy
-        python311Packages.spacy-lookups-data
         gccPkg.libc
         mupdf
         pymupdf   
