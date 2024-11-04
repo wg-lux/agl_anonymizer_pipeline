@@ -162,7 +162,7 @@
       nativeBuildInputs = with pkgs; [
         cudaPackages.saxpy
         cudaPackages.cudatoolkit
-        cudnn
+        cudaPackages.cudnn
         python311Packages.pip
         gccPkg.libc
         cargo
