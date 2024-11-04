@@ -50,7 +50,7 @@
               final.emacsPackages.msvc
             ];
             shellHook = ''
-            export CC="${final.emacsPackages.msvc}/bin/gcc.exe"
+            export disutils.msvccompiler="${final.emacsPackages.msvc}/bin/gcc.exe"
             '';
 
 
