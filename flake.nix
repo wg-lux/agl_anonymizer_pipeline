@@ -199,7 +199,10 @@
       shellHook = ''
         print "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+        export CARGO_HOME="${HOME}/.cargo"
+        export SETUPTOOLS_USE_DISTUTILS=stdlib;
         poetry install
+        echo "Environment variables set for tokenizers build"
   '';
     };
   };
