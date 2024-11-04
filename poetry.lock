@@ -31,25 +31,6 @@ test-trackers = ["comet-ml", "dvclive", "tensorboard", "wandb"]
 testing = ["bitsandbytes", "datasets", "diffusers", "evaluate", "parameterized", "pytest (>=7.2.0,<=8.0.0)", "pytest-subtests", "pytest-xdist", "scikit-learn", "scipy", "timm", "torchdata (>=0.8.0)", "torchpippy (>=0.2.0)", "tqdm", "transformers"]
 
 [[package]]
-name = "attrs"
-version = "24.2.0"
-description = "Classes Without Boilerplate"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
-]
-
-[package.extras]
-benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
-
-[[package]]
 name = "beautifulsoup4"
 version = "4.12.3"
 description = "Screen-scraping library"
@@ -69,24 +50,6 @@ chardet = ["chardet"]
 charset-normalizer = ["charset-normalizer"]
 html5lib = ["html5lib"]
 lxml = ["lxml"]
-
-[[package]]
-name = "bioc"
-version = "2.1"
-description = "bioc - Processing BioC, Brat, and PubTator with Python."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "bioc-2.1-py3-none-any.whl", hash = "sha256:f1730d26821330f9f625058841612d6cfb616efb906fc682297fe04dd5d9398a"},
-    {file = "bioc-2.1.tar.gz", hash = "sha256:7d9248198bdae291b0ebb218de2dc653c96d32a7eac2fa0ef4ed0c74ce45aaaa"},
-]
-
-[package.dependencies]
-docopt = "*"
-intervaltree = "*"
-jsonlines = ">=1.2.0"
-lxml = ">=4.6.3"
-tqdm = "*"
 
 [[package]]
 name = "blis"
@@ -171,6 +134,24 @@ urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >
 
 [package.extras]
 crt = ["awscrt (==0.22.0)"]
+
+[[package]]
+name = "bpemb"
+version = "0.3.6"
+description = "Byte-pair embeddings in 275 languages"
+optional = false
+python-versions = "*"
+files = [
+    {file = "bpemb-0.3.6-py3-none-any.whl", hash = "sha256:6eabc133bbd0a7dbeb52b2cfed55ca5cacbb38b236ebb1f504b279a2d835e8b7"},
+    {file = "bpemb-0.3.6.tar.gz", hash = "sha256:a33fa1dcdfaf3d4cb3eaebac430b6f23a684a888e1761f5a026ce3868153ee2d"},
+]
+
+[package.dependencies]
+gensim = "*"
+numpy = "*"
+requests = "*"
+sentencepiece = "*"
+tqdm = "*"
 
 [[package]]
 name = "catalogue"
@@ -350,14 +331,17 @@ srsly = ">=2.4.0,<3.0.0"
 
 [[package]]
 name = "conllu"
-version = "4.5.3"
+version = "6.0.0"
 description = "CoNLL-U Parser parses a CoNLL-U formatted string into a nested python dictionary"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "conllu-4.5.3-py2.py3-none-any.whl", hash = "sha256:2b962b315c3c575e429105d045c888726df780b87a6dfe7609367e861990902d"},
-    {file = "conllu-4.5.3.tar.gz", hash = "sha256:a016cf77e203b2e3ace82fcf0cba2874530d1458e874521640eba36e19546acc"},
+    {file = "conllu-6.0.0-py3-none-any.whl", hash = "sha256:c47206a0912f768bfae429d3d3c2c7f5ed068babd2502663e865cfb21532cbcc"},
+    {file = "conllu-6.0.0.tar.gz", hash = "sha256:bc6072d49d00e77f4454039519118c0500fafa0d0eb509f53793081084f50aba"},
 ]
+
+[package.extras]
+test = ["tox"]
 
 [[package]]
 name = "contourpy"
@@ -518,16 +502,6 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
-name = "docopt"
-version = "0.6.2"
-description = "Pythonic argument parser, that will make you smile"
-optional = false
-python-versions = "*"
-files = [
-    {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
-]
-
-[[package]]
 name = "filelock"
 version = "3.16.1"
 description = "A platform independent file lock."
@@ -545,23 +519,25 @@ typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
 name = "flair"
-version = "0.14.0"
+version = "0.13.1"
 description = "A very simple framework for state-of-the-art NLP"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "flair-0.14.0-py3-none-any.whl", hash = "sha256:10735065ff462c05d0ea06ff01bc90e647f822a287858f9a6d0dabc7e402c754"},
-    {file = "flair-0.14.0.tar.gz", hash = "sha256:dc14b58e93a52141f204d9995191aa3b7e0463a661a41faa8f8db30745a188a4"},
+    {file = "flair-0.13.1-py3-none-any.whl", hash = "sha256:d38a01bbaf6c708059a3a23f10487e1d2dabb3171fc262fac35d95215821c2cc"},
+    {file = "flair-0.13.1.tar.gz", hash = "sha256:34f6e99180a2d4b9f24783e6225be0fe8d7ab2d1c6c59dbc1cec4b4eb03ba12d"},
 ]
 
 [package.dependencies]
-bioc = ">=2.0.0,<3.0.0"
 boto3 = ">=1.20.27"
-conllu = ">=4.0,<5.0.0"
+bpemb = ">=0.3.2"
+conllu = ">=4.0"
 deprecated = ">=1.2.13"
 ftfy = ">=6.1.0"
 gdown = ">=4.4.0"
+gensim = ">=4.2.0"
 huggingface-hub = ">=0.10.0"
+janome = ">=0.4.2"
 langdetect = ">=1.0.9"
 lxml = ">=4.8.0"
 matplotlib = ">=2.2.3"
@@ -580,10 +556,8 @@ torch = ">=1.5.0,<1.8 || >1.8"
 tqdm = ">=4.63.0"
 transformer-smaller-training-vocab = ">=0.2.3"
 transformers = {version = ">=4.18.0,<5.0.0", extras = ["sentencepiece"]}
+urllib3 = ">=1.0.0,<2.0.0"
 wikipedia-api = ">=0.5.7"
-
-[package.extras]
-word-embeddings = ["bpemb (>=0.3.5)", "gensim (>=4.2.0)"]
 
 [[package]]
 name = "fonttools"
@@ -868,17 +842,15 @@ files = [
 ]
 
 [[package]]
-name = "intervaltree"
-version = "3.1.0"
-description = "Editable interval tree data structure for Python 2 and 3"
+name = "janome"
+version = "0.5.0"
+description = "Japanese morphological analysis engine."
 optional = false
 python-versions = "*"
 files = [
-    {file = "intervaltree-3.1.0.tar.gz", hash = "sha256:902b1b88936918f9b2a19e0e5eb7ccb430ae45cde4f39ea4b36932920d33952d"},
+    {file = "Janome-0.5.0-py2.py3-none-any.whl", hash = "sha256:d098670394a77881ce2f6b7d696c0ea5ff74c0c8cf74a8a882159ec82c0e6dc7"},
+    {file = "Janome-0.5.0.tar.gz", hash = "sha256:ce4a3ed7a4635c2f80139639327d5b1e0381858ad74a3c4a61e8cc83f820400e"},
 ]
-
-[package.dependencies]
-sortedcontainers = ">=2.0,<3.0"
 
 [[package]]
 name = "jinja2"
@@ -918,20 +890,6 @@ files = [
     {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
     {file = "joblib-1.4.2.tar.gz", hash = "sha256:2382c5816b2636fbd20a09e0f4e9dad4736765fdfb7dca582943b9c1366b3f0e"},
 ]
-
-[[package]]
-name = "jsonlines"
-version = "4.0.0"
-description = "Library with helpers for the jsonlines file format"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "jsonlines-4.0.0-py3-none-any.whl", hash = "sha256:185b334ff2ca5a91362993f42e83588a360cf95ce4b71a73548502bda52a7c55"},
-    {file = "jsonlines-4.0.0.tar.gz", hash = "sha256:0c6d2c09117550c089995247f605ae4cf77dd1533041d366351f6f298822ea74"},
-]
-
-[package.dependencies]
-attrs = ">=19.2.0"
 
 [[package]]
 name = "kiwisolver"
@@ -2812,17 +2770,6 @@ test = ["azure-common", "azure-core", "azure-storage-blob", "boto3", "google-clo
 webhdfs = ["requests"]
 
 [[package]]
-name = "sortedcontainers"
-version = "2.4.0"
-description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
-optional = false
-python-versions = "*"
-files = [
-    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
-    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
-]
-
-[[package]]
 name = "soupsieve"
 version = "2.6"
 description = "A modern CSS selector implementation for Beautiful Soup."
@@ -3506,20 +3453,19 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.2.3"
+version = "1.26.20"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=3.8"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
-    {file = "urllib3-2.2.3-py3-none-any.whl", hash = "sha256:ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac"},
-    {file = "urllib3-2.2.3.tar.gz", hash = "sha256:e7d814a81dad81e6caf2ec9fdedb284ecc9c73076b62654547cc64ccdcae26e9"},
+    {file = "urllib3-1.26.20-py2.py3-none-any.whl", hash = "sha256:0ed14ccfbf1c30a9072c7ca157e4319b70d65f623e91e7b32fadb2853431016e"},
+    {file = "urllib3-1.26.20.tar.gz", hash = "sha256:40c2dc0c681e47eb8f90e7e27bf6ff7df2e677421fd46756da1161c39ca70d32"},
 ]
 
 [package.extras]
-brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
-h2 = ["h2 (>=4,<5)"]
-socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
-zstd = ["zstandard (>=0.18.0)"]
+brotli = ["brotli (==1.0.9)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
+secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "wasabi"
@@ -3638,4 +3584,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.9"
-content-hash = "44785e8ee67b2dd74fda0330a54a72ea1b528ac8654c767bd6151f778b02ca14"
+content-hash = "d8aaf43136cbfca73553c85f64c375db6ecd2f165a40ba56ca10ee7285f52a8f"
