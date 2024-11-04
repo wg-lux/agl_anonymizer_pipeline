@@ -182,6 +182,9 @@
         rustc
         mupdf
         pymupdf   
+        hatchling
+        safetensors
+        
         python311Packages.tokenizers
       ];
 
