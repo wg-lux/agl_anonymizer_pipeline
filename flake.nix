@@ -39,13 +39,24 @@
       };
       overlays = [
         (final: prev: {
+          setuptools = prev.python311Packages.setuptools.overrideAttrs (old: {
+            version = "59.5.0";  # A stable version with distutils support
+          });
           numpy = prev.numpy.overrideAttrs (old: {
+
             version = "1.26.4";  # Specify the compatible version
+
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.emacsPackages.msvc
             ];
+            shellHook = ''
+            export CC="${final.emacsPackages.msvc}/bin/gcc.exe"
+            '';
+
+
           });
           mupdf = prev.mupdf.overrideAttrs (old: {
+            dontStrip = false;
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.pkg-config
               final.libclang
@@ -68,6 +79,7 @@
           });
 
           pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
+            dontStrip = false;
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.mupdf
               final.pkg-config
@@ -85,6 +97,7 @@
       ];
     };
 
+
     # Use cachix to cache NVIDIA-related packages
     nvidiaCache = cachix.lib.mkCachixCache {
       inherit (pkgs) lib;
@@ -92,6 +105,8 @@
       publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
       secretKey = null;  # Not needed for pulling from the cache
     };
+
+    direnv = pkgs.direnv;  # Include direnv for environment management
 
     # Define the C++ toolchain with Clang and GCC
     clangVersion = "16";   # Version of Clang
@@ -103,6 +118,7 @@
     clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
       gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
     });
+    
 
     # Poetry to Nix package translation with specific build requirements
     pypkgs-build-requirements = {
@@ -157,8 +173,9 @@
 
       # Native build inputs for dependencies (e.g., C++ dependencies)
       nativeBuildInputs = with pkgs; [
+        cudaPackages.saxpy
         python311Packages.pip
-        python311Packages.setuptools
+        setuptools
         python311Packages.numpy
         python311Packages.torch-bin
         python311Packages.torchvision-bin

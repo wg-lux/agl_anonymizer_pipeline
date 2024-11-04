@@ -100,7 +100,9 @@ Run the Module: Execute the main script to process the images.
 python main.py --image images/your_image.jpg --east_path=None --device="lympus_cv_1500" --validation=true --min_confidence=0.5 --width=320 --height=320
 ```
 
-Arguments can be set to call the function with different settings.
+Arguments can be set through flags or the system call to change the module settings.
+
+
 
 
 ## Parameters of the `main` function
