@@ -126,7 +126,13 @@
     });
     
 
-
+    # Poetry to Nix package translation with specific build requirements
+    pypkgs-build-requirements = {
+      conllu = [ "setuptools" ];
+      janome = [ "setuptools" ];
+      pptree = [ "setuptools" ];
+      wikipedia-api = [ "setuptools" ];
+    };
 
     lib = pkgs.lib;
     poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
@@ -150,7 +156,7 @@
               ) build-requirements
             );
           })
-      )
+      ) pypkgs-build-requirements
     );
 
 
