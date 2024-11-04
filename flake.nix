@@ -44,6 +44,11 @@
           });
           numpy = prev.numpy.overrideAttrs (old: {
             version = "1.26.4";
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.pkg-config
+              final.gcc
+              final.libclang
+            ];
             postPatch = ''
               substituteInPlace numpy/distutils/command/config.py \
                 --replace "from distutils.msvccompiler import get_build_version as get_build_msvc_version" ""
