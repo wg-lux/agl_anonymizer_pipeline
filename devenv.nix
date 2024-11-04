@@ -6,7 +6,6 @@
 
   # https://devenv.sh/packages/
   packages = [ 
-    pkgs.devenv
     pkgs.git
     pkgs.python311
     pkgs.libcxx
