@@ -160,7 +160,6 @@
       nativeBuildInputs = with pkgs; [
         cudaPackages.saxpy
         python311Packages.pip
-        python311Packages.numpy
         python311Packages.torch-bin
         python311Packages.torchvision-bin
         python311Packages.torchaudio-bin
@@ -206,6 +205,7 @@
       shellHook = ''
         print "Setting up development environment"
         export LD_LIBRARY_PATH="${gccPkg.libc}/lib:$LD_LIBRARY_PATH"
+        poetry install
   '';
     };
   };

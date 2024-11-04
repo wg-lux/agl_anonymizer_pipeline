@@ -15,6 +15,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+numpy = "1.26.4"
 spacy = "=3.7.5"
 spacy-lookups-data = "^1.0.5"
 gender-guesser = "^0.4.0"
@@ -32,7 +33,6 @@ torchvision = "^0.19.1"
 torchaudio = "^2.4.1"
 # opencv-python = "^4.10.0"
 PyMuPDF = "=1.23.26"
-numpy = "1.26.4"
 
 
 
