@@ -61,6 +61,7 @@
               prev.freeglut
               prev.libGLU
               prev.libjpeg_turbo
+
               # Add tesseract if needed
               prev.tesseract
             ];
@@ -187,7 +188,8 @@
         python311Packages.hatchling
         maturin
         python311Packages.safetensors
-
+        python311Packages.setuptools
+        python311Packages.ftfy
         python311Packages.tokenizers
       ];
 
