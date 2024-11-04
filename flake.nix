@@ -160,7 +160,6 @@
       nativeBuildInputs = with pkgs; [
         cudaPackages.saxpy
         python311Packages.pip
-        setuptools
         python311Packages.numpy
         python311Packages.torch-bin
         python311Packages.torchvision-bin
