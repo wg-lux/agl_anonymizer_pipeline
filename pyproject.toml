@@ -26,9 +26,9 @@ imutils = "0.5.4"
 opencv-python-headless = "4.9.0.80"
 flair = "0.14.0"
 transformers = "4.26.0"
-torch = "2.1.1"
-torchvision = "0.15.1"
-torchaudio = "0.10.0"
+torch = "2.1.0"
+torchvision = "0.16.0"
+torchaudio = "2.1.0"
 
 
 [tool.poetry.group.nixProvided.dependencies]
