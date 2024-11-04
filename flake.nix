@@ -195,6 +195,7 @@
         pkgs.python311Packages.safetensors
         pkgs.cargo
         pkgs.rustc
+        pkgs.libclang
        ];  # CUDA toolkit version for devShell
       shellHook = ''
         print "Setting up development environment"
