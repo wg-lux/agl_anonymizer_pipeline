@@ -43,18 +43,13 @@
             version = "59.5.0";  # A stable version with distutils support
           });
           numpy = prev.numpy.overrideAttrs (old: {
-
-            version = "1.26.4";  # Specify the compatible version
-
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.emacsPackages.msvc
-            ];
-            shellHook = ''
-            export disutils.msvccompiler="${final.emacsPackages.msvc}/bin/gcc.exe"
+            version = "1.26.4";
+            postPatch = ''
+              substituteInPlace numpy/distutils/command/config.py \
+                --replace "from distutils.msvccompiler import get_build_version as get_build_msvc_version" ""
             '';
-
-
           });
+
           mupdf = prev.mupdf.overrideAttrs (old: {
             dontStrip = false;
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
