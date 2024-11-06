@@ -82,12 +82,23 @@
             '';
           });
 
+          hatchling = prev.python311Packages.hatchling.overrideAttrs (old: {
+            dontStrip = false;
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.python311
+            ];
+
+          });
+
+
           tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
+
+
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.cargo
               final.rustc
               final.libclang
-              final.python311Packages.hatchling
+              final.hatchling
               final.python311Packages.setuptools
             ];
             postInstall = ''
@@ -97,11 +108,36 @@
             '';
           });
 
+          ftfy = prev.python311Packages.ftfy.overrideAttrs (old: {
+            dontStrip = false;
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.python311
+              final.hatchling
+            ];
+          });
+
+          maturin = prev.maturin.overrideAttrs (old: {
+            dontStrip = false;
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.rustc
+              final.rustup
+              final.cargo
+            ];
+          });
+
+          safetensors = prev.python311Packages.safetensors.overrideAttrs (old: {
+            dontStrip = false;
+            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+              final.maturin
+            ];
+          });
 
 
         })
 
       ];
+
+
 
 
     };
@@ -176,20 +212,25 @@
 
       # Native build inputs for dependencies (e.g., C++ dependencies)
       nativeBuildInputs = with pkgs; [
+
         cudaPackages.saxpy
         cudaPackages.cudatoolkit
         cudaPackages.cudnn
+        python311
         python311Packages.pip
         gccPkg.libc
         cargo
         rustc
+        rustup
         mupdf
         pymupdf   
-        python311Packages.hatchling
         maturin
-        python311Packages.safetensors
+        hatchling
+        ftfy
+        python311Packages.sympy
+        python311Packages.tomlkit
+        safetensors
         python311Packages.setuptools
-        python311Packages.ftfy
         python311Packages.tokenizers
       ];
 
@@ -207,6 +248,12 @@
       ];
       cudaSupport = true;  # Enable CUDA support in the Nix environment
     };
+    configureFlags = [
+      "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
+
+      "--prefix=$out"
+      "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
+    ];
 
 
     # Package definition for building the poetry application
@@ -218,16 +265,18 @@
     # Development shell for setting up the environment
     devShells.x86_64-linux.default = pkgs.mkShell {
       preShellHook = ''
-        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.cudnn.lib}:$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:$LD_LIBRARY_PATH"
 
       '';  # Set the LD_LIBRARY_PATH for CUDA libraries
+
 
       inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
       nativeBuildInputs = [ 
-        pkgs.python311Packages.hatchling
+        pkgs.hatchling
         pkgs.maturin
-        pkgs.python311Packages.safetensors
+        safetensors
+        pkgs.python311Packages.setuptools
         pkgs.cargo
         pkgs.rustc
         pkgs.libclang

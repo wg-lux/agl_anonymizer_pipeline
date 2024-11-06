@@ -102,6 +102,27 @@ python main.py --image images/your_image.jpg --east_path=None --device="lympus_c
 
 Arguments can be set through flags or the system call to change the module settings.
 
+The `ap` object is an instance of the `argparse.ArgumentParser` class, which is used to parse command-line arguments. It allows the user to specify various options and arguments when running the script.
+
+The `add_argument` method is used to define each argument that the script can accept. Here is a description of each argument:
+
+- `-i` or `--image`: Specifies the path to the input image. This argument is required and expects a string value.
+
+- `-east` or `--east`: Specifies the path to the input EAST text detector. This argument is optional and expects a string value. When set to None, the EAST Model is fetched from Github (recommended, therefore setting this flag is only necessary when running a local model for the EAST Text detection.)
+
+- `-d` or `--device`: Specifies the device name used to set the correct text settings. This argument is optional and defaults to "olympus_cv_1500". It expects a string value.
+
+- `-v` or `--validation`: Specifies if validation through the AGL-Validator is required. This argument is optional and defaults to `False`. It expects a boolean value.
+
+- `-c` or `--min-confidence`: Specifies the minimum probability required to inspect a region in EAST Text Detection. This argument is optional and defaults to `0.5`. It expects a float value.
+
+- `-w` or `--width`: Specifies the resized image width (should be a multiple of 32). This argument is optional and defaults to `320`. It expects an integer value.
+
+- `-e` or `--height`: Specifies the resized image height (should be a multiple of 32). This argument is optional and defaults to `320`. It expects an integer value.
+
+These arguments allow the user to customize the behavior of the script by providing different input images, text detectors, device names, validation options, confidence thresholds, and image dimensions.
+
+To use the script, the user would provide these arguments along with their corresponding values when running the script from the command line.
 
 
 
