@@ -122,6 +122,9 @@
               final.rustc
               final.rustup
               final.cargo
+              final.libclang
+              final.stdenv
+
             ];
           });
 
@@ -225,6 +228,7 @@
         rustup
         mupdf
         pymupdf   
+        stdenv
         maturin
         hatchling
         ftfy
@@ -278,7 +282,6 @@
         pkgs.maturin
         pkgs.safetensors
         pkgs.python311Packages.setuptools
-        pkgs.safetensors
         pkgs.cargo
         pkgs.rustc
         pkgs.libclang
