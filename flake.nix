@@ -134,17 +134,9 @@
               final.maturin
             ];
           });
-
-
         })
-
       ];
-
-
-
-
     };
-
 
     # Use cachix to cache NVIDIA-related packages
     nvidiaCache = cachix.lib.mkCachixCache {
@@ -237,6 +229,9 @@
         safetensors
         python311Packages.setuptools
         python311Packages.tokenizers
+        python311Packages.torch-bin
+        python311Packages.torchvision-bin
+        python311Packages.torchaudio-bin
       ];
 
       };
@@ -285,7 +280,9 @@
         pkgs.cargo
         pkgs.rustc
         pkgs.libclang
-       ];  # CUDA toolkit version for devShell
+       ];  
+      
+      # CUDA toolkit version for devShell
       postShellHook =  ''
 
         poetry install  # Install the poetry application in the devShell
