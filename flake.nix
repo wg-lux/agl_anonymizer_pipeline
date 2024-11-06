@@ -174,6 +174,7 @@
       wikipedia-api = [ "setuptools" ];
       django-flat-theme = [ "setuptools" ];
       django-flat-responsive = [ "setuptools" ];
+      segtok = [ "setuptools" ];
     };
 
     lib = pkgs.lib;
@@ -275,8 +276,9 @@
       nativeBuildInputs = [ 
         pkgs.hatchling
         pkgs.maturin
-        safetensors
+        pkgs.safetensors
         pkgs.python311Packages.setuptools
+        pkgs.safetensors
         pkgs.cargo
         pkgs.rustc
         pkgs.libclang
