@@ -228,6 +228,7 @@
   
     perSystem = { system, pkgs, poetry2nix, ... }:
     {
+      systems = [ "x86_64-linux" ];  # Define the system architecture
       packages.default = {
         inputs = inputs;
         # Define poetryApp here at the correct scope
