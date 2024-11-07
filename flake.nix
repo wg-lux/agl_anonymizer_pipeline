@@ -271,7 +271,7 @@
             export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
             maturin develop
           '';
-          buildInputs = [self.packages.${system}.poetryApp];
+          buildInputs = [self.packages.${systems}.poetryApp];
           packages = [pkgs.poetry];
           nativeBuildInputs = with pkgs; [
             cudaPackages_11.cudatoolkit
