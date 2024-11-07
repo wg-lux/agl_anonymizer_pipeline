@@ -30,21 +30,21 @@
 
   };
 
-  outputs = inputs@{ flake-parts, ... }:
+  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, nci, ... }:
   flake-parts.lib.mkFlake { inherit inputs; } {
-    
-    imports = [
-      inputs.nci.flakeModule
+
+    systems = [
+        "x86_64-linux"
     ];
     
     flake = {
       description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
       inputs = inputs;
-      outputs = { self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts }:  
+      outputs = { self, nixpkgs, cachix, rust-overlay, flake-parts }:  
 
       
       let
-        system = "x86_64-linux";  # Define the system architecture
+        system = system; # Define the system architecture
         pkgs = import nixpkgs {
           inherit system;
           config = {
@@ -209,23 +209,43 @@
           ) pypkgs-build-requirements
         );
 
-        # Poetry application setup
-        poetryApp = poetry2nixProcessed.mkPoetryApplication {
+
+      in {
+        # Configuration for Nix binary caches and CUDA support
+        nixConfig = {
+          binary-caches = [
+            nvidiaCache.binaryCachePublicUrl
+          ];
+          binary-cache-public-keys = [
+            nvidiaCache.publicKey
+          ];
+          cudaSupport = true;  # Enable CUDA support in the Nix environment
+        };
+        configureFlags = [
+          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
+
+          "--prefix=$out"
+          "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
+        ];
+      };
+    };
+  
+    perSystem = { system, pkgs, poetry2nix, ... }:
+    {
+      packages.default = {
+        inputs = inputs;
+        # Define poetryApp here at the correct scope
+        poetryApp = poetry2nix.lib.mkPoetryApplication {
           python = pkgs.python311;
           projectDir = ./.;  # Points to the project directory
-          src = lib.cleanSource ./.;  # Clean the source code
-          overrides = p2n-overrides;  # Apply package overrides for special requirements
-
+          src = pkgs.lib.cleanSource ./.;  # Clean the source code
 
           # Native build inputs for dependencies (e.g., C++ dependencies)
           nativeBuildInputs = with pkgs; [
-
             cudaPackages.saxpy
             cudaPackages.cudatoolkit
             cudaPackages.cudnn
             python311Packages.pip
-            gccPkg.libc
-
             cargo
             rustc
             rustup
@@ -245,79 +265,40 @@
             python311Packages.torchaudio-bin
           ];
 
+          outputs = { self, poetry2nix, ...}@inputs:{
+            poetryApp = self;
           };
 
-
-      in {
-        # Configuration for Nix binary caches and CUDA support
-        nixConfig = {
-          binary-caches = [
-            nvidiaCache.binaryCachePublicUrl
-          ];
-          binary-cache-public-keys = [
-            nvidiaCache.publicKey
-          ];
-          cudaSupport = true;  # Enable CUDA support in the Nix environment
-        };
-        configureFlags = [
-          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
-
-          "--prefix=$out"
-          "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
-        ];
-
-
-        # Package definition for building the poetry application
-        packages.x86_64-linux.poetryApp = poetryApp;
-
-        # Default package points to the poetry application
-        packages.x86_64-linux.default = poetryApp;
-
-        # Development shell for setting up the environment
-        devShells.x86_64-linux.default = pkgs.mkShell {
+        # Development shell
+        devShells.default = pkgs.mkShell {
           preShellHook = ''
             export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
             maturin develop
-
-          '';  # Set the LD_LIBRARY_PATH for CUDA libraries
-
-
-          buildInputs = [self.packages.x86_64-linux.poetryApp];  # Include poetryApp in the build environment
-          packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-          nativeBuildInputs = 
-          [
-          pkgs.cudaPackages_11.cudatoolkit 
-          pkgs.cudaPackages_11.cudnn
-          pkgs.python311Packages.pip
-          pkgs.gccPkg.libc
-          pkgs.cargo
-          pkgs.rustc
-          pkgs.rustup
-          pkgs.stdenv
-          pkgs.setuptools 
-          pkgs.rust-overlay
-          pkgs.maturin
-          pkgs.hatchling
-          pkgs.ftfy
-          pkgs.python311Packages.sympy
-          ];
-
-
-          
-          # CUDA toolkit version for devShell
-          postShellHook =  ''
-
-            poetry install  # Install the poetry application in the devShell
           '';
+          buildInputs = [self.packages.${system}.poetryApp];
+          packages = [pkgs.poetry];
+          nativeBuildInputs = with pkgs; [
+            cudaPackages_11.cudatoolkit
+            cudaPackages_11.cudnn
+            python311Packages.pip
+            cargo
+            rustc
+            rustup
+            stdenv
+            python311Packages.sympy
+          ];
+          postShellHook = "poetry install";
         };
+      
+
       };
     };
-    systems = [
-      # systems for which you want to build the `perSystem` attributes
-      "x86_64-linux"
-      # ...
-    ];
-    perSystem = { config, ... }: {
-    };
   };
+};
+
 }
+
+
+
+
+
