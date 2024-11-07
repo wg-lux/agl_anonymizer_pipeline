@@ -88,10 +88,9 @@
             dontStrip = false;
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               final.python311
+              final.python311Packages.gdown
             ];
-
           });
-
 
           tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
 
@@ -197,9 +196,9 @@
               ) build-requirements
             );
           })
+          
       ) pypkgs-build-requirements
     );
-
 
     # Poetry application setup
     poetryApp = poetry2nixProcessed.mkPoetryApplication {
@@ -224,6 +223,8 @@
         mupdf
         pymupdf   
         stdenv
+        python311Packages.gdown
+
         maturin
         hatchling
         ftfy
