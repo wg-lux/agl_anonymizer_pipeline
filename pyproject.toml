@@ -13,6 +13,10 @@ cli = "app.main:main"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[build-system.rust]
+requires = ["maturin"]
+build-backend = "maturin"
+
 [tool.poetry.dependencies]
 python = "3.11.9"
 numpy = "2.1.3"

@@ -1,0 +1,12 @@
+[package]
+name = "safetensors"
+version = "0.4.3"
+edition = "2018"
+
+[dependencies]
+pyo3 = { version = "0.22.5", features = ["extension-module"] }
+
+exclude = [ "rust-toolchain", "target/*", "Cargo.lock"]
+
+[lib]
+crate-type = ["cdylib"]

@@ -24,12 +24,14 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
+
 
   };
 
 
   # Outputs: Define the packages, devShell, and configurations
-  outputs = { self, nixpkgs, poetry2nix, cachix }:  
+  outputs = { self, nixpkgs, poetry2nix, cachix, rust-overlay }:  
 
   
   let
@@ -115,6 +117,13 @@
               final.hatchling
             ];
           });
+          rust-overlay.overlays.default.rust-bin.stable.latest.default = rust-overlay.overlays.default.rust-bin.stable.latest.default.overrideAttrs (old: {
+            extensions = old.extensions or [] ++ [
+              "rust-src"
+              "rust-analyzer"
+            ];
+          });
+
 
           maturin = prev.maturin.overrideAttrs (old: {
             dontStrip = false;
@@ -128,12 +137,6 @@
             ];
           });
 
-          safetensors = prev.python311Packages.safetensors.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.maturin
-            ];
-          });
         })
       ];
     };
@@ -212,9 +215,9 @@
         cudaPackages.saxpy
         cudaPackages.cudatoolkit
         cudaPackages.cudnn
-        python311
         python311Packages.pip
         gccPkg.libc
+
         cargo
         rustc
         rustup
@@ -226,7 +229,6 @@
         ftfy
         python311Packages.sympy
         python311Packages.tomlkit
-        safetensors
         python311Packages.setuptools
         python311Packages.tokenizers
         python311Packages.torch-bin
@@ -265,22 +267,15 @@
     # Development shell for setting up the environment
     devShells.x86_64-linux.default = pkgs.mkShell {
       preShellHook = ''
-        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
+        maturin develop
 
       '';  # Set the LD_LIBRARY_PATH for CUDA libraries
 
 
-      inputsFrom = [ self.packages.x86_64-linux.poetryApp ];  # Include poetryApp in the dev environment
+      buildInputs = [self.packages.x86_64-linux.poetryApp];  # Include poetryApp in the build environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-      nativeBuildInputs = [ 
-        pkgs.hatchling
-        pkgs.maturin
-        pkgs.safetensors
-        pkgs.python311Packages.setuptools
-        pkgs.cargo
-        pkgs.rustc
-        pkgs.libclang
-       ];  
+
       
       # CUDA toolkit version for devShell
       postShellHook =  ''
