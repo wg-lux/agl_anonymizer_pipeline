@@ -1,5 +1,7 @@
 # agl_anonymizer_pipeline
 
+## !! Unstable Install - packaging is still under development. !!
+
 agl_anonymizer_pipeline is a comprehensive Python API designed for image processing with specific functionalities for anonymizing, saving, blurring, and OCR (Optical Character Recognition). This tool is particularly useful in scenarios where sensitive information needs to be redacted from images or documents while retaining the overall context and visual structure.
 
 
