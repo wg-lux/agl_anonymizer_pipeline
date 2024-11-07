@@ -25,281 +25,299 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
-
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    nci.url = "github:yusdacra/nix-cargo-integration";
 
   };
 
-
-  # Outputs: Define the packages, devShell, and configurations
-  outputs = { self, nixpkgs, poetry2nix, cachix, rust-overlay }:  
-
-  
-  let
-    system = "x86_64-linux";  # Define the system architecture
-    pkgs = import nixpkgs {
-      inherit system;
-      config = {
-        allowUnfree = true;
-        cudaSupport = true;  # Enable CUDA support in the configuration
-        allowBroken = true;  # Allow broken packages for development
-      };
-      overlays = [
-        (final: prev: {
-
-          mupdf = prev.mupdf.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.pkg-config
-              final.libclang
-            ];
-            buildInputs = old.buildInputs or [] ++ [
-              # Include necessary dependencies
-              prev.autoPatchelfHook
-              prev.openjpeg
-              prev.jbig2dec
-              prev.freetype
-              prev.harfbuzz
-              prev.gumbo
-              prev.freeglut
-              prev.libGLU
-              prev.libjpeg_turbo
-
-              # Add tesseract if needed
-              prev.tesseract
-            ];
-            makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
-          });
-
-          pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.mupdf
-              final.pkg-config
-              final.libclang
-            ];
-            postInstall = ''
-              echo "Linking mupdf libraries"
-              export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
-              find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
-            '';
-          });
-
-          hatchling = prev.python311Packages.hatchling.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.python311
-              final.python311Packages.gdown
-            ];
-          });
-
-          tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
-
-
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.cargo
-              final.rustc
-              final.libclang
-              final.hatchling
-              final.python311Packages.setuptools
-            ];
-            postInstall = ''
-              echo "Linking tokenizers libraries"
-              export LD_LIBRARY_PATH="${final.cudatoolkit}/lib:$LD_LIBRARY_PATH"
-              find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib {} \;
-            '';
-          });
-
-          ftfy = prev.python311Packages.ftfy.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.python311
-              final.hatchling
-            ];
-          });
-          rust-overlay.overlays.default.rust-bin.stable.latest.default = rust-overlay.overlays.default.rust-bin.stable.latest.default.overrideAttrs (old: {
-            extensions = old.extensions or [] ++ [
-              "rust-src"
-              "rust-analyzer"
-            ];
-          });
-
-
-          maturin = prev.maturin.overrideAttrs (old: {
-            dontStrip = false;
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.rustc
-              final.rustup
-              final.cargo
-              final.libclang
-              final.stdenv
-
-            ];
-          });
-
-        })
-      ];
-    };
-
-    # Use cachix to cache NVIDIA-related packages
-    nvidiaCache = cachix.lib.mkCachixCache {
-      inherit (pkgs) lib;
-      name = "nvidia";
-      publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
-      secretKey = null;  # Not needed for pulling from the cache
-    };
-
-    direnv = pkgs.direnv;  # Include direnv for environment management
-
-    # Define the C++ toolchain with Clang and GCC
-    clangVersion = "16";   # Version of Clang
-    gccVersion = "13";     # Version of GCC
-    llvmPkgs = pkgs."llvmPackages_${clangVersion}";  # LLVM toolchain
-    gccPkg = pkgs."gcc${gccVersion}";  # GCC package for compiling
-
-    # Create a clang toolchain with libstdc++ from GCC
-    clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
-      gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
-    });
+  outputs = inputs@{ flake-parts, ... }:
+  flake-parts.lib.mkFlake { inherit inputs; } {
     
-
-    # Poetry to Nix package translation with specific build requirements
-    pypkgs-build-requirements = {
-      gender-guesser = [ "setuptools" ];
-      conllu = [ "setuptools" ];
-      janome = [ "setuptools" ];
-      pptree = [ "setuptools" ];
-      wikipedia-api = [ "setuptools" ];
-      django-flat-theme = [ "setuptools" ];
-      django-flat-responsive = [ "setuptools" ];
-      segtok = [ "setuptools" ];
-    };
-
-    lib = pkgs.lib;
-    poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-
-    p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
-      builtins.mapAttrs (package: build-requirements:
-        if package == "tokenizers" then
-          prev.rustc.overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-              final.cargo
-              final.rustc
-              final.libclang
-            ];
-          })
-
-        else
-          (builtins.getAttr package prev).overridePythonAttrs (old: {
-            buildInputs = (old.buildInputs or [ ]) ++ (
-              builtins.map (pkg:
-                if builtins.isString pkg then builtins.getAttr pkg prev else pkg
-              ) build-requirements
-            );
-          })
-          
-      ) pypkgs-build-requirements
-    );
-
-    # Poetry application setup
-    poetryApp = poetry2nixProcessed.mkPoetryApplication {
-      python = pkgs.python311;
-      projectDir = ./.;  # Points to the project directory
-      src = lib.cleanSource ./.;  # Clean the source code
-      overrides = p2n-overrides;  # Apply package overrides for special requirements
-
-
-      # Native build inputs for dependencies (e.g., C++ dependencies)
-      nativeBuildInputs = with pkgs; [
-
-        cudaPackages.saxpy
-        cudaPackages.cudatoolkit
-        cudaPackages.cudnn
-        python311Packages.pip
-        gccPkg.libc
-
-        cargo
-        rustc
-        rustup
-        mupdf
-        pymupdf   
-        stdenv
-        python311Packages.gdown
-        maturin
-        hatchling
-        ftfy
-        python311Packages.sympy
-        python311Packages.tomlkit
-        python311Packages.setuptools
-        python311Packages.tokenizers
-        python311Packages.torch-bin
-        python311Packages.torchvision-bin
-        python311Packages.torchaudio-bin
-      ];
-
-      };
-
-
-  in {
-    # Configuration for Nix binary caches and CUDA support
-    nixConfig = {
-      binary-caches = [
-        nvidiaCache.binaryCachePublicUrl
-      ];
-      binary-cache-public-keys = [
-        nvidiaCache.publicKey
-      ];
-      cudaSupport = true;  # Enable CUDA support in the Nix environment
-    };
-    configureFlags = [
-      "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
-
-      "--prefix=$out"
-      "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
+    imports = [
+      inputs.nci.flakeModule
     ];
-
-
-    # Package definition for building the poetry application
-    packages.x86_64-linux.poetryApp = poetryApp;
-
-    # Default package points to the poetry application
-    packages.x86_64-linux.default = poetryApp;
-
-    # Development shell for setting up the environment
-    devShells.x86_64-linux.default = pkgs.mkShell {
-      preShellHook = ''
-        export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
-        maturin develop
-
-      '';  # Set the LD_LIBRARY_PATH for CUDA libraries
-
-
-      buildInputs = [self.packages.x86_64-linux.poetryApp];  # Include poetryApp in the build environment
-      packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
-      nativeBuildInputs = 
-      [
-      pkgs.cudaPackages_11.cudatoolkit 
-      pkgs.cudaPackages_11.cudnn
-      pkgs.python311Packages.pip
-      pkgs.gccPkg.libc
-      pkgs.cargo
-      pkgs.rustc
-      pkgs.rustup
-      pkgs.stdenv
-      pkgs.setuptools 
-      pkgs.rust-overlay
-      pkgs.maturin
-      pkgs.hatchling
-      pkgs.ftfy
-      pkgs.python311Packages.sympy
-      ];
-
+    
+    flake = {
+      description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
+      inputs = inputs;
+      outputs = { self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts }:  
 
       
-      # CUDA toolkit version for devShell
-      postShellHook =  ''
+      let
+        system = "x86_64-linux";  # Define the system architecture
+        pkgs = import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+            cudaSupport = true;  # Enable CUDA support in the configuration
+            allowBroken = true;  # Allow broken packages for development
+          };
+          overlays = [
+            (final: prev: {
 
-        poetry install  # Install the poetry application in the devShell
-      '';
+              mupdf = prev.mupdf.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.pkg-config
+                  final.libclang
+                ];
+                buildInputs = old.buildInputs or [] ++ [
+                  # Include necessary dependencies
+                  prev.autoPatchelfHook
+                  prev.openjpeg
+                  prev.jbig2dec
+                  prev.freetype
+                  prev.harfbuzz
+                  prev.gumbo
+                  prev.freeglut
+                  prev.libGLU
+                  prev.libjpeg_turbo
+
+                  # Add tesseract if needed
+                  prev.tesseract
+                ];
+                makeFlags = old.makeFlags or [];  # Preserve existing makeFlags
+              });
+
+              pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.mupdf
+                  final.pkg-config
+                  final.libclang
+                ];
+                postInstall = ''
+                  echo "Linking mupdf libraries"
+                  export LD_LIBRARY_PATH="${final.mupdf}/lib:$LD_LIBRARY_PATH"
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.mupdf}/lib {} \;
+                '';
+              });
+
+              hatchling = prev.python311Packages.hatchling.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.python311Packages.gdown
+                ];
+              });
+
+              tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
+
+
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.cargo
+                  final.rustc
+                  final.libclang
+                  final.hatchling
+                  final.python311Packages.setuptools
+                ];
+                postInstall = ''
+                  echo "Linking tokenizers libraries"
+                  export LD_LIBRARY_PATH="${final.cudatoolkit}/lib:$LD_LIBRARY_PATH"
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib {} \;
+                '';
+              });
+
+              ftfy = prev.python311Packages.ftfy.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
+              rust-overlay.overlays.default.rust-bin.stable.latest.default = rust-overlay.overlays.default.rust-bin.stable.latest.default.overrideAttrs (old: {
+                extensions = old.extensions or [] ++ [
+                  "rust-src"
+                  "rust-analyzer"
+                ];
+              });
+
+
+              maturin = prev.maturin.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.rustc
+                  final.rustup
+                  final.cargo
+                  final.libclang
+                  final.stdenv
+
+                ];
+              });
+
+            })
+          ];
+        };
+
+        # Use cachix to cache NVIDIA-related packages
+        nvidiaCache = cachix.lib.mkCachixCache {
+          inherit (pkgs) lib;
+          name = "nvidia";
+          publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
+          secretKey = null;  # Not needed for pulling from the cache
+        };
+
+        direnv = pkgs.direnv;  # Include direnv for environment management
+
+        # Define the C++ toolchain with Clang and GCC
+        clangVersion = "16";   # Version of Clang
+        gccVersion = "13";     # Version of GCC
+        llvmPkgs = pkgs."llvmPackages_${clangVersion}";  # LLVM toolchain
+        gccPkg = pkgs."gcc${gccVersion}";  # GCC package for compiling
+
+        # Create a clang toolchain with libstdc++ from GCC
+        clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
+          gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
+        });
+        
+
+        # Poetry to Nix package translation with specific build requirements
+        pypkgs-build-requirements = {
+          gender-guesser = [ "setuptools" ];
+          conllu = [ "setuptools" ];
+          janome = [ "setuptools" ];
+          pptree = [ "setuptools" ];
+          wikipedia-api = [ "setuptools" ];
+          django-flat-theme = [ "setuptools" ];
+          django-flat-responsive = [ "setuptools" ];
+          segtok = [ "setuptools" ];
+        };
+
+        lib = pkgs.lib;
+        poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
+
+        p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
+          builtins.mapAttrs (package: build-requirements:
+            if package == "tokenizers" then
+              prev.rustc.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.cargo
+                  final.rustc
+                  final.libclang
+                ];
+              })
+
+            else
+              (builtins.getAttr package prev).overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ (
+                  builtins.map (pkg:
+                    if builtins.isString pkg then builtins.getAttr pkg prev else pkg
+                  ) build-requirements
+                );
+              })
+              
+          ) pypkgs-build-requirements
+        );
+
+        # Poetry application setup
+        poetryApp = poetry2nixProcessed.mkPoetryApplication {
+          python = pkgs.python311;
+          projectDir = ./.;  # Points to the project directory
+          src = lib.cleanSource ./.;  # Clean the source code
+          overrides = p2n-overrides;  # Apply package overrides for special requirements
+
+
+          # Native build inputs for dependencies (e.g., C++ dependencies)
+          nativeBuildInputs = with pkgs; [
+
+            cudaPackages.saxpy
+            cudaPackages.cudatoolkit
+            cudaPackages.cudnn
+            python311Packages.pip
+            gccPkg.libc
+
+            cargo
+            rustc
+            rustup
+            mupdf
+            pymupdf   
+            stdenv
+            python311Packages.gdown
+            maturin
+            hatchling
+            ftfy
+            python311Packages.sympy
+            python311Packages.tomlkit
+            python311Packages.setuptools
+            python311Packages.tokenizers
+            python311Packages.torch-bin
+            python311Packages.torchvision-bin
+            python311Packages.torchaudio-bin
+          ];
+
+          };
+
+
+      in {
+        # Configuration for Nix binary caches and CUDA support
+        nixConfig = {
+          binary-caches = [
+            nvidiaCache.binaryCachePublicUrl
+          ];
+          binary-cache-public-keys = [
+            nvidiaCache.publicKey
+          ];
+          cudaSupport = true;  # Enable CUDA support in the Nix environment
+        };
+        configureFlags = [
+          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
+
+          "--prefix=$out"
+          "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
+        ];
+
+
+        # Package definition for building the poetry application
+        packages.x86_64-linux.poetryApp = poetryApp;
+
+        # Default package points to the poetry application
+        packages.x86_64-linux.default = poetryApp;
+
+        # Development shell for setting up the environment
+        devShells.x86_64-linux.default = pkgs.mkShell {
+          preShellHook = ''
+            export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
+            maturin develop
+
+          '';  # Set the LD_LIBRARY_PATH for CUDA libraries
+
+
+          buildInputs = [self.packages.x86_64-linux.poetryApp];  # Include poetryApp in the build environment
+          packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
+          nativeBuildInputs = 
+          [
+          pkgs.cudaPackages_11.cudatoolkit 
+          pkgs.cudaPackages_11.cudnn
+          pkgs.python311Packages.pip
+          pkgs.gccPkg.libc
+          pkgs.cargo
+          pkgs.rustc
+          pkgs.rustup
+          pkgs.stdenv
+          pkgs.setuptools 
+          pkgs.rust-overlay
+          pkgs.maturin
+          pkgs.hatchling
+          pkgs.ftfy
+          pkgs.python311Packages.sympy
+          ];
+
+
+          
+          # CUDA toolkit version for devShell
+          postShellHook =  ''
+
+            poetry install  # Install the poetry application in the devShell
+          '';
+        };
+      };
+    };
+    systems = [
+      # systems for which you want to build the `perSystem` attributes
+      "x86_64-linux"
+      # ...
+    ];
+    perSystem = { config, ... }: {
     };
   };
 }
