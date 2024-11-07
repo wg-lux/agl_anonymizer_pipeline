@@ -26,11 +26,10 @@
     };
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nci.url = "github:yusdacra/nix-cargo-integration";
 
   };
 
-  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, nci, ... }:
+  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, ... }:
   flake-parts.lib.mkFlake { inherit inputs; } {
 
     systems = [
@@ -44,7 +43,7 @@
 
       
       let
-        system = system; # Define the system architecture
+        system = "x86_64-linux"; # Define the system architecture
         pkgs = import nixpkgs {
           inherit system;
           config = {
