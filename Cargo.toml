@@ -5,8 +5,9 @@ edition = "2018"
 
 [dependencies]
 pyo3 = { version = "0.22.5", features = ["extension-module"] }
+maturin = {version = "1.5.1"}
 
-exclude = [ "rust-toolchain", "target/*", "Cargo.lock"]
 
 [lib]
 crate-type = ["cdylib"]
+
