@@ -141,10 +141,7 @@
                   final.stdenv
 
                 ];
-                pkgs.maturin.overrideAttrs (old: {
-                  cargoBuildOptions = old.cargoBuildOptions or [] ++ [ "--no-default-features" "--features=" ];
-                })
-
+                
               });
 
             })
