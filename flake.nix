@@ -224,7 +224,6 @@
         pymupdf   
         stdenv
         python311Packages.gdown
-
         maturin
         hatchling
         ftfy
@@ -276,6 +275,24 @@
 
       buildInputs = [self.packages.x86_64-linux.poetryApp];  # Include poetryApp in the build environment
       packages = [ pkgs.poetry ];  # Install poetry in the devShell for development
+      nativeBuildInputs = 
+      [
+      pkgs.cudaPackages_11.cudatoolkit 
+      pkgs.cudaPackages_11.cudnn
+      pkgs.python311Packages.pip
+      pkgs.gccPkg.libc
+      pkgs.cargo
+      pkgs.rustc
+      pkgs.rustup
+      pkgs.stdenv
+      pkgs.setuptools 
+      pkgs.rust-overlay
+      pkgs.maturin
+      pkgs.hatchling
+      pkgs.ftfy
+      pkgs.python311Packages.sympy
+      ];
+
 
       
       # CUDA toolkit version for devShell
