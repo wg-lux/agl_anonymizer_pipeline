@@ -31,7 +31,8 @@
 
   outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, ... }:
   flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = [ "x86_64-linux" ];  # Define the system architecture
+    systems = [ "x86_64-linux"
+                 ];  # Define the system architecture
     
     flake = {
       description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
@@ -130,6 +131,7 @@
 
 
               maturin = prev.maturin.overrideAttrs (old: {
+                system = "i686-unknown-linux-mu";
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustc
@@ -139,6 +141,10 @@
                   final.stdenv
 
                 ];
+                pkgs.maturin.overrideAttrs (old: {
+                  cargoBuildOptions = old.cargoBuildOptions or [] ++ [ "--no-default-features" "--features=" ];
+                })
+
               });
 
             })
