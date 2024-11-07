@@ -32,9 +32,7 @@
   outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, ... }:
   flake-parts.lib.mkFlake { inherit inputs; } {
 
-    systems = [
-        "x86_64-linux"
-    ];
+    system = "x86_64-linux";
     
     flake = {
       description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
