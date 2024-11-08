@@ -131,7 +131,7 @@
 
 
               maturin = prev.maturin.overrideAttrs (old: {
-                system = "i686-unknown-linux-mu";
+                
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustc
@@ -202,7 +202,7 @@
                   builtins.map (pkg:
                     if builtins.isString pkg then builtins.getAttr pkg prev else pkg
                   ) build-requirements
-                );
+                ); 
               })
               
           ) pypkgs-build-requirements
