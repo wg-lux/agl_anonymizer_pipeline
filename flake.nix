@@ -122,27 +122,9 @@
                   final.hatchling
                 ];
               });
-              rust-overlay.overlays.default.rust-bin.stable.latest.default = rust-overlay.overlays.default.rust-bin.stable.latest.default.overrideAttrs (old: {
-                extensions = old.extensions or [] ++ [
-                  "rust-src"
-                  "rust-analyzer"
-                ];
-              });
 
 
-              maturin = prev.maturin.overrideAttrs (old: {
-                
-                dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.rustc
-                  final.rustup
-                  final.cargo
-                  final.libclang
-                  final.stdenv
-
-                ];
-                
-              });
+              rust = [rust-overlay.overlay];
 
             })
           ];
@@ -245,6 +227,7 @@
             cudaPackages.cudatoolkit
             cudaPackages.cudnn
             python311Packages.pip
+            rust
             cargo
             rustc
             rustup
