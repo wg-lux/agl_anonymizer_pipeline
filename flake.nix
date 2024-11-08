@@ -180,7 +180,7 @@
 
 
         # Define poetryApp here at the correct scope
-        poetryApp = poetry2nix.lib.mkPoetryApplication {
+        poetryApp = poetry2nix.mkPoetryApplication {
           python = pkgs.python311;
           projectDir = self;  # Points to the project directory
           preferWheels = false;  # Disable wheel preference
