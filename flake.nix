@@ -17,6 +17,7 @@
 
   # Inputs: Define where Nix packages, poetry2nix, and cachix are sourced
   inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     poetry2nix.url = "github:nix-community/poetry2nix";
     poetry2nix.inputs.nixpkgs.follows = "nixpkgs"; # Ensure poetry2nix follows nixpkgs for consistency
@@ -26,9 +27,11 @@
     };
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
 
+
   };
 
   outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
   
       let
         system = "x86_64-linux"; # Define the system architecture
@@ -180,40 +183,40 @@
       in
         packages = {
 
-        # Define poetryApp here at the correct scope
-        poetryApp = poetry2nix.mkPoetryApplication {
-          python = pkgs.python311;
-          projectDir = self;  # Points to the project directory
-          preferWheels = false;  # Disable wheel preference
-          src = pkgs.lib.cleanSource ./.;  # Clean the source code
+          # Define poetryApp here at the correct scope
+          poetryApp = poetry2nix.mkPoetryApplication {
+            python = pkgs.python311;
+            projectDir = self;  # Points to the project directory
+            preferWheels = false;  # Disable wheel preference
+            src = pkgs.lib.cleanSource ./.;  # Clean the source code
 
-          # Native build inputs for dependencies (e.g., C++ dependencies)
-          nativeBuildInputs = with pkgs; [
-            cudaPackages.saxpy
-            cudaPackages.cudatoolkit
-            cudaPackages.cudnn
-            python311Packages.pip
-            rust
-            cargo
-            rustc
-            rustup
-            mupdf
-            pymupdf   
-            stdenv
-            python311Packages.gdown
-            maturin
-            hatchling
-            ftfy
-            python311Packages.sympy
-            python311Packages.tomlkit
-            python311Packages.setuptools
-            python311Packages.tokenizers
-            python311Packages.torch-bin
-            python311Packages.torchvision-bin
-            python311Packages.torchaudio-bin
-          ];
-        };
-        default = self.packages.${system}.poetryApp;
+            # Native build inputs for dependencies (e.g., C++ dependencies)
+            nativeBuildInputs = with pkgs; [
+              cudaPackages.saxpy
+              cudaPackages.cudatoolkit
+              cudaPackages.cudnn
+              python311Packages.pip
+              rust
+              cargo
+              rustc
+              rustup
+              mupdf
+              pymupdf   
+              stdenv
+              python311Packages.gdown
+              maturin
+              hatchling
+              ftfy
+              python311Packages.sympy
+              python311Packages.tomlkit
+              python311Packages.setuptools
+              python311Packages.tokenizers
+              python311Packages.torch-bin
+              python311Packages.torchvision-bin
+              python311Packages.torchaudio-bin
+            ];
+          };
+          default = self.packages.${system}.poetryApp;
       };
 
 
@@ -244,6 +247,7 @@
             export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
           '';
           package = with pkgs; [
+            poetry
             cudaPackages_11.cudatoolkit
             cudaPackages_11.cudnn
             python311Packages.pip
@@ -254,7 +258,7 @@
             stdenv
           ];
         };
-      };
+      });
       
 }
 
