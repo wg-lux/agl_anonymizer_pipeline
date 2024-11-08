@@ -28,7 +28,7 @@
 
   };
 
-  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, ... }:
+  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
   
       let
         system = "x86_64-linux"; # Define the system architecture
@@ -40,6 +40,7 @@
             allowBroken = true;  # Allow broken packages for development
           };
           overlays = [
+            (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
 
               mupdf = prev.mupdf.overrideAttrs (old: {
@@ -114,8 +115,6 @@
               });
 
 
-              rust = [rust-overlay.overlay];
-
             })
           ];
         };
@@ -184,7 +183,8 @@
         # Define poetryApp here at the correct scope
         poetryApp = poetry2nix.lib.mkPoetryApplication {
           python = pkgs.python311;
-          projectDir = ./.;  # Points to the project directory
+          projectDir = self;  # Points to the project directory
+          preferWheels = false;  # Disable wheel preference
           src = pkgs.lib.cleanSource ./.;  # Clean the source code
 
           # Native build inputs for dependencies (e.g., C++ dependencies)
@@ -213,6 +213,7 @@
             python311Packages.torchaudio-bin
           ];
         };
+        default = self.packages.${system}.poetryApp;
 
 
       in {
@@ -236,23 +237,20 @@
 
         # Development shell
         devShells.default = pkgs.mkShell {
+          inputsFrom = [self.packages.${system}.poetryApp];
           preShellHook = ''
             export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
-            maturin develop
           '';
-          buildInputs = [self.packages.${systems}.poetryApp];
-          packages = [pkgs.poetry];
-          nativeBuildInputs = with pkgs; [
+          package = with pkgs; [
             cudaPackages_11.cudatoolkit
             cudaPackages_11.cudnn
             python311Packages.pip
+            rust-bin.beta.latest.default
             cargo
             rustc
             rustup
             stdenv
-            python311Packages.sympy
           ];
-          postShellHook = "poetry install";
         };
       };
       
