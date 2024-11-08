@@ -179,6 +179,8 @@
               
           ) pypkgs-build-requirements
         );
+        in
+        {
         packages = {
 
           # Define poetryApp here at the correct scope
@@ -217,8 +219,6 @@
           default = self.packages.${system}.poetryApp;
       };
 
-
-      in {
         # Configuration for Nix binary caches and CUDA support
         nixConfig = {
           binary-caches = [
@@ -235,7 +235,6 @@
           "--prefix=$out"
           "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
         ];
-        defaultPackage.${system} = poetryApp;
   
 
         # Development shell
@@ -256,6 +255,7 @@
             stdenv
           ];
         };
+       
       });
       
 }
