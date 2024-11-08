@@ -177,7 +177,8 @@
               
           ) pypkgs-build-requirements
         );
-
+      in
+        packages = {
 
         # Define poetryApp here at the correct scope
         poetryApp = poetry2nix.mkPoetryApplication {
@@ -213,6 +214,7 @@
           ];
         };
         default = self.packages.${system}.poetryApp;
+      };
 
 
       in {
