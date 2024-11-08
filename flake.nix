@@ -233,6 +233,7 @@
           "--prefix=$out"
           "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
         ];
+        defaultPackage.${system} = poetryApp;
   
 
         # Development shell
