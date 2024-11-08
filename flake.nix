@@ -30,9 +30,8 @@
 
   };
 
-  outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-  
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
+    flake-utils.lib.eachDefaultSystem (system:  
       let
         system = "x86_64-linux"; # Define the system architecture
         pkgs = import nixpkgs {
@@ -180,7 +179,6 @@
               
           ) pypkgs-build-requirements
         );
-      in
         packages = {
 
           # Define poetryApp here at the correct scope
