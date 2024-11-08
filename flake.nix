@@ -25,21 +25,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
-    flake-parts.url = "github:hercules-ci/flake-parts";
 
   };
 
   outputs = inputs@{ self, nixpkgs, poetry2nix, cachix, rust-overlay, flake-parts, ... }:
-  flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = [ "x86_64-linux"
-                 ];  # Define the system architecture
-    
-    flake = {
-      description = "Flake for the agl_anonymizer_pipeline service with CUDA support";
-      inputs = inputs;
-      outputs = { self, nixpkgs, cachix, rust-overlay, flake-parts }:  
-
-      
+  
       let
         system = "x86_64-linux"; # Define the system architecture
         pkgs = import nixpkgs {
@@ -191,30 +181,6 @@
         );
 
 
-      in {
-        # Configuration for Nix binary caches and CUDA support
-        nixConfig = {
-          binary-caches = [
-            nvidiaCache.binaryCachePublicUrl
-          ];
-          binary-cache-public-keys = [
-            nvidiaCache.publicKey
-          ];
-          cudaSupport = true;  # Enable CUDA support in the Nix environment
-        };
-        configureFlags = [
-          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
-
-          "--prefix=$out"
-          "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
-        ];
-      };
-    };
-  
-    perSystem = { systems, pkgs, poetry2nix, ... }:
-    {
-      packages.default = {
-        inputs = inputs;
         # Define poetryApp here at the correct scope
         poetryApp = poetry2nix.lib.mkPoetryApplication {
           python = pkgs.python311;
@@ -246,10 +212,27 @@
             python311Packages.torchvision-bin
             python311Packages.torchaudio-bin
           ];
+        };
 
-          outputs = { self, poetry2nix, ...}@inputs:{
-            poetryApp = self;
-          };
+
+      in {
+        # Configuration for Nix binary caches and CUDA support
+        nixConfig = {
+          binary-caches = [
+            nvidiaCache.binaryCachePublicUrl
+          ];
+          binary-cache-public-keys = [
+            nvidiaCache.publicKey
+          ];
+          cudaSupport = true;  # Enable CUDA support in the Nix environment
+        };
+        configureFlags = [
+          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
+
+          "--prefix=$out"
+          "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
+        ];
+  
 
         # Development shell
         devShells.default = pkgs.mkShell {
@@ -271,14 +254,10 @@
           ];
           postShellHook = "poetry install";
         };
-      
-
       };
-    };
-  };
-};
-
+      
 }
+
 
 
 
