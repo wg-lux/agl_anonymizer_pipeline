@@ -153,7 +153,6 @@
           segtok = [ "setuptools" ];
         };
 
-        lib = pkgs.lib;
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
         p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
