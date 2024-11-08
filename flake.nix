@@ -33,7 +33,7 @@
       let
         system = "x86_64-linux"; # Define the system architecture
         pkgs = import nixpkgs {
-          inherit system;
+          system = "x86_64-linux"; # Define the system architecture
           config = {
             allowUnfree = true;
             cudaSupport = true;  # Enable CUDA support in the configuration
@@ -237,7 +237,7 @@
 
         # Development shell
         devShells.default = pkgs.mkShell {
-          inputsFrom = [self.packages.${system}.poetryApp];
+          inputsFrom = [self.packages.${system}.default];
           preShellHook = ''
             export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
           '';
