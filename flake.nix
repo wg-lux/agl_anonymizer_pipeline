@@ -186,6 +186,15 @@
             projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
 
+            overrides = poetry2nix.defaultPoetryOverrides.extend
+            (final: prev: {
+              gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
+              });
+            });
+
             # Native build inputs for dependencies (e.g., C++ dependencies)
             nativeBuildInputs = with pkgs; [
               cudaPackages.saxpy
