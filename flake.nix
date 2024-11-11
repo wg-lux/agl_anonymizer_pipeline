@@ -45,6 +45,13 @@
           overlays = [
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
+              maturin = prev.maturin.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.pkg-config
+                  final.rust-overlay
+                ];
+              });
 
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
