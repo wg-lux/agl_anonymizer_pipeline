@@ -238,7 +238,7 @@
               pillow = prev.pillow.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.maturin
-                  prev.python311Packages.setuptools-rust
+                  prev.setuptools_rust
                 ];
               });
 
