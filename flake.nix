@@ -203,6 +203,16 @@
                   prev.setuptools
                 ];
               });
+              janome = prev.janome.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
+              });
+              wikipedia-api = prev.wikipedia-api.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
+              });
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
