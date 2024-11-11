@@ -54,7 +54,7 @@
           overlays = [
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
-              
+
               setuptools_rust = prev.python311Packages.setuptools-rust;
 
               maturin = prev.maturin.overrideAttrs (old: {
@@ -63,7 +63,7 @@
                   final.pkg-config
                   final.rustc
                   final.rustup
-                  final.python311Packages.setuptools-rust
+                  final.setuptools_rust
                 ];
               });
 
@@ -252,6 +252,7 @@
               cargo
               rustc
               rustup
+              setuptools_rust
               mupdf
               pymupdf
               stdenv
