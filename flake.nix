@@ -185,7 +185,6 @@
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
-            src = pkgs.lib.cleanSource ./.;  # Clean the source code
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
             nativeBuildInputs = with pkgs; [
