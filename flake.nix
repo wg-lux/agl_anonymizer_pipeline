@@ -226,6 +226,11 @@
                   prev.maturin
                 ];
               });
+              maturin = prev.maturin.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools-rust
+                ];
+              });
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
@@ -246,6 +251,7 @@
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
             cython
+            setuptools-rust
             pip
             build
             gdown
@@ -256,6 +262,7 @@
             torch-bin
             torchvision-bin
             torchaudio-bin
+            
           ];
           };
 
