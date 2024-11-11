@@ -203,6 +203,7 @@
             ];
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
+            cython
             pip
             build
             gdown
