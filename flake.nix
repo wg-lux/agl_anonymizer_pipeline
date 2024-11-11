@@ -215,6 +215,8 @@
         in
         {
         # Configuration for Nix binary caches and CUDA support
+        defaultPackage.${system} = poetryApp;
+        packages.${system}.default = poetryApp;
         nixConfig = {
           binary-caches = [
             nvidiaCache.binaryCachePublicUrl
