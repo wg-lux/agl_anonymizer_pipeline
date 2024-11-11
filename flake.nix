@@ -55,6 +55,14 @@
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
 
+              triton = prev.python311Packages.openai-triton-cuda.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.pkg-config
+                  final.libclang
+                ];
+              });
+
               setuptools_rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -258,6 +266,7 @@
             nativeBuildInputs = with pkgs; [
               python311
               python311Packages.build
+
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
@@ -276,6 +285,7 @@
             # Runtime dependencies
             cython
             pip
+            triton
             build
             gdown
             ftfy
