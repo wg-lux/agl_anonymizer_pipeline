@@ -32,8 +32,10 @@
 
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
       let
-        system = "x86_64-linux"; # Define the system architecture
-        pkgs = import nixpkgs.legacyPackages.${system} {
+      system = "x86_64-linux"; # Define the system architecture
+
+        pkgs = import nixpkgs {
+          inherit system;
           config = {
             allowUnfree = true;
             cudaSupport = true;  # Enable CUDA support in the configuration
