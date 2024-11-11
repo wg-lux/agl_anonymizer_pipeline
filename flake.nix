@@ -42,6 +42,15 @@
             cudaSupport = true;  # Enable CUDA support in the configuration
             allowBroken = true;  # Allow broken packages for development
           };
+
+          # Overlays are added to ensure the correct order of installation is used.
+
+          # Without the overlay, the package may not be installed in the correct order.
+          # This can lead to build failures.
+          # Libraries might not find the 
+          # Examples are the missing setup of a rust dependency like maturin
+          # or of a c compiler.
+
           overlays = [
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
@@ -102,8 +111,6 @@
               });
 
               tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
-
-
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cargo
                   final.rustc
@@ -222,6 +229,13 @@
               wikipedia-api = prev.wikipedia-api.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
+                ];
+              });
+
+              pillow = prev.pillow.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.maturin
+                  prev.setuptools-rust
                 ];
               });
 
