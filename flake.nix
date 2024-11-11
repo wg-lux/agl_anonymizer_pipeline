@@ -180,7 +180,7 @@
               
           ) pypkgs-build-requirements
         );
-      inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+      inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
