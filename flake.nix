@@ -60,6 +60,8 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.pkg-config
                   final.libclang
+                  final.setuptools
+                  
                 ];
               });
 
