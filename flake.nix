@@ -51,6 +51,7 @@
                   final.pkg-config
                   final.rustc
                   final.rustup
+                  final.setuptools-rust
                 ];
               });
 
@@ -108,6 +109,7 @@
                   final.rustc
                   final.libclang
                   final.hatchling
+                  final.setuptools-rust
                   final.python311Packages.setuptools
                 ];
                 postInstall = ''
@@ -196,6 +198,11 @@
 
             overrides = defaultPoetryOverrides.extend
             (final: prev: {
+              maturin = prev.maturin.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools-rust
+                ];
+              });
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
@@ -221,16 +228,7 @@
                   prev.setuptools
                 ];
               });
-              safetensors = prev.safetensors.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.maturin
-                ];
-              });
-              maturin = prev.maturin.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.setuptools-rust
-                ];
-              });
+
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
