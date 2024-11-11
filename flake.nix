@@ -60,7 +60,9 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cargo
                   final.rustc
-                  final.build
+                  final.python311
+                  final.python311Packages.build
+
                 ];
               });
 
