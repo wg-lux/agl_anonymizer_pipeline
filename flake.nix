@@ -256,7 +256,8 @@
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
             nativeBuildInputs = with pkgs; [
-              build
+              python311
+              python311Packages.build
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
