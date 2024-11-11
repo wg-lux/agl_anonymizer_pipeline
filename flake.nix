@@ -213,6 +213,11 @@
                   prev.setuptools
                 ];
               });
+              safetensors = prev.safetensors.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.maturin
+                ];
+              });
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
@@ -278,9 +283,3 @@
 
       
 }
-
-
-
-
-
-
