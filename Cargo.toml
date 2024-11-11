@@ -1,0 +1,8 @@
+[package]
+name = "agl_anonymizer_pipeline"
+version = "0.1.12"
+edition = "2021"
+
+[dependencies]
+pyo3 = { version = "0.18", features = ["extension-module"] }
+safetensors = { version = "0.4.3" }
