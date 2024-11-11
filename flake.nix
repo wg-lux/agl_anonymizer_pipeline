@@ -191,7 +191,6 @@
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
-              rust
               cargo
               rustc
               rustup
@@ -205,10 +204,10 @@
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
             pip
+            setuptools
             gdown
             ftfy
             sympy
-            setuptools
             tokenizers
             tomlkit
             torch-bin
