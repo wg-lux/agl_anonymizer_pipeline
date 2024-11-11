@@ -55,17 +55,7 @@
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
 
-              triton = prev.python311Packages.openai-triton-cuda.overrideAttrs (old: {
-                dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.pkg-config
-                  final.libclang
-                  final.setuptools
-                  
-                ];
-              });
-
-              setuptools_rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
+              setuptools-rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cargo
@@ -82,7 +72,7 @@
                   final.pkg-config
                   final.rustc
                   final.rustup
-                  final.setuptools_rust
+                  final.setuptools-rust
                 ];
               });
 
@@ -160,7 +150,7 @@
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.maturin
-                  final.setuptools_rust
+                  final.setuptools-rust
                 ];
               });
 
@@ -275,7 +265,7 @@
               cargo
               rustc
               rustup
-              setuptools_rust
+              setuptools-rust
               mupdf
               pymupdf
               stdenv
@@ -287,7 +277,6 @@
             # Runtime dependencies
             cython
             pip
-            triton
             build
             gdown
             ftfy
