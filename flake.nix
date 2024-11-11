@@ -51,7 +51,7 @@
                   final.pkg-config
                   final.rustc
                   final.rustup
-                  final.setuptools-rust
+                  final.python311Packages.setuptools-rust
                 ];
               });
 
