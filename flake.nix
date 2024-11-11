@@ -137,6 +137,14 @@
                 ];
               });
 
+              pillow = prev.python311Packages.pillow.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.maturin
+                  final.setuptools_rust
+                ];
+              });
+
 
             })
           ];
@@ -235,13 +243,6 @@
                 ];
               });
 
-              pillow = prev.pillow.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.maturin
-                  prev.setuptools-rust
-                ];
-              });
-
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
@@ -263,7 +264,6 @@
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
             cython
-            setuptools-rust
             pip
             build
             gdown
