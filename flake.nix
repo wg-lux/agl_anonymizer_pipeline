@@ -197,20 +197,26 @@
               rustc
               rustup
               mupdf
-              pymupdf   
+              pymupdf
               stdenv
-              python311Packages.gdown
               maturin
               hatchling
               ftfy
-              python311Packages.sympy
-              python311Packages.setuptools
-              python311Packages.tokenizers
-              python311Packages.torch-bin
-              python311Packages.torchvision-bin
-              python311Packages.torchaudio-bin
             ];
+          buildInputs = with pkgs.python311Packages; [
+            # Runtime dependencies
+            pip
+            gdown
+            ftfy
+            sympy
+            setuptools
+            tokenizers
+            torch-bin
+            torchvision-bin
+            torchaudio-bin
+          ];
           };
+
         in
         {
         # Configuration for Nix binary caches and CUDA support
