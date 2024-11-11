@@ -186,7 +186,7 @@
             projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
 
-            overrides = poetry2nix.defaultPoetryOverrides.extend
+            overrides = defaultPoetryOverrides.extend
             (final: prev: {
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
