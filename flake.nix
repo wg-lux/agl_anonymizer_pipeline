@@ -119,7 +119,7 @@
                   final.rustc
                   final.libclang
                   final.hatchling
-                  final.setuptools-rust
+                  final.setuptools_rust
                   final.python311Packages.setuptools
                 ];
                 postInstall = ''
