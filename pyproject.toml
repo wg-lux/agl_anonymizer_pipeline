@@ -10,7 +10,7 @@ readme = "README.md"
 cli = "app.main:main"
 
 [build-system]
-requires = ["maturin=1.5.1"]
+requires = ["maturin=1.5.1", "wheel", "setuptools-rust"]
 build-backend = "maturin"
 
 
