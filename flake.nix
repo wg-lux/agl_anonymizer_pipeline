@@ -204,7 +204,6 @@
               hatchling
               ftfy
               python311Packages.sympy
-              python311Packages.tomlkit
               python311Packages.setuptools
               python311Packages.tokenizers
               python311Packages.torch-bin
