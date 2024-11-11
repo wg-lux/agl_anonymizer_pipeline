@@ -55,7 +55,14 @@
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
 
-              setuptools_rust = prev.python311Packages.setuptools-rust;
+              setuptools_rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.cargo
+                  final.rustc
+                  final.build
+                ];
+              });
 
               maturin = prev.maturin.overrideAttrs (old: {
                 dontStrip = false;
@@ -247,6 +254,7 @@
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
             nativeBuildInputs = with pkgs; [
+              build
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
