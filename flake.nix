@@ -31,11 +31,9 @@
   };
 
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
-    flake-utils.lib.eachDefaultSystem (system:  
       let
         system = "x86_64-linux"; # Define the system architecture
-        pkgs = import nixpkgs {
-          system = "x86_64-linux"; # Define the system architecture
+        pkgs = import nixpkgs.legacyPackages.${system} {
           config = {
             allowUnfree = true;
             cudaSupport = true;  # Enable CUDA support in the configuration
@@ -179,14 +177,10 @@
               
           ) pypkgs-build-requirements
         );
-        in
-        {
-        packages = {
-
-          # Define poetryApp here at the correct scope
-          poetryApp = poetry2nix.lib.mkPoetryApplication {
+      inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+        poetryApp = mkPoetryApplication {
             python = pkgs.python311;
-            projectDir = self;  # Points to the project directory
+            projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
             src = pkgs.lib.cleanSource ./.;  # Clean the source code
 
@@ -216,9 +210,8 @@
               python311Packages.torchaudio-bin
             ];
           };
-          default = self.packages.${system}.poetryApp;
-      };
-
+        in
+        {
         # Configuration for Nix binary caches and CUDA support
         nixConfig = {
           binary-caches = [
@@ -237,26 +230,14 @@
         ];
   
 
-        # Development shell
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [self.packages.${system}.default];
-          preShellHook = ''
-            export LD_LIBRARY_PATH="${pkgs.cudatoolkit.lib}:${pkgs.maturin}$LD_LIBRARY_PATH"
-          '';
-          package = with pkgs; [
-            poetry
-            cudaPackages_11.cudatoolkit
-            cudaPackages_11.cudnn
-            python311Packages.pip
-            rust-bin.beta.latest.default
-            cargo
-            rustc
-            rustup
-            stdenv
-          ];
-        };
+        apps.${system}.default = {
+          type = "app";
+          program = "${poetryApp}/bin/agl_anonymizer_pipeline";
+
        
-      });
+      };
+    };
+
       
 }
 
