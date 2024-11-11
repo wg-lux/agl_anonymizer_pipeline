@@ -49,7 +49,8 @@
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.pkg-config
-                  final.rust-overlay
+                  final.rustc
+                  final.rustup
                 ];
               });
 
