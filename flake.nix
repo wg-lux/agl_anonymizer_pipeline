@@ -205,7 +205,7 @@
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
             pip
-            setuptools
+            build
             gdown
             ftfy
             sympy
