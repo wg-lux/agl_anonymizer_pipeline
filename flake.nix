@@ -61,7 +61,7 @@
                   prev.gumbo
                   prev.freeglut
                   prev.libGLU
-                  prev.libjpeg_turbo
+                  prev.libjpeg
 
                   # Add tesseract if needed
                   prev.tesseract
@@ -191,7 +191,6 @@
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
-              python311Packages.pip
               rust
               cargo
               rustc
@@ -211,6 +210,7 @@
             sympy
             setuptools
             tokenizers
+            tomlkit
             torch-bin
             torchvision-bin
             torchaudio-bin
