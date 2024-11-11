@@ -198,11 +198,7 @@
 
             overrides = defaultPoetryOverrides.extend
             (final: prev: {
-              maturin = prev.maturin.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.setuptools-rust
-                ];
-              });
+
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
