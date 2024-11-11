@@ -54,6 +54,9 @@
           overlays = [
             (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
+              
+              setuptools_rust = prev.python311Packages.setuptools-rust;
+
               maturin = prev.maturin.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -235,7 +238,7 @@
               pillow = prev.pillow.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.maturin
-                  prev.setuptools-rust
+                  prev.python311Packages.setuptools-rust
                 ];
               });
 
