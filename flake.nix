@@ -119,7 +119,7 @@
                   final.rustc
                   final.libclang
                   final.hatchling
-                  final.setuptools_rust
+                  final.python311Packages.setuptools-rust
                   final.python311Packages.setuptools
                 ];
                 postInstall = ''
@@ -238,7 +238,7 @@
               pillow = prev.pillow.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.maturin
-                  prev.setuptools_rust
+                  prev.setuptools-rust
                 ];
               });
 
