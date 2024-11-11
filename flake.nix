@@ -198,6 +198,11 @@
                   prev.setuptools
                 ];
               });
+              conllu = prev.conllu.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
+              });
             });
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
