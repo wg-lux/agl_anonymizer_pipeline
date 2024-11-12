@@ -25,20 +25,15 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    rust-flake = { url = "path:rust"; }; # Link to your Rust flake here
+
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-flake, ... }:
       let
-      overlay = [ (import rust-overlay) ];
       system = "x86_64-linux"; # Define the system architecture
-      rustPkgs = pkgs.callPackage."/rust" {
-        inherit system;
-        nixpkgs = pkgs;
-      };
+      rustPkgs = rust-flake.outputs.packages.${system}.agl_anonymizer_pipeline; # Reference Rust packages
+
 
         # Use cachix to cache NVIDIA-related packages
       nvidiaCache = cachix.lib.mkCachixCache {
