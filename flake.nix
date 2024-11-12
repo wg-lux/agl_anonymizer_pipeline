@@ -239,6 +239,7 @@
             nativeBuildInputs = with pkgs; [
               python311
               python311Packages.build
+              python311Packages.setuptools-rust
 
               cudaPackages.saxpy
               cudaPackages.cudatoolkit

@@ -32,7 +32,7 @@
             cargo
             rustc
             maturin
-            cargo2nix.packages.${system}.cargo2nix
+#            cargo2nix.packages.${system}.cargo2nix
             rust-analyzer
             clippy
             rustfmt
