@@ -25,9 +25,8 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rustSubflake = {
-      path = "./rust";
-    };
+    rustSubflake.url = "path:./rust";
+
 
 
   };
