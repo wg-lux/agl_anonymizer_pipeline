@@ -21,8 +21,8 @@
       in rec {
         packages = {
           # replace hello-world with your package name
-           = (rustPkgs.workspace.hello-world {});
-          default = packages.hello-world;
+          agl_anonymizer_pipeline = (rustPkgs.workspace.agl_anonymizer_pipeline {});
+          default = packages.agl_anonymizer_pipeline;
         };
       }
     );

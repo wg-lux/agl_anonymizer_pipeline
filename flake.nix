@@ -25,17 +25,43 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
+    rustSubflake = {
+      path = "./rust";
+    };
 
 
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rustSubflake, ... }:
       let
+
       system = "x86_64-linux"; # Define the system architecture
+      rustPkgs = rustSubflake.packages.${system}.agl_anonymizer_pipeline;
 
 
-        pkgs = import nixpkgs {
+        # Use cachix to cache NVIDIA-related packages
+      nvidiaCache = cachix.lib.mkCachixCache {
+          inherit (pkgs) lib;
+          name = "nvidia";
+          publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
+          secretKey = null;  # Not needed for pulling from the cache
+        };
+
+      direnv = pkgs.direnv;  # Include direnv for environment management
+
+      # Define the C++ toolchain with Clang and GCC
+      clangVersion = "16";   # Version of Clang
+      gccVersion = "13";     # Version of GCC
+      llvmPkgs = pkgs."llvmPackages_${clangVersion}";  # LLVM toolchain
+      gccPkg = pkgs."gcc${gccVersion}";  # GCC package for compiling
+
+      # Create a clang toolchain with libstdc++ from GCC
+      clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
+        gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
+      });
+
+
+      pkgs = import nixpkgs {
           inherit system;
           config = {
             allowUnfree = true;
@@ -44,19 +70,19 @@
           };
 
           # Overlays are added to ensure the correct order of installation is used.
-
+          # On Install some dependencies might not find a package that is needed for 
+          # the build.
           # Without the overlay, the package may not be installed in the correct order.
           # This can lead to build failures.
-          # Libraries might not find the 
+
           # Examples are the missing setup of a rust dependency like maturin
           # or of a c compiler.
 
           overlays = [
-            (import rust-overlay)  # Import the Rust overlay
             (final: prev: {
 
               setuptools-rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
-                dontStrip = false;
+                dontStrip = false; # prevents excessive error outputs from this dependency
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cargo
                   final.rustc
@@ -157,29 +183,8 @@
 
             })
           ];
-        };
 
-        # Use cachix to cache NVIDIA-related packages
-        nvidiaCache = cachix.lib.mkCachixCache {
-          inherit (pkgs) lib;
-          name = "nvidia";
-          publicKey = "nvidia.cachix.org-1:dSyZxI8geDCJrwgvBfPH3zHMC+PO6y/BT7O6zLBOv0w=";
-          secretKey = null;  # Not needed for pulling from the cache
-        };
-
-        direnv = pkgs.direnv;  # Include direnv for environment management
-
-        # Define the C++ toolchain with Clang and GCC
-        clangVersion = "16";   # Version of Clang
-        gccVersion = "13";     # Version of GCC
-        llvmPkgs = pkgs."llvmPackages_${clangVersion}";  # LLVM toolchain
-        gccPkg = pkgs."gcc${gccVersion}";  # GCC package for compiling
-
-        # Create a clang toolchain with libstdc++ from GCC
-        clangStdEnv = pkgs.stdenvAdapters.overrideCC llvmPkgs.stdenv (llvmPkgs.clang.override {
-          gccForLibs = gccPkg;  # Link Clang with libstdc++ from GCC
-        });
-        
+        };        
 
         # Poetry to Nix package translation with specific build requirements
         pypkgs-build-requirements = {
@@ -262,6 +267,7 @@
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
+              rustPkgs
               cargo
               rustc
               rustup
@@ -292,6 +298,7 @@
 
         in
         {
+        
         # Configuration for Nix binary caches and CUDA support
         defaultPackage.${system} = poetryApp;
         packages.${system}.default = poetryApp;
@@ -315,8 +322,6 @@
         apps.${system}.default = {
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
-
-       
       };
     };
 
