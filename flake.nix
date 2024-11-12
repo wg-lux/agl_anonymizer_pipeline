@@ -80,10 +80,6 @@
           overlays = [
             (final: prev: {
 
-              maturin = prev.rustPkgs.maturin.overrideAttrs (old: {
-                
-              });
-
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
