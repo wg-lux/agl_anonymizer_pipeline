@@ -79,7 +79,7 @@
 
           overlays = [
             (final: prev: {
-              maturin = prev.rustPkgs.maturin.overrideAttrs (old: {
+              maturin = prev.maturin.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                 final.python311Packages.setuptools
                 final.python311Packages.wheel
