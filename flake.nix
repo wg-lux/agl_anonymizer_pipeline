@@ -25,18 +25,17 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rustSubflake.url = "path:./rust";
-
-
 
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rustSubflake, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, ... }:
       let
 
       system = "x86_64-linux"; # Define the system architecture
-      rustPkgs = rustSubflake.packages.${system}.agl_anonymizer_pipeline;
-
+      rustPkgs = (import ./rust {
+        inherit system nixpkgs;
+        
+      }).packages.${system}.agl_anonymizer_pipeline;
 
         # Use cachix to cache NVIDIA-related packages
       nvidiaCache = cachix.lib.mkCachixCache {
@@ -79,27 +78,6 @@
 
           overlays = [
             (final: prev: {
-
-              setuptools-rust = prev.python311Packages.setuptools-rust.overrideAttrs (old: {
-                dontStrip = false; # prevents excessive error outputs from this dependency
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cargo
-                  final.rustc
-                  final.python311
-                  final.python311Packages.build
-
-                ];
-              });
-
-              maturin = prev.maturin.overrideAttrs (old: {
-                dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.pkg-config
-                  final.rustc
-                  final.rustup
-                  final.setuptools-rust
-                ];
-              });
 
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
@@ -149,11 +127,9 @@
 
               tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cargo
-                  final.rustc
-                  final.libclang
+                  final.rustPkgs
                   final.hatchling
-                  final.python311Packages.setuptools-rust
+                  final.rustPkgs
                   final.python311Packages.setuptools
                 ];
                 postInstall = ''
@@ -174,8 +150,7 @@
               pillow = prev.python311Packages.pillow.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.maturin
-                  final.setuptools-rust
+                  final.rustPkgs
                 ];
               });
 
@@ -204,9 +179,7 @@
             if package == "tokenizers" then
               prev.rustc.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cargo
-                  final.rustc
-                  final.libclang
+                  final.rustPkgs
                 ];
               })
 
@@ -222,6 +195,7 @@
           ) pypkgs-build-requirements
         );
       inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
+
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
@@ -257,6 +231,8 @@
               });
 
             });
+            PIP_NO_CACHE_DIR = "off";
+
 
             # Native build inputs for dependencies (e.g., C++ dependencies)
             nativeBuildInputs = with pkgs; [
@@ -267,14 +243,9 @@
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
               rustPkgs
-              cargo
-              rustc
-              rustup
-              setuptools-rust
               mupdf
               pymupdf
               stdenv
-              maturin
               hatchling
               ftfy
             ];
@@ -300,7 +271,7 @@
         
         # Configuration for Nix binary caches and CUDA support
         defaultPackage.${system} = poetryApp;
-        packages.${system}.default = poetryApp;
+        packages.${system}.agl_anonymizer_pipeline = poetryApp;
         nixConfig = {
           binary-caches = [
             nvidiaCache.binaryCachePublicUrl
@@ -318,7 +289,7 @@
         ];
   
 
-        apps.${system}.default = {
+        apps.${system}.agl_anonymizer_pipeline = {
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
