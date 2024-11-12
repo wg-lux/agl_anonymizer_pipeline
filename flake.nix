@@ -251,6 +251,7 @@
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
               rustPkgs
+              maturin
               mupdf
               pymupdf
               stdenv
