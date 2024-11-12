@@ -1,4 +1,6 @@
 {
+  description = "AGL Anonymizer Pipeline";
+
   inputs = {
     cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
     flake-utils.follows = "cargo2nix/flake-utils";
@@ -16,13 +18,24 @@
         rustPkgs = pkgs.rustBuilder.makePackageSet {
           rustVersion = "1.75.0";
           packageFun = import ./Cargo.nix;
+          extraRustComponents = ["rust-src"];
         };
 
       in rec {
         packages = {
-          # replace hello-world with your package name
-          agl_anonymizer_pipeline = (rustPkgs.workspace.agl_anonymizer_pipeline {});
+          agl_anonymizer_pipeline = (rustPkgs.workspace.agl_anonymizer_pipeline {}).bin;
           default = packages.agl_anonymizer_pipeline;
+        };
+
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            cargo
+            rustc
+            cargo2nix.packages.${system}.cargo2nix
+            rust-analyzer
+            clippy
+            rustfmt
+          ];
         };
       }
     );

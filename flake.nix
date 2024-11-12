@@ -25,17 +25,20 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-overlay, ... }:
       let
-
+      overlay = [ (import rust-overlay) ];
       system = "x86_64-linux"; # Define the system architecture
-      rustPkgs = (import ./rust {
-        inherit system nixpkgs;
-        
-      }).packages.${system}.agl_anonymizer_pipeline;
+      rustPkgs = pkgs.callPackage."/rust" {
+        inherit system;
+        nixpkgs = pkgs;
+      };
 
         # Use cachix to cache NVIDIA-related packages
       nvidiaCache = cachix.lib.mkCachixCache {
@@ -60,7 +63,9 @@
 
 
       pkgs = import nixpkgs {
+
           inherit system;
+          inherit rustPkgs;
           config = {
             allowUnfree = true;
             cudaSupport = true;  # Enable CUDA support in the configuration
@@ -75,6 +80,7 @@
 
           # Examples are the missing setup of a rust dependency like maturin
           # or of a c compiler.
+
 
           overlays = [
             (final: prev: {
