@@ -32,7 +32,8 @@
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-flake, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
-      rustPkgs = rust-flake.outputs.packages.${system}.agl_anonymizer_pipeline; # Reference Rust packages
+      pks = import nixpkgs { inherit system; };  # Import Nix packages
+      rustPkgs = rust-flake.packages.${system};  # Correctly reference rust packages
 
 
         # Use cachix to cache NVIDIA-related packages
@@ -60,7 +61,6 @@
       pkgs = import nixpkgs {
 
           inherit system;
-          inherit rustPkgs;
           config = {
             allowUnfree = true;
             cudaSupport = true;  # Enable CUDA support in the configuration
@@ -80,16 +80,8 @@
           overlays = [
             (final: prev: {
 
-              maturin = prev.maturin.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.python311Packages.setuptools
-                  final.python311Packages.wheel
-                  final.python311Packages.setuptools-rust  # Adding setuptools-rust for maturin
-                  final.rustc
-                  final.cargo
-                ];
-              });
-
+              agl_anonymizer_pipeline = rustPkgs.agl_anonymizer_pipeline;
+              
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -181,6 +173,7 @@
           django-flat-theme = [ "setuptools" ];
           django-flat-responsive = [ "setuptools" ];
           segtok = [ "setuptools" ];
+          maturin = [ "setuptools" ];
         };
 
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
@@ -213,7 +206,8 @@
             preferWheels = false;  # Disable wheel preference
 
             overrides = defaultPoetryOverrides.extend
-            (final: prev: {
+            (final: prev: 
+              (p2n-overrides final prev) // {
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
@@ -240,8 +234,19 @@
                   prev.setuptools
                 ];
               });
+              sentencepiece = prev.sentencepiece.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
+              });
+              safetensors = prev.safetensors.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.maturin
+                ];
+              });
+              }
 
-            });
+            );
             PIP_NO_CACHE_DIR = "off";
 
 
@@ -254,7 +259,6 @@
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
-              rustPkgs
               maturin
               mupdf
               pymupdf
