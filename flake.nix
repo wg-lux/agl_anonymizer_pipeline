@@ -130,9 +130,8 @@
 
               tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.rustPkgs
+                  rustPkgs.agl_anonymizer_pipeline
                   final.hatchling
-                  final.rustPkgs
                   final.python311Packages.setuptools
                 ];
                 postInstall = ''
@@ -153,7 +152,7 @@
               pillow = prev.python311Packages.pillow.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.rustPkgs
+                  rustPkgs.agl_anonymizer_pipeline
                 ];
               });
 
@@ -180,23 +179,9 @@
 
         p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
           builtins.mapAttrs (package: build-requirements:
-            if package == "tokenizers" then
-              prev.rustc.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.rustPkgs
-                ];
-              })
 
-            else
-              (builtins.getAttr package prev).overridePythonAttrs (old: {
-                buildInputs = (old.buildInputs or [ ]) ++ (
-                  builtins.map (pkg:
-                    if builtins.isString pkg then builtins.getAttr pkg prev else pkg
-                  ) build-requirements
-                ); 
-              })
               
-          ) pypkgs-build-requirements
+           pypkgs-build-requirements)
         );
       inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
 
@@ -237,11 +222,6 @@
               sentencepiece = prev.sentencepiece.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
-                ];
-              });
-              safetensors = prev.safetensors.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.maturin
                 ];
               });
               }
