@@ -80,6 +80,16 @@
           overlays = [
             (final: prev: {
 
+              maturin = prev.maturin.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311Packages.setuptools
+                  final.python311Packages.wheel
+                  final.python311Packages.setuptools-rust  # Adding setuptools-rust for maturin
+                  final.rustc
+                  final.cargo
+                ];
+              });
+
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -107,9 +117,9 @@
               pymupdf = prev.python311Packages.pymupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.mupdf
-                  final.pkg-config
-                  final.libclang
+                  prev.mupdf
+                  prev.pkg-config
+                  prev.libclang
                 ];
                 postInstall = ''
                   echo "Linking mupdf libraries"
