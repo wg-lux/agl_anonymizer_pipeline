@@ -132,7 +132,7 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   rustPkgs.agl_anonymizer_pipeline
                   final.hatchling
-                  final.python311Packages.setuptools
+                  pkgs.python311Packages.setuptools
                 ];
                 postInstall = ''
                   echo "Linking tokenizers libraries"
@@ -177,12 +177,13 @@
 
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-        p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
-          builtins.mapAttrs (package: build-requirements:
-
-              
-           pypkgs-build-requirements)
-        );
+    p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
+      builtins.mapAttrs (package: build-requirements:
+        (builtins.getAttr package prev).overridePythonAttrs (old: {
+          buildInputs = (old.buildInputs or [ ]) ++ (builtins.map (pkg: if builtins.isString pkg then builtins.getAttr pkg prev else pkg) build-requirements);
+        })
+      ) pypkgs-build-requirements
+    );
       inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
 
         poetryApp = mkPoetryApplication {
