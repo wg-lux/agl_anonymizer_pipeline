@@ -211,7 +211,7 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
-                  prev.maturin
+                  prev.rustPkgs
                   prev.hatch-fancy-pypi-readme
                 ];
               });
@@ -229,7 +229,7 @@
               python311
               python311Packages.build
               python311Packages.setuptools-rust
-
+              rustPkgs
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
@@ -256,7 +256,6 @@
             torch-bin
             torchvision-bin
             torchaudio-bin
-            rustPkgs
             
             
           ];
