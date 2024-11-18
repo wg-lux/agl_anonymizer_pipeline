@@ -172,6 +172,7 @@
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
               {
+              rustPkgs = rustPkgs;
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
