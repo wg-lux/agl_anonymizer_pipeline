@@ -228,6 +228,7 @@
 
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
+            pkgs.cudatoolkit
             cython
             pip
             build
@@ -272,7 +273,6 @@
           buildPhase = ''
             maturin build --release -m pyproject.toml
           '';
-
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
