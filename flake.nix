@@ -280,6 +280,7 @@
               python311Packages.hatch-fancy-pypi-readme
               flit
               ftfy
+              cudaPackages.cuda_nvcc
               openai-triton-llvm
             ];
 
