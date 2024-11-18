@@ -348,6 +348,7 @@
         apps.agl_anonymizer_pipeline = {
           buildPhase = ''
             maturin build --release -m pyproject.toml
+            rustup target add x86_64-unknown-linux-gnu
           '';
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
