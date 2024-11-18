@@ -221,7 +221,7 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
                   final.flit
-                  finl.torch-bin
+                  final.torch-bin
                 ];
                 buildInputs = old.buildInputs or [] ++ [
                   final.rustPkgs
