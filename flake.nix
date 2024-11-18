@@ -220,6 +220,11 @@
                   final.hatch-fancy-pypi-readme
                 ];
               });
+              flit = prev.flit.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools
+                ];
+              });
               mpld3 = prev.mpld3.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   final.setuptools
