@@ -282,7 +282,7 @@
               ftfy
               cudaPackages.cuda_nvcc
               llvvm_18
-              llvmPackages_17.libllvm
+              llvmPackages
             ];
 
           buildInputs = with pkgs.python311Packages; [
