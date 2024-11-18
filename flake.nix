@@ -228,12 +228,6 @@
                   prev.hatch-fancy-pypi-readme
                 ];
               });
-              safetensors = prev.safetensors.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.setuptools-rust
-                  final.rustPkgs
-                ];
-              });
               tokenizers = prev.tokenizers.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustPkgs
