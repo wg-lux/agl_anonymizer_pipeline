@@ -220,6 +220,7 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
+                  final.flit
                 ];
                 buildInputs = old.buildInputs or [] ++ [
                   final.rustPkgs
