@@ -147,6 +147,14 @@
                   final.hatchling
                 ];
               });
+              
+              safetensors = prev.python311Packages.safetensors.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.maturin
+                  final.hatchling
+                ];
+              });
 
 
             })
@@ -202,6 +210,10 @@
                   prev.setuptools
                 ];
               });
+              segtok = prev.segtok.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                ];
               }
 
             );
@@ -244,7 +256,9 @@
             
             
           ];
-          };
+        });
+        };
+        
 
         in
         {
