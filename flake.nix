@@ -147,6 +147,14 @@
                 ];
               });
 
+              flit = prev.python311Packages.flit.overrideAttrs (old: {
+                dontStrip = false;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
+
 
             })
           ];
@@ -220,7 +228,7 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
-                  final.python311Packages.flit
+                  final.flit
                   final.torch-bin
                 ];
                 buildInputs = old.buildInputs or [] ++ [
