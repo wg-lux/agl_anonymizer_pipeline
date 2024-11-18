@@ -288,18 +288,25 @@
           ];
           
         });
-        shellHook = ''
-          export CUDA_PATH=${pkgs.cudatoolkit}
-          export PATH=$CUDA_PATH/bin:$PATH
-          export PATH=$TRITON_PTXAS_PATH:$PATH
-          export TRITON_PTXAS_PATH=$CUDA_PATH/bin
-        '';
+
+        };
+        devShell = pkgs.mkshell {
+          buildInputs = [
+            pkgs.cudatoolkit
+            # Add other necessary packages here
+          ];
+          shellHook = ''
+            export CUDA_PATH=${pkgs.cudatoolkit}
+            export PATH=$CUDA_PATH/bin:$PATH
+            export TRITON_PTXAS_PATH=$CUDA_PATH/bin/ptxas
+            export PATH=$TRITON_PTXAS_PATH:$PATH
+          '';
         };
         
 
         in
         {
-        
+        devShells.${system} = devShell;
         # Configuration for Nix binary caches and CUDA support
         packages.${system}.default = poetryApp;
 
