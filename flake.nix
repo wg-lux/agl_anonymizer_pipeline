@@ -280,6 +280,7 @@
               python311Packages.hatch-fancy-pypi-readme
               flit
               ftfy
+              openai-triton-llvm
             ];
 
           buildInputs = with pkgs.python311Packages; [
