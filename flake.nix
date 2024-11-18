@@ -263,6 +263,7 @@
               stdenv
               hatchling
               python311Packages.hatch-fancy-pypi-readme
+              python311Packages.flit
               ftfy
             ];
 
