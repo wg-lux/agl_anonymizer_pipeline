@@ -220,7 +220,7 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
-                  final.flit
+                  final.python311Packages.flit
                   final.torch-bin
                 ];
                 buildInputs = old.buildInputs or [] ++ [
@@ -283,7 +283,6 @@
             torch-bin
             torchvision-bin
             torchaudio-bin
-            
             
           ];
           
