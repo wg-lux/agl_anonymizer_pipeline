@@ -160,11 +160,8 @@
 
 
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
-        rustPkgs = naersk'.buildPackage {
-              src = ./rust;
-        };
+        
         poetryApp = mkPoetryApplication {
-            inherit rustPkgs;
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
@@ -172,7 +169,9 @@
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
               {
-              rustPkgs = rustPkgs;
+              rustPkgs = naersk'.buildPackage {
+                    src = ./rust;
+              };
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
@@ -212,14 +211,15 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
-                  prev.rustPkgs
+                  final.rustPkgs
                   prev.hatch-fancy-pypi-readme
                 ];
               });
               transformers = prev.transformers.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
-                  prev.rustPkgs
+                  final.rustPkgs
+                  final.maturin
                 ];
               });
             PIP_NO_CACHE_DIR = "off";
