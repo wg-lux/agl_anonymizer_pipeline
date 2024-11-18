@@ -148,11 +148,6 @@
                 ];
               });
 
-              pillow = prev.python311Packages.pillow.overrideAttrs (old: {
-                dontStrip = false;
-              });
-                
-
 
             })
           ];
@@ -182,7 +177,9 @@
           ) pypkgs-build-requirements
         );
           inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
-
+        rustPkgs = naersk'.buildPackage {
+              src = ./rust;
+        };
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
@@ -244,6 +241,7 @@
               hatchling
               ftfy
             ];
+
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
             cython
@@ -257,6 +255,8 @@
             torch-bin
             torchvision-bin
             torchaudio-bin
+            rustPkgs
+            
             
           ];
           };
@@ -265,12 +265,8 @@
         {
         
         # Configuration for Nix binary caches and CUDA support
-        packages.${system} = {
-            default = poetryApp;
-            default_rust = naersk'.buildPackage {
-              src = ./rust;
-          };
-        };
+        packages.${system}.default = poetryApp;
+
         nixConfig = {
           binary-caches = [
             nvidiaCache.binaryCachePublicUrl
