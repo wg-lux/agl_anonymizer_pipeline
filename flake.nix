@@ -281,7 +281,7 @@
               flit
               ftfy
               cudaPackages.cuda_nvcc
-              openai-triton-llvm
+              llvvm_18
             ];
 
           buildInputs = with pkgs.python311Packages; [
@@ -313,13 +313,7 @@
           ];
           shellHook = ''
             export CUDA_PATH=${pkgs.cudatoolkit}
-            export TRITON_CUDA_PATH=${pkgs.openai-triton-llvm}
-            export PATH=$TRITON_CUDA_PATH/bin:$PATH
-            export PTXUTIL_PATH=$TRITON_CUDA_PATH/bin/ptxas
-            export PATH=$PTXUTIL_PATH:$PATH
             export PATH=$CUDA_PATH/bin:$PATH
-            export TRITON_PTXAS_PATH=$CUDA_PATH/bin/ptxas
-            export PATH=$TRITON_PTXAS_PATH:$PATH
           '';
         };
         
@@ -348,6 +342,8 @@
         apps.agl_anonymizer_pipeline = {
           buildPhase = ''
             maturin build --release -m pyproject.toml
+            export LLVM_SYS_150_PREFIX=${llvm_18}
+            export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
             rustup target add x86_64-unknown-linux-gnu
           '';
           type = "app";
