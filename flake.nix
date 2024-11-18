@@ -81,7 +81,6 @@
           overlays = [
             (final: prev: {
 
-              
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -208,20 +207,45 @@
                   prev.setuptools
                 ];
               });
-              flair = prev.flair.overridePythonAttrs (old: {
+              gdown = prev.gdown.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.hatch-fancy-pypi-readme
+                ];
+              });
+              mpld3 = prev.mpld3.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
-                  prev.setuptools
+                  final.setuptools
+                ];
+              });
+              flair = prev.flair.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools
+                ];
+                buildInputs = old.buildInputs or [] ++ [
                   final.rustPkgs
                   prev.hatch-fancy-pypi-readme
                 ];
               });
-              transformers = prev.transformers.overridePythonAttrs (old: {
-                buildInputs = old.buildInputs or [] ++ [
-                  prev.setuptools
+              safetensors = prev.safetensors.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools-rust
                   final.rustPkgs
-                  final.maturin
                 ];
               });
+              tokenizers = prev.tokenizers.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.rustPkgs
+                  final.setuptools-rust
+                ];
+              });
+              transformers = prev.transformers.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.rustPkgs
+                  final.setuptools-rust
+                ];
+
+              });
+
             PIP_NO_CACHE_DIR = "off";
 
 
@@ -234,7 +258,6 @@
               cudaPackages.saxpy
               cudaPackages.cudatoolkit
               cudaPackages.cudnn
-              maturin
               mupdf
               pymupdf
               stdenv
@@ -280,12 +303,10 @@
           cudaSupport = true;  # Enable CUDA support in the Nix environment
         };
         configureFlags = [
-          "sudo rm -f /dev/null && sudo mknod -m 666 /dev/null c 1 3"
 
           "--prefix=$out"
           "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
         ];
-  
 
         apps.agl_anonymizer_pipeline = {
           buildPhase = ''

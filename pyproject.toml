@@ -31,8 +31,6 @@ opencv-python-headless = "4.9.0.80"
 flair = "0.13.1"
 transformers = "4.43.0"
 
-
-
 [tool.poetry.group.nixProvided.dependencies]
 # opencv-python = "4.10.0"
 PyMuPDF = "1.23.26"
