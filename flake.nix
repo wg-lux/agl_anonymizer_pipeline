@@ -286,7 +286,12 @@
             
             
           ];
+          
         });
+        shellHook = ''
+          export CUDA_PATH=${pkgs.cudatoolkit}
+          export PATH=$CUDA_PATH/bin:$PATH
+        '';
         };
         
 
