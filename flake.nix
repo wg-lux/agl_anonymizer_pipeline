@@ -154,29 +154,12 @@
 
         };       
 
-        # Poetry to Nix package translation with specific build requirements
-        pypkgs-build-requirements = {
-          gender-guesser = [ "setuptools" ];
-          conllu = [ "setuptools" ];
-          janome = [ "setuptools" ];
-          pptree = [ "setuptools" ];
-          wikipedia-api = [ "setuptools" ];
-          django-flat-theme = [ "setuptools" ];
-          django-flat-responsive = [ "setuptools" ];
-          segtok = [ "setuptools" ];
-          maturin = [ "setuptools" ];
-        };
+
 
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-        p2n-overrides = (final: prev:
-          builtins.mapAttrs (package: build-requirements:
-            (builtins.getAttr package prev).overridePythonAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ (builtins.map (pkg: if builtins.isString pkg then builtins.getAttr pkg prev else pkg) build-requirements);
-            })
-          ) pypkgs-build-requirements
-        );
-          inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
+
+        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
         rustPkgs = naersk'.buildPackage {
               src = ./rust;
         };
@@ -187,7 +170,7 @@
 
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
-              (p2n-overrides final prev) // {
+              {
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
@@ -239,6 +222,7 @@
               pymupdf
               stdenv
               hatchling
+              python311Packages.hatch-fancy-pypi-readme
               ftfy
             ];
 
@@ -285,6 +269,10 @@
   
 
         apps.agl_anonymizer_pipeline = {
+          buildPhase = ''
+            maturin build --release -m pyproject.toml
+          '';
+
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
