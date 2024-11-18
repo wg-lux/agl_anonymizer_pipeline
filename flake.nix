@@ -177,14 +177,14 @@
 
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-    p2n-overrides = poetry2nixProcessed.defaultPoetryOverrides.extend (final: prev:
-      builtins.mapAttrs (package: build-requirements:
-        (builtins.getAttr package prev).overridePythonAttrs (old: {
-          buildInputs = (old.buildInputs or [ ]) ++ (builtins.map (pkg: if builtins.isString pkg then builtins.getAttr pkg prev else pkg) build-requirements);
-        })
-      ) pypkgs-build-requirements
-    );
-      inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
+        p2n-overrides = (final: prev:
+          builtins.mapAttrs (package: build-requirements:
+            (builtins.getAttr package prev).overridePythonAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ (builtins.map (pkg: if builtins.isString pkg then builtins.getAttr pkg prev else pkg) build-requirements);
+            })
+          ) pypkgs-build-requirements
+        );
+          inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
 
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
@@ -268,8 +268,8 @@
         {
         
         # Configuration for Nix binary caches and CUDA support
-        defaultPackage.${system} = poetryApp;
-        packages.${system}.agl_anonymizer_pipeline = poetryApp;
+        packages.${system} = poetryApp;
+        defaultPackage.${system}.agl_anonymizer_pipeline = poetryApp;
         nixConfig = {
           binary-caches = [
             nvidiaCache.binaryCachePublicUrl
@@ -287,7 +287,7 @@
         ];
   
 
-        apps.${system}.agl_anonymizer_pipeline = {
+        apps."".agl_anonymizer_pipeline = {
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
