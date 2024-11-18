@@ -25,15 +25,16 @@
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust-flake = { url = "path:rust"; }; # Link to your Rust flake here
+    naersk.url = "github:nix-community/naersk";
 
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, rust-flake, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, naersk, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
       pks = import nixpkgs { inherit system; };  # Import Nix packages
-      rustPkgs = rust-flake.packages.${system};  # Correctly reference rust packages
+      naersk' = pkgs.callPackage naersk {};
+
 
 
         # Use cachix to cache NVIDIA-related packages
@@ -80,7 +81,6 @@
           overlays = [
             (final: prev: {
 
-              agl_anonymizer_pipeline = rustPkgs.agl_anonymizer_pipeline;
               
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
@@ -130,7 +130,6 @@
 
               tokenizers = prev.python311Packages.tokenizers.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  rustPkgs.agl_anonymizer_pipeline
                   final.hatchling
                   pkgs.python311Packages.setuptools
                 ];
@@ -151,16 +150,14 @@
 
               pillow = prev.python311Packages.pillow.overrideAttrs (old: {
                 dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  rustPkgs.agl_anonymizer_pipeline
-                ];
               });
+                
 
 
             })
           ];
 
-        };        
+        };       
 
         # Poetry to Nix package translation with specific build requirements
         pypkgs-build-requirements = {
@@ -268,8 +265,12 @@
         {
         
         # Configuration for Nix binary caches and CUDA support
-        packages.${system} = poetryApp;
-        defaultPackage.${system}.agl_anonymizer_pipeline = poetryApp;
+        packages.${system} = {
+            default = poetryApp;
+            default_rust = naersk'.buildPackage {
+              src = ./rust;
+          };
+        };
         nixConfig = {
           binary-caches = [
             nvidiaCache.binaryCachePublicUrl
@@ -287,7 +288,7 @@
         ];
   
 
-        apps."".agl_anonymizer_pipeline = {
+        apps.agl_anonymizer_pipeline = {
           type = "app";
           program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
