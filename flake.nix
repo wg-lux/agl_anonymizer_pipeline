@@ -147,14 +147,6 @@
                   final.hatchling
                 ];
               });
-              
-              safetensors = prev.python311Packages.safetensors.overrideAttrs (old: {
-                dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.maturin
-                  final.hatchling
-                ];
-              });
 
 
             })
@@ -172,6 +164,7 @@
               src = ./rust;
         };
         poetryApp = mkPoetryApplication {
+            inherit rustPkgs;
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
             preferWheels = false;  # Disable wheel preference
@@ -214,9 +207,20 @@
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
                 ];
-              }
-
-            );
+              });
+              flair = prev.flair.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                  prev.maturin
+                  prev.hatch-fancy-pypi-readme
+                ];
+              });
+              transformers = prev.transformers.overridePythonAttrs (old: {
+                buildInputs = old.buildInputs or [] ++ [
+                  prev.setuptools
+                  prev.rustPkgs
+                ];
+              });
             PIP_NO_CACHE_DIR = "off";
 
 
