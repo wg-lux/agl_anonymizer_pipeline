@@ -291,8 +291,8 @@
         shellHook = ''
           export CUDA_PATH=${pkgs.cudatoolkit}
           export PATH=$CUDA_PATH/bin:$PATH
-          export TRITON_PTXAS_PATH=${pkgs.cudatoolkit}/bin/ptxas
           export PATH=$TRITON_PTXAS_PATH:$PATH
+          export TRITON_PTXAS_PATH=$CUDA_PATH/bin
         '';
         };
         
