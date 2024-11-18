@@ -298,7 +298,7 @@
             torch-bin
             torchvision-bin
             torchaudio-bin
-            
+            coreutils-full
           ];
           
         });
@@ -307,10 +307,16 @@
         devShell = pkgs.mkshell {
           buildInputs = [
             pkgs.cudatoolkit
+            pkgs.cuda_packages.cuda_nvcc
+            pkgs.coreutils-full
             # Add other necessary packages here
           ];
           shellHook = ''
             export CUDA_PATH=${pkgs.cudatoolkit}
+            export TRITON_CUDA_PATH=${pkgs.openai-triton-llvm}
+            export PATH=$TRITON_CUDA_PATH/bin:$PATH
+            export PTXUTIL_PATH=$TRITON_CUDA_PATH/bin/ptxas
+            export PATH=$PTXUTIL_PATH:$PATH
             export PATH=$CUDA_PATH/bin:$PATH
             export TRITON_PTXAS_PATH=$CUDA_PATH/bin/ptxas
             export PATH=$TRITON_PTXAS_PATH:$PATH
