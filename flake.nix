@@ -322,6 +322,7 @@
             nvidiaCache.publicKey
           ];
           cudaSupport = true;  # Enable CUDA support in the Nix environment
+          
         };
         configureFlags = [
 
@@ -338,6 +339,7 @@
 
           ];
           NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
+          LD_LIBRARY_PATH="/run/opengl-driver/lib python -c "import torch; ..."";
           apps.agl_anonymizer_pipeline = {
             buildPhase = ''
               maturin build --release -m pyproject.toml
