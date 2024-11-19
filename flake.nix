@@ -334,13 +334,13 @@
             pkgs.cudatoolkit
             pkgs.clangStdEnv
             pkgs.cudaPackages.cuda_nvcc
+            pkgs.flit
 
           ];
           NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
           apps.agl_anonymizer_pipeline = {
             buildPhase = ''
               maturin build --release -m pyproject.toml
-              export LLVM_SYS_150_PREFIX=${pkgs.llvm_17}
               export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
               rustup target add x86_64-linux
             '';
