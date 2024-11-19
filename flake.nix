@@ -27,11 +27,13 @@
     };
     naersk.url = "github:nix-community/naersk";
 
+
   };
 
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, naersk, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
+      programs.nix-ld.enable = true;
       pks = import nixpkgs { inherit system; };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {};
 
@@ -159,7 +161,8 @@
             })
           ];
 
-        };       
+        };  
+        lib = pkgs.lib;     
 
 
 
@@ -287,7 +290,6 @@
 
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
-            pkgs.cudatoolkit
             cython
             pip
             build
@@ -301,27 +303,15 @@
             torchaudio-bin
             coreutils-full
           ];
+
           
         });
 
-        };
-        devShell = pkgs.mkshell {
-          buildInputs = [
-            pkgs.cudatoolkit
-            pkgs.cuda_packages.cuda_nvcc
-            pkgs.coreutils-full
-            # Add other necessary packages here
-          ];
-          shellHook = ''
-            export CUDA_PATH=${pkgs.cudatoolkit}
-            export PATH=$CUDA_PATH/bin:$PATH
-          '';
         };
         
 
         in
         {
-        devShells.${system} = devShell;
         # Configuration for Nix binary caches and CUDA support
         packages.${system}.default = poetryApp;
 
@@ -340,16 +330,25 @@
           "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
         ];
 
-        apps.agl_anonymizer_pipeline = {
-          buildPhase = ''
-            maturin build --release -m pyproject.toml
-            export LLVM_SYS_150_PREFIX=${pkgs.llvm_17}
-            export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
-            rustup target add x86_64-unknown-linux-gnu
-          '';
-          type = "app";
-          program = "${poetryApp}/bin/agl_anonymizer_pipeline";
-      };
+        mkShell = {
+          NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
+            cudatoolkit
+            clangStdEnv
+
+          ];
+          NIX_LD = lib.fileContents "${stdenv.cc}/nix-support/dynamic-linker";
+          apps.agl_anonymizer_pipeline = {
+            buildPhase = ''
+              maturin build --release -m pyproject.toml
+              export LLVM_SYS_150_PREFIX=${pkgs.llvm_17}
+              export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
+              rustup target add x86_64-unknown-linux-gnu
+            '';
+            type = "app";
+            program = "${poetryApp}/bin/agl_anonymizer_pipeline";
+          };
+        };
+
     };
 
       
