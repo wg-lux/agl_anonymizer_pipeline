@@ -135,8 +135,8 @@
                 ];
                 postInstall = ''
                   echo "Linking tokenizers libraries"
-                  export LD_LIBRARY_PATH="${final.cudatoolkit}/lib:$LD_LIBRARY_PATH"
-                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib {} \;
+                  export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudaPackages.cudatoolkit}/lib {} \;
                 '';
               });
 
@@ -150,19 +150,19 @@
 
               triton = prev.triton.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cudatoolkit
+                  final.cudaPackages.cudatoolkit
                   final.cudaPackages.cudnn
                   final.cudaPackages.ptxas
                 ];
                 buildPhase = ''
-                  export CUDA_HOME=${final.cudatoolkit}
+                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export PATH=${final.cudaPackages.ptxas}/bin:$PATH
                   ${old.buildPhase or ""}
                 '';
                 postInstall = ''
                   echo "Linking Triton CUDA libraries"
-                  export LD_LIBRARY_PATH=${final.cudatoolkit}/lib64:$LD_LIBRARY_PATH
-                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib64 {} \;
+                  export LD_LIBRARY_PATH=${final.cudaPackages.cudatoolkit}/lib64:$LD_LIBRARY_PATH
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudaPackages.cudatoolkit}/lib64 {} \;
                 '';
               });
 
@@ -245,7 +245,7 @@
                   final.cudaPackages.ptxas
                 ];
                 buildPhase = ''
-                  export CUDA_HOME=${final.cudatoolkit}
+                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export PATH=${final.cudaPackages.ptxas}/bin:$PATH
                   ${old.buildPhase or ""}
                 '';
@@ -295,7 +295,7 @@
               python311Packages.setuptools-rust
               rustPkgs
               cudaPackages.saxpy
-              cudaPackages.cudatoolkit
+              cudaPackages.cudaPackages.cudatoolkit
               cudaPackages.cudnn
               mupdf
               pymupdf
@@ -316,6 +316,7 @@
             sympy
             tokenizers
             tomlkit
+            cudaPackages.cudaPackages.cudatoolkit
             torch-bin
             torchvision-bin
             torchaudio-bin
@@ -333,7 +334,7 @@
         {
         # Configuration for Nix binary caches and CUDA support
         packages.${system}.default = poetryApp;
-        environment.systemPackages = with pkgs; [cudatoolkit];
+        environment.systemPackages = with pkgs; [cudaPackages.cudatoolkit];
         hardware.graphics.enable = true;
         boot.kernelPackages = pkgs.linuxPackages_latest;
         boot.kernelParams = [ 
@@ -368,7 +369,7 @@
           buildInputs = with pkgs; [
             git gitRepo gnupg autoconf curl
             procps gnumake util-linux m4 gperf unzip
-            cudatoolkit linuxPackages.nvidia_x11
+            cudaPackages.cudatoolkit linuxPackages.nvidia_x11
             libGLU libGL
             xorg.libXi xorg.libXmu freeglut
             xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
@@ -377,17 +378,17 @@
           ];
           shellHook = ''
             export NIX_CCFLAGS="-/usr/include"
-            export CUDA_PATH=${pkgs.cudatoolkit}
+            export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
             # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
             export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
             export EXTRA_CCFLAGS="-I/usr/include"
           ''; 
 
-          NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
+          NIX_LD = lib.fileContents "${pkgs.cudaPackages.cudatoolkit}/nix-support/dynamic-linker";
           apps.agl_anonymizer_pipeline = {
             buildPhase = ''
               maturin build --release -m pyproject.toml
-              export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
+              export RUSTFLAGS="-C link-arg=-L${pkgs.cudaPackages.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
               rustup target add x86_64-linux
               
             '';
