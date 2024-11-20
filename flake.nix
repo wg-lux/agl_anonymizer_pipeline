@@ -289,6 +289,11 @@
                   final.setuptools
                 ];
               });
+              fst-pso = prev.fst-pso.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools
+                ];
+              });
 
             PIP_NO_CACHE_DIR = "off";
 
