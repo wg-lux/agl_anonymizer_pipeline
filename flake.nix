@@ -267,6 +267,12 @@
                   final.flit
                 ];
               });
+              maturin = prev.maturin.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools-rust
+                  final.rustPkgs
+                ];
+              });
 
             PIP_NO_CACHE_DIR = "off";
 
