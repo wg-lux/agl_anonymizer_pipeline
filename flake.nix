@@ -173,7 +173,7 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudatoolkit
                   final.flit
-                ]
+                ];
               });
 
 
@@ -242,7 +242,7 @@
                   final.hatch-fancy-pypi-readme
                 ];
               });
-              flit = prev.flit.overridePythonAttrs (old: {
+              flit = prev.python311Packages.flit.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
                 ];
