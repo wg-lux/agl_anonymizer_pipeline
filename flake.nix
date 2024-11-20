@@ -152,7 +152,6 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudaPackages.cudatoolkit
                   final.cudaPackages.cudnn
-                  final.cudaPackages.ptxas
                 ];
                 buildPhase = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
@@ -370,7 +369,6 @@
             xorg.libXi xorg.libXmu freeglut
             xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
             ncurses5 stdenv.cc binutils
-            cudaPackages.ptxas
           ];
           shellHook = ''
             export NIX_CCFLAGS="-/usr/include"
