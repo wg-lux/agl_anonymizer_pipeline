@@ -161,13 +161,6 @@
                 '';
               });
 
-              pytorch-revgrade = prev.pytorch-revgrade.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cudatoolkit
-                  final.python311Packages.flit
-                ];
-              });
-
 
             })
           ];
@@ -305,6 +298,7 @@
             torchvision-bin
             torchaudio-bin
             coreutils-full
+            python311Packages.flit
           ];
 
           
