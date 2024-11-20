@@ -152,7 +152,7 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudatoolkit
                   final.cudaPackages.cudnn
-                  final.python311Packages.setuptools-rust
+                  final.cudaPackages.ptxas
                 ];
                 postInstall = ''
                   echo "Linking Triton CUDA libraries"
@@ -365,7 +365,7 @@
             cudaPackages.ptxas
           ];
           shellHook = ''
-#           export NIX_CCFLAGS="-/usr/include"
+            export NIX_CCFLAGS="-/usr/include"
             export CUDA_PATH=${pkgs.cudatoolkit}
             # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
             export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
