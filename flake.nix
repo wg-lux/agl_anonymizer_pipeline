@@ -294,6 +294,11 @@
                   final.setuptools
                 ];
               });
+              fuzzytm = prev.fuzzytm.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools
+                ];
+              });
 
             PIP_NO_CACHE_DIR = "off";
 
