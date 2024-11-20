@@ -242,8 +242,8 @@
                   final.setuptools
                   final.flit
                   final.torch-bin
-                  final.cudaPackages.ptxas
-                  final.cudaPackages.cudatoolkit
+                  final.ptxas
+                  final.cudatoolkit
                 ];
 
                 buildInputs = old.buildInputs or [] ++ [
