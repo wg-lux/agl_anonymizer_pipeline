@@ -245,11 +245,7 @@
                   final.cudaPackages.ptxas
                   final.cudaPackages.cudatoolkit
                 ];
-                buildPhase = ''
-                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
-                  export PATH=${final.cudaPackages.ptxas}/bin:$PATH
-                  ${old.buildPhase or ""}
-                '';
+
                 buildInputs = old.buildInputs or [] ++ [
                   final.rustPkgs
                   prev.hatch-fancy-pypi-readme
