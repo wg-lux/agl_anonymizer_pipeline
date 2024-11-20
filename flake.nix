@@ -148,7 +148,7 @@
                 ];
               });
 
-              triton = prev.triton.overrideAttrs (old: {
+              triton = prev.python311Packages.openai-triton-cuda.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudaPackages.cudatoolkit
                   final.cudaPackages.cudnn
@@ -156,7 +156,7 @@
                 ];
                 buildPhase = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
-                  export PATH=${final.cudaPackages.ptxas}/bin:$PATH
+                  export PATH=${final.cudaPackages.cudatoolkit}/bin/ptxas:$PATH
                   ${old.buildPhase or ""}
                 '';
                 postInstall = ''
