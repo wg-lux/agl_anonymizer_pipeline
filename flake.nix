@@ -154,6 +154,11 @@
                   final.cudaPackages.cudnn
                   final.cudaPackages.ptxas
                 ];
+                buildPhase = ''
+                  export CUDA_HOME=${final.cudatoolkit}
+                  export PATH=${final.cudaPackages.ptxas}/bin:$PATH
+                  ${old.buildPhase or ""}
+                '';
                 postInstall = ''
                   echo "Linking Triton CUDA libraries"
                   export LD_LIBRARY_PATH=${final.cudatoolkit}/lib64:$LD_LIBRARY_PATH
@@ -237,7 +242,13 @@
                   final.setuptools
                   final.flit
                   final.torch-bin
+                  final.cudaPackages.ptxas
                 ];
+                buildPhase = ''
+                  export CUDA_HOME=${final.cudatoolkit}
+                  export PATH=${final.cudaPackages.ptxas}/bin:$PATH
+                  ${old.buildPhase or ""}
+                '';
                 buildInputs = old.buildInputs or [] ++ [
                   final.rustPkgs
                   prev.hatch-fancy-pypi-readme
