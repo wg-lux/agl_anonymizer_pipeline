@@ -262,6 +262,11 @@
                 ];
 
               });
+              pytorch-revgrad = prev.pytorch-revgrad.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.flit
+                ];
+              });
 
             PIP_NO_CACHE_DIR = "off";
 
