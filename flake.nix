@@ -156,6 +156,33 @@
                 ];
               });
 
+              triton = prev.triton.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.cudatoolkit
+                  final.cudaPackages.cudnn
+                  final.python311Packages.setuptools-rust
+                ];
+                postInstall = ''
+                  echo "Linking Triton CUDA libraries"
+                  export LD_LIBRARY_PATH=${final.cudatoolkit}/lib64:$LD_LIBRARY_PATH
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib64 {} \;
+                '';
+              });
+
+              torch-bin = prev.torch-bin.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.cudatoolkit
+                  final.cudaPackages.cudnn
+                  final.python311Packages.setuptools-rust
+                  final.flit
+                ];
+                postInstall = ''
+                  echo "Linking Torch CUDA libraries"
+                  export LD_LIBRARY_PATH=${final.cudatoolkit}/lib64:$LD_LIBRARY_PATH
+                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib64 {} \;
+                '';
+              });
+
 
             })
           ];
@@ -350,18 +377,15 @@
             xorg.libXi xorg.libXmu freeglut
             xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
             ncurses5 stdenv.cc binutils
+            cudaPackages.ptxas
           ];
           shellHook = ''
+#           export NIX_CCFLAGS="-/usr/include"
             export CUDA_PATH=${pkgs.cudatoolkit}
             # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
             export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
             export EXTRA_CCFLAGS="-I/usr/include"
           ''; 
-          NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
-            pkgs.cudatoolkit
-            pkgs.clangStdEnv
-            pkgs.flit
-          ];
 
           NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
           apps.agl_anonymizer_pipeline = {
