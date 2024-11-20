@@ -243,6 +243,7 @@
                   final.flit
                   final.torch-bin
                   final.cudaPackages.ptxas
+                  final.cudaPackages.cudatoolkit
                 ];
                 buildPhase = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
@@ -295,7 +296,7 @@
               python311Packages.setuptools-rust
               rustPkgs
               cudaPackages.saxpy
-              cudaPackages.cudaPackages.cudatoolkit
+              cudaPackages.cudatoolkit
               cudaPackages.cudnn
               mupdf
               pymupdf
