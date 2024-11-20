@@ -28,6 +28,7 @@ gensim = "4.3.0"
 pytesseract = "0.3.13"
 imutils = "0.5.4"
 opencv-python-headless = "4.9.0.80"
+pytorch-revgrad = "0.2.0"
 flair = "0.13.1"
 transformers = "4.43.0"
 
