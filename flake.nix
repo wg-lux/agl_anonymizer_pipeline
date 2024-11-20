@@ -81,12 +81,31 @@
 
           overlays = [
             (final: prev: {
+                            cython = prev.python311Packages.cython.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
+              wheel = prev.python311Packages.wheel.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
+              blas = prev.python311Packages.blas.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.stdenv.cc.cc
+                  final.clang
+                ];
+              });
 
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.pkg-config
                   final.libclang
+                  final.blas
                 ];
                 buildInputs = old.buildInputs or [] ++ [
                   # Include necessary dependencies
@@ -164,24 +183,7 @@
                   find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudaPackages.cudatoolkit}/lib64 {} \;
                 '';
               });
-              cython = prev.python311Packages.cython.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.python311
-                  final.hatchling
-                ];
-              });
-              wheel = prev.python311Packages.wheel.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.python311
-                  final.hatchling
-                ];
-              });
-              blas = prev.python311Packages.blas.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.stdenv.cc.cc
-                  final.clang
-                ];
-              });
+
 
 
             })
