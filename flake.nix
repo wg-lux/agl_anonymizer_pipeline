@@ -33,7 +33,6 @@
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, naersk, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
-      programs.nix-ld.enable = true;
       pks = import nixpkgs { inherit system; };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {};
 
@@ -313,6 +312,20 @@
         {
         # Configuration for Nix binary caches and CUDA support
         packages.${system}.default = poetryApp;
+        environment.systemPackages = with pkgs; [cudatoolkit];
+        hardware.graphics.enable = true;
+        boot.kernelPackages = pkgs.linuxPackages_latest;
+        boot.kernelParams = [ 
+          "nvidia-drm.modeset=1"
+          "nvidia-drm.fbdev=1"
+        ];
+        hardware.nvidia = {
+          powerManagement = {
+            enable = true;
+            finegrained = false;
+          };
+          nvidiaSettings = true;
+        };
 
         nixConfig = {
           binary-caches = [
