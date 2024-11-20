@@ -325,7 +325,6 @@
                   final.wheel
                   final.cython
                   final.stdenv.cc.cc
-                  final.blas
                 ];
                 buildInputs = old.buildInputs or [] ++ [
                   final.numpy
