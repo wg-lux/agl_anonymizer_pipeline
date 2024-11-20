@@ -357,6 +357,11 @@
             export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
             export EXTRA_CCFLAGS="-I/usr/include"
           ''; 
+          NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
+            pkgs.cudatoolkit
+            pkgs.clangStdEnv
+            pkgs.flit
+          ];
 
           NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
           apps.agl_anonymizer_pipeline = {
