@@ -148,14 +148,6 @@
                 ];
               });
 
-              flit = prev.python311Packages.flit.overrideAttrs (old: {
-                dontStrip = false;
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.python311
-                  final.hatchling
-                ];
-              });
-
               triton = prev.triton.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudatoolkit
@@ -172,7 +164,7 @@
               pytorch-revgrade = prev.pytorch-revgrade.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudatoolkit
-                  final.flit
+                  final.python311Packages.flit
                 ];
               });
 
