@@ -176,6 +176,12 @@
                   final.hatchling
                 ];
               });
+              blas = prev.python311Packages.blas.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.stdenv.cc.cc
+                  final.clang
+                ];
+              });
 
 
             })
@@ -348,7 +354,6 @@
               python311Packages.wheel
               python311Packages.cython
               blas
-
               ];
 
           buildInputs = with pkgs.python311Packages; [
