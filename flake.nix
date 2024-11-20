@@ -282,9 +282,7 @@
               python311Packages.hatch-fancy-pypi-readme
               flit
               ftfy
-              cudaPackages.cuda_nvcc
-              llvmPackages
-            ];
+              ];
 
           buildInputs = with pkgs.python311Packages; [
             # Runtime dependencies
@@ -344,19 +342,29 @@
         ];
 
         mkShell = {
-          NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
-            pkgs.cudatoolkit
-            pkgs.clangStdEnv
-            pkgs.cudaPackages.cuda_nvcc
-            pkgs.flit
-
+          buildInputs = with pkgs; [
+            git gitRepo gnupg autoconf curl
+            procps gnumake util-linux m4 gperf unzip
+            cudatoolkit linuxPackages.nvidia_x11
+            libGLU libGL
+            xorg.libXi xorg.libXmu freeglut
+            xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
+            ncurses5 stdenv.cc binutils
           ];
+          shellHook = ''
+            export CUDA_PATH=${pkgs.cudatoolkit}
+            # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
+            export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
+            export EXTRA_CCFLAGS="-I/usr/include"
+          ''; 
+
           NIX_LD = lib.fileContents "${pkgs.cudatoolkit}/nix-support/dynamic-linker";
           apps.agl_anonymizer_pipeline = {
             buildPhase = ''
               maturin build --release -m pyproject.toml
               export RUSTFLAGS="-C link-arg=-L${pkgs.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
               rustup target add x86_64-linux
+              
             '';
             type = "app";
             program = "${poetryApp}/bin/agl_anonymizer_pipeline";
