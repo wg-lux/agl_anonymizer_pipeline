@@ -169,18 +169,11 @@
                 '';
               });
 
-              torch-bin = prev.torch-bin.overrideAttrs (old: {
+              pytorch-revgrade = prev.pytorch-revgrade.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.cudatoolkit
-                  final.cudaPackages.cudnn
-                  final.python311Packages.setuptools-rust
                   final.flit
-                ];
-                postInstall = ''
-                  echo "Linking Torch CUDA libraries"
-                  export LD_LIBRARY_PATH=${final.cudatoolkit}/lib64:$LD_LIBRARY_PATH
-                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudatoolkit}/lib64 {} \;
-                '';
+                ]
               });
 
 
