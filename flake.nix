@@ -93,7 +93,7 @@
                   final.hatchling
                 ];
               });
-              blas = prev.python311Packages.blas.overrideAttrs (old: {
+              blas = prev.blas.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.stdenv.cc.cc
                   final.clang
