@@ -317,6 +317,7 @@
                   final.wheel
                   final.cython
                   final.stdenv.cc.cc
+                  final.blas
                 ];
                 buildInputs = old.buildInputs or [] ++ [
                   final.numpy
@@ -344,8 +345,9 @@
               python311Packages.flit
               ftfy
               stdenv.cc.cc
-              wheel
+              python311Packages.wheel
               python311Packages.cython
+              blas
 
               ];
 
