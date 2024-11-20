@@ -301,13 +301,13 @@
               });
               gensim = prev.gensim.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.python311Packages.setuptools
-                  final.python311Packages.wheel
-                  final.python311Packages.cython
+                  final.setuptools
+                  final.wheel
+                  final.cython
                   final.stdenv.cc.cc
                 ];
                 buildInputs = old.buildInputs or [] ++ [
-                  final.python311Packages.numpy
+                  final.numpy
                 ];
               });
 
