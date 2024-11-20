@@ -164,6 +164,18 @@
                   find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudaPackages.cudatoolkit}/lib64 {} \;
                 '';
               });
+              cython = prev.python311Packages.cython.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
+              wheel = prev.python311Packages.wheel.overrideAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.python311
+                  final.hatchling
+                ];
+              });
 
 
             })
@@ -331,6 +343,10 @@
               python311Packages.hatch-fancy-pypi-readme
               python311Packages.flit
               ftfy
+              stdenv.cc.cc
+              wheel
+              python311Packages.cython
+
               ];
 
           buildInputs = with pkgs.python311Packages; [
@@ -349,6 +365,7 @@
             torchaudio-bin
             coreutils-full
             python311Packages.flit
+            
           ];
 
           
