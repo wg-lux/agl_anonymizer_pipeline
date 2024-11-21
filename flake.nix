@@ -192,6 +192,16 @@
             python = pkgs.python311;
             projectDir = ./.;  # Points to the project directory
             preferWheels = true;  # Disable wheel preference
+            nativeBuildInputs = with pkgs; [
+              cudaPackages.cuda_nvcc
+              cudaPackages.cudatoolkit
+              setuptools
+            ];
+            buildInputs = with pkgs; [
+              cudaPackages.cuda_nvcc
+              cudaPackages.cudatoolkit
+            ];
+
 
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
