@@ -201,7 +201,7 @@
               });
 
               # And triton
-              triton = prev.triton.overridePythonAttrs (old: {
+              triton = prev.triton.overrideAttrs (old: {
                 format = "wheel";
                 preferWheel = true;
                 
