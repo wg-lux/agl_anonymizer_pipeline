@@ -179,83 +179,27 @@
                 ];
               });
 
-              # In your poetryApp overrides
-              flair = prev.flair.overridePythonAttrs (old: {
-                format = "wheel";  # Force wheel format
-                preferWheel = true;
-                
-                buildInputs = old.buildInputs or [] ++ [
-                  final.python311Packages.torch-bin  # Use pre-built torch
-                ];
-                
-                propagatedBuildInputs = old.propagatedBuildInputs or [] ++ [
-                  final.python311Packages.torch-bin
-                  final.python311Packages.transformers
-                ];
-              });
-
-              # Also modify torch to use pre-built version
-              torch = prev.torch-bin.overridePythonAttrs (old: {
-                format = "wheel";
-                preferWheel = true;
-              });
-
-              triton = prev.triton.overrideAttrs (old: {
+              triton = prev.triton.overridePythonAttrs (old: {
                 format = "wheel";
                 preferWheel = true;
                 
-                nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
-                  final.cudaPackages.cuda_nvcc
-                  final.cudaPackages.cudatoolkit
-                  final.nodejs
-                  final.git
-                  final.which
-                  final.gnumake  # Add make
-                ];
+                # Use specific version known to work with PyTorch
+                version = "2.1.0";  # or another stable version
                 
-                buildInputs = (old.buildInputs or []) ++ [
-                  final.cudaPackages.cuda_nvcc
+                propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
                   final.cudaPackages.cudatoolkit
-                  final.git
-                  final.which
+                  final.cudaPackages.cuda_nvcc
                 ];
 
-                # Initialize git repo and set version
-                preBuild = ''
-                  git init
-                  git config --global user.email "nix@builder"
-                  git config --global user.name "Nix"
-                  git add .
-                  git commit -m "Initial commit"
-                  # If there's a version file or similar, we might need to create it:
-                  echo "7.17.0" > VERSION
+                # Skip build phases since we're using wheel
+                dontBuild = true;
+                dontInstall = false;
+
+                # Set environment variables
+                postFixup = ''
+                  mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
+                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
-
-                buildPhase = ''
-                  # Create required directories
-                  mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin
-
-                  # Copy CUDA binaries
-                  cp ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
-                  chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
-
-                  # Build the project
-                  make
-                '';
-
-                installPhase = ''
-                  make install PREFIX=$out
-                '';
-
-                shellHook = ''
-                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
-                  export CUDA_PATH=${final.cudaPackages.cudatoolkit}
-                  export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
-                  export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
-                '';
-
-                dontStrip = true;
-                dontNpmInstall = true;
               });
             })
           ];
@@ -339,21 +283,13 @@
                   final.setuptools
                 ];
               });
-              torch = prev.torch-bin.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.setuptools
-                  final.triton
-                ];
-              });
+              torch = prev.torch-bin;  # Use pre-built torch
+    
               flair = prev.flair.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.setuptools
-                  final.flit
-                  final.torch
-                  final.triton
-                ];
-
-                buildInputs = old.buildInputs or [] ++ [
+                format = "wheel";
+                preferWheel = true;
+                buildInputs = (old.buildInputs or []) ++ [
+                  final.torch-bin
                   final.rustPkgs
                   prev.hatch-fancy-pypi-readme
                 ];
