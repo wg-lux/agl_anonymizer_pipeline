@@ -18,6 +18,10 @@
     substitute = true;  # Enable substitution
     trust-substituters = true;  # Trust binary caches
     builders-use-substitutes = true;  # Allow builders to use substitutes
+    extra-sandbox-paths = [
+      "/usr/lib64/"
+    ];
+    sandbox = false;  # Disable the sandbox for building
   };
 
   # Inputs: Define where Nix packages, poetry2nix, and cachix are sourced
