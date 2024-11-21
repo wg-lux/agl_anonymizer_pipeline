@@ -287,12 +287,17 @@
                   final.setuptools
                 ];
               });
+              torch = prev.torch-bin.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools
+                  final.triton
+                ];
+              });
               flair = prev.flair.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
                   final.flit
-                  final.torch-bin
-                  final.triton
+                  final.torch
                 ];
 
                 buildInputs = old.buildInputs or [] ++ [
