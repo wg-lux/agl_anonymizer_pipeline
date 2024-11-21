@@ -362,7 +362,10 @@
 
         
       });
-      devShell = pkgs.mkshell {
+
+
+      };
+      devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
           git
           cudaPackages.cudatoolkit
@@ -379,9 +382,6 @@
         export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
         export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
         '';
-      };
-      }
-
       };
       
 
