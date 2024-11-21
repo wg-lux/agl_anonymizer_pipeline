@@ -180,24 +180,8 @@
               });
 
               triton = prev.python311Packages.triton.overrideAttrs (old: {
-                format = "setuptools";
-                nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
-                  final.cmake
-                  final.ninja
-                  final.pkg-config
-
-                  final.cudaPackages.cuda_nvcc
-                  final.cudaPackages.cudatoolkit
-
-                  final.llvmPackages.llvm
-                  final.llvmPackages.clang
-                  
-                ];
-                
-                buildInputs = (old.buildInputs or []) ++ [
-                  final.cudaPackages.cuda_nvcc
-                  final.cudaPackages.cudatoolkit
-                ];
+                format = "wheel";  # Force wheel format
+                preferWheel = true;
 
                 # Move directory creation and environment setup earlier in the build process
                 preConfigure = ''
