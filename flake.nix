@@ -208,14 +208,17 @@
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
                   final.nodejs
+                  final.git    # Add git
+                  final.which  # Add which
                 ];
                 
                 buildInputs = (old.buildInputs or []) ++ [
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
+                  final.git    # Add git here too for runtime
+                  final.which  # Add which here too for runtime
                 ];
 
-                # Create directory structure during the build phase
                 buildPhase = ''
                   # Create required directories
                   mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin
@@ -225,7 +228,6 @@
                   chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
 
-                # Set environment variables
                 shellHook = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export CUDA_PATH=${final.cudaPackages.cudatoolkit}
@@ -233,10 +235,7 @@
                   export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
                 '';
 
-                # Don't strip binaries to preserve compatibility
                 dontStrip = true;
-
-                # Skip the default npm install since we're handling it ourselves
                 dontNpmInstall = true;
               });
             })
