@@ -200,16 +200,14 @@
                 preferWheel = true;
               });
 
-             triton = prev.triton.overrideAttrs (old: {
-                # Keep wheel format for Python components
+              triton = prev.triton.overrideAttrs (old: {
                 format = "wheel";
                 preferWheel = true;
                 
-                # Add build dependencies
                 nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
-                  final.nodejs  # For npm install
+                  final.nodejs
                 ];
                 
                 buildInputs = (old.buildInputs or []) ++ [
@@ -217,17 +215,13 @@
                   final.cudaPackages.cudatoolkit
                 ];
 
-                # Create directory structure earlier
-                preBuild = ''
-                  mkdir -p $TMP/triton/backends/nvidia/bin
-                  cp ${final.cudaPackages.cuda_nvcc}/bin/ptxas $TMP/triton/backends/nvidia/bin/
-                  chmod +wx $TMP/triton/backends/nvidia/bin/ptxas
-                '';
-
-                # Move files to final location
-                postInstall = ''
+                # Create directory structure during the build phase
+                buildPhase = ''
+                  # Create required directories
                   mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin
-                  cp $TMP/triton/backends/nvidia/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
+
+                  # Copy CUDA binaries
+                  cp ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
                   chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
 
@@ -239,8 +233,11 @@
                   export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
                 '';
 
-                # Don't strip binaries
+                # Don't strip binaries to preserve compatibility
                 dontStrip = true;
+
+                # Skip the default npm install since we're handling it ourselves
+                dontNpmInstall = true;
               });
             })
           ];
