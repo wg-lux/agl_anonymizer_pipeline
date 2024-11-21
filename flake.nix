@@ -197,7 +197,6 @@
                 ];
 
                 # Skip build phases since we're using wheel
-                dontBuild = true;
                 dontInstall = false;
 
                 # Set environment variables
