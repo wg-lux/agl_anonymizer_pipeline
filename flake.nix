@@ -214,6 +214,7 @@
                   final.python311Packages.wheel
                   final.python311Packages.cython
                   final.stdenv.cc.cc
+                  final.rustPkgs
                 ];
               });
             })
