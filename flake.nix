@@ -208,16 +208,28 @@
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
                   final.nodejs
-                  final.git    # Add git
-                  final.which  # Add which
+                  final.git
+                  final.which
+                  final.gnumake  # Add make
                 ];
                 
                 buildInputs = (old.buildInputs or []) ++ [
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
-                  final.git    # Add git here too for runtime
-                  final.which  # Add which here too for runtime
+                  final.git
+                  final.which
                 ];
+
+                # Initialize git repo and set version
+                preBuild = ''
+                  git init
+                  git config --global user.email "nix@builder"
+                  git config --global user.name "Nix"
+                  git add .
+                  git commit -m "Initial commit"
+                  # If there's a version file or similar, we might need to create it:
+                  echo "7.17.0" > VERSION
+                '';
 
                 buildPhase = ''
                   # Create required directories
@@ -226,6 +238,13 @@
                   # Copy CUDA binaries
                   cp ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
                   chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
+
+                  # Build the project
+                  make
+                '';
+
+                installPhase = ''
+                  make install PREFIX=$out
                 '';
 
                 shellHook = ''
