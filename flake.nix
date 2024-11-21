@@ -201,38 +201,47 @@
               });
 
              triton = prev.triton.overrideAttrs (old: {
+                # Keep wheel format for Python components
                 format = "wheel";
                 preferWheel = true;
+                
+                # Add build dependencies
+                nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+                  final.cudaPackages.cuda_nvcc
+                  final.cudaPackages.cudatoolkit
+                  final.nodejs  # For npm install
+                ];
                 
                 buildInputs = (old.buildInputs or []) ++ [
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
                 ];
-                
-                propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
-                  final.cudaPackages.cuda_nvcc
-                  final.cudaPackages.cudatoolkit
-                ];
 
-                # Create directory structure and symlinks in the correct location
-                preInstall = ''
-                  mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
-                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
+                # Create directory structure earlier
+                preBuild = ''
+                  mkdir -p $TMP/triton/backends/nvidia/bin
+                  cp ${final.cudaPackages.cuda_nvcc}/bin/ptxas $TMP/triton/backends/nvidia/bin/
+                  chmod +wx $TMP/triton/backends/nvidia/bin/ptxas
                 '';
 
+                # Move files to final location
                 postInstall = ''
+                  mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin
+                  cp $TMP/triton/backends/nvidia/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
                   chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
 
-                # Set CUDA environment
+                # Set environment variables
                 shellHook = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export CUDA_PATH=${final.cudaPackages.cudatoolkit}
                   export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
                   export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
                 '';
-              });
 
+                # Don't strip binaries
+                dontStrip = true;
+              });
             })
           ];
 
