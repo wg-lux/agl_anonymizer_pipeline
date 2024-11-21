@@ -195,7 +195,7 @@
             nativeBuildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
-              setuptools
+              python311Packages.setuptools
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
