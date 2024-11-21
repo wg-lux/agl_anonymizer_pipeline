@@ -181,6 +181,7 @@
 
               triton = prev.triton.overrideAttrs (old: {
                 format = "wheel";
+                sandbox = false;
                 preferWheel = true;
                 
                 # Use specific version known to work with PyTorch
