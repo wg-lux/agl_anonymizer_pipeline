@@ -304,7 +304,7 @@
                 format = "wheel";
                 preferWheel = true;
                 buildInputs = (old.buildInputs or []) ++ [
-                  final.torch-bin
+                  final.torch
                   final.rustPkgs
                   prev.hatch-fancy-pypi-readme
                 ];
