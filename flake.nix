@@ -190,19 +190,30 @@
                   final.cudaPackages.cudatoolkit
                 ];
 
-                # Ensure CUDA paths are properly set during build
-                preBuild = ''
+                # Move directory creation and environment setup earlier in the build process
+                preConfigure = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export CUDA_PATH=${final.cudaPackages.cudatoolkit}
                   export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
-                  mkdir -p $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
-                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/ptxas
+                  
+                  # Create directories before the build starts
+                  mkdir -p $TMPDIR/triton/third_party/cuda/bin/
+                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $TMPDIR/triton/third_party/cuda/bin/ptxas
+                  
+                  # Ensure the build system can find ptxas
+                  export PYTHONPATH=$TMPDIR:$PYTHONPATH
                 '';
 
-                # Skip the problematic chmod command
-                postFixup = ''
-                  echo "Skipping chmod on ptxas"
+                # Modify the install phase to handle the cuda directory
+                postInstall = ''
+                  # Create the final directory structure
+                  mkdir -p $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
+                  cp -r $TMPDIR/triton/third_party/cuda/bin/ptxas $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
+                  chmod +x $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/ptxas
                 '';
+
+                # Remove the previous postFixup if it exists
+                postFixup = "";
               });
 
             })
