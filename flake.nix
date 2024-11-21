@@ -200,21 +200,36 @@
                 preferWheel = true;
               });
 
-              # And triton
-              triton = prev.triton.overrideAttrs (old: {
+             triton = prev.triton.overrideAttrs (old: {
                 format = "wheel";
                 preferWheel = true;
                 
-                # Add CUDA runtime dependencies
-                propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
-                  final.cudaPackages.cudatoolkit
+                buildInputs = (old.buildInputs or []) ++ [
                   final.cudaPackages.cuda_nvcc
+                  final.cudaPackages.cudatoolkit
                 ];
                 
-                # Set necessary environment variables
-                preBuild = ''
+                propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
+                  final.cudaPackages.cuda_nvcc
+                  final.cudaPackages.cudatoolkit
+                ];
+
+                # Create directory structure and symlinks in the correct location
+                preInstall = ''
+                  mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
+                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
+                '';
+
+                postInstall = ''
+                  chmod +x $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
+                '';
+
+                # Set CUDA environment
+                shellHook = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export CUDA_PATH=${final.cudaPackages.cudatoolkit}
+                  export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
+                  export LD_LIBRARY_PATH="${final.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
                 '';
               });
 
