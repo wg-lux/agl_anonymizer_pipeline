@@ -205,6 +205,17 @@
                   ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
               });
+              torch = prev.torch-bin.overridePythonAttrs (old: {
+                format = "wheel";
+                preferWheel = true;
+                sandbox = false;
+                buildInputs = (old.buildInputs or []) ++ [
+                  final.python311Packages.setuptools
+                  final.python311Packages.wheel
+                  final.python311Packages.cython
+                  final.stdenv.cc.cc
+                ];
+              });
             })
           ];
 
@@ -287,7 +298,7 @@
                   final.setuptools
                 ];
               });
-              torch = prev.torch-bin;  # Use pre-built torch
+              torch = prev.torch;  # Use pre-built torch
     
               flair = prev.flair.overridePythonAttrs (old: {
                 format = "wheel";
