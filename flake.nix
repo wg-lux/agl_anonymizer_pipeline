@@ -222,10 +222,12 @@
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
               python311Packages.setuptools
+              triton
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
+              triton
             ];
 
 
