@@ -193,10 +193,6 @@
                   final.linuxPackages.nvidia_x11
                   final.cudaPackages.cudnn
                   final.cudaPackages.saxpy
-                  final.cudaPackages.cublas
-                  final.cudaPackages.cufft
-                  final.cudaPackages.cusolver
-                  final.cudaPackages.cusparse
                   final.llvmPackages.llvm
                 ];
 
