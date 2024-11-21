@@ -180,9 +180,18 @@
               });
 
               triton = prev.python311Packages.triton.overrideAttrs (old: {
+                format = "setuptools";
                 nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+                  final.cmake
+                  final.ninja
+                  final.pkg-config
+
                   final.cudaPackages.cuda_nvcc
                   final.cudaPackages.cudatoolkit
+
+                  final.llvmPackages.llvm
+                  final.llvmPackages.clang
+                  
                 ];
                 
                 buildInputs = (old.buildInputs or []) ++ [
