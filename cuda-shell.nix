@@ -10,14 +10,17 @@ pkgs.mkShell {
      xorg.libXi xorg.libXmu freeglut
      xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
      ncurses5 stdenv.cc binutils
+     cudaPackages.cudatoolkit
    ];
    shellHook = ''
-      export CUDA_PATH=${pkgs.cudatoolkit}
+      export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
       # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
       export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
       export EXTRA_CCFLAGS="-I/usr/include"
-      export LD_LIBRARY_PATH=${pkgs.cudatoolkit}/lib64:$LD_LIBRARY_PATH
-      export EXTRA_LDFLAGS="-L${pkgs.cudatoolkit}/lib64"
-      export EXTRA_CCFLAGS="-I${pkgs.cudatoolkit}/include"
+      export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib64:$LD_LIBRARY_PATH
+      export EXTRA_LDFLAGS="-L${pkgs.cudaPackages.cudatoolkit}/lib64"
+      export EXTRA_CCFLAGS="-I${pkgs.cudaPackages.cudatoolkit}/include"
+      export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
+
    '';          
 }

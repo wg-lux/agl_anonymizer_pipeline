@@ -170,8 +170,6 @@
                 ];
               });
 
-
-
             })
           ];
 
@@ -187,7 +185,6 @@
         
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
-            
             projectDir = ./.;  # Points to the project directory
             preferWheels = true;  # Disable wheel preference
 
@@ -342,7 +339,6 @@
           python311Packages.wheel
           python311Packages.cython
           blas
-          openai-triton-cuda
           ];
 
         buildInputs = with pkgs.python311Packages; [
@@ -355,6 +351,7 @@
           sympy
           tokenizers
           tomlkit
+          cudaPackages.cudaPackages.cudatoolkit
           torch-bin
           torchvision-bin
           torchaudio-bin
@@ -365,6 +362,25 @@
 
         
       });
+      devShell = pkgs.mkshell {
+        buildInputs = with pkgs; [
+          git
+          cudaPackages.cudatoolkit
+          linuxPackages.nvidia_x11
+          libGLU
+          libGL
+          xorg.libXi
+          xorg.libXmu
+          freeglut
+        ];
+
+        shellHook = ''
+        export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
+        export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
+        export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
+        '';
+      };
+      }
 
       };
       
@@ -373,40 +389,9 @@
       {
       # Configuration for Nix binary caches and CUDA support
       packages.${system}.default = poetryApp;
-      environment.systemPackages = with pkgs; [cudaPackages.cudatoolkit];
-      hardware.graphics.enable = true;
-      boot.kernelPackages = pkgs.linuxPackages_latest;
-      boot.kernelParams = [ 
-        "nvidia-drm.modeset=1"
-        "nvidia-drm.fbdev=1"
-      ];
-      hardware.nvidia = {
-        powerManagement = {
-          enable = true;
-          finegrained = false;
-        };
-        nvidiaSettings = true;
-      };
 
-      nixConfig = {
-        binary-caches = [
-          nvidiaCache.binaryCachePublicUrl
-        ];
-        binary-cache-public-keys = [
-          nvidiaCache.publicKey
-        ];
-        cudaSupport = true;  # Enable CUDA support in the Nix environment
-        programs.nix-ld.enable = true;  # Enable the nix-ld program
-      };
-      configureFlags = [
+      devShells.${system}.default = devShell;
 
-        "--prefix=$out"
-        "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
-      ];
-
-      
-
-      NIX_LD = lib.fileContents "${pkgs.cudaPackages.cudatoolkit}/nix-support/dynamic-linker";
       apps.agl_anonymizer_pipeline = {
         buildPhase = ''
           maturin build --release -m pyproject.toml
