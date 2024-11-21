@@ -193,7 +193,7 @@
                   final.linuxPackages.nvidia_x11
                   final.cudaPackages.cudnn
                   final.cudaPackages.saxpy
-                  final.llvmPackages.llvm
+                  final.libllvm
                 ];
 
                 # Skip build phases since we're using wheel
@@ -239,11 +239,23 @@
               python311Packages.setuptools
               linuxPackages.nvidia_x11
               llvmPackages.llvm
+              llvmPackages.libllvm
+              rustc
+              cargo
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
+              llvmPackages.llvm
+              llvmPackages.libllvm
             ];
+              # Add environment variables for LLVM
+            LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
+            LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+            
+            # For the rust build
+            RUST_BACKTRACE = "1";
+            RUSTFLAGS = "-C target-cpu=native";
 
 
             overrides = defaultPoetryOverrides.extend
@@ -251,6 +263,17 @@
               {
               rustPkgs = naersk'.buildPackage {
                     src = ./rust;
+                      buildInputs = with pkgs; [
+                        llvmPackages.llvm
+                        llvmPackages.libllvm
+                        rustc
+                        cargo
+                      ];
+                      
+                      # Add LLVM environment variables
+                      LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
+                      LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+                      RUST_BACKTRACE = "1";
               };
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
@@ -297,6 +320,15 @@
                 buildInputs = old.buildInputs or [] ++ [
                   final.setuptools
                 ];
+              });
+              rustc-llvm-proxy = prev.rustc-llvm-proxy.overrideAttrs (old: {
+                buildInputs = (old.buildInputs or []) ++ [
+                  final.llvmPackages.llvm
+                  final.llvmPackages.libllvm
+                ];
+                
+                LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
+                LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
               });
               torch = prev.torch;  # Use pre-built torch
     
@@ -370,6 +402,7 @@
                   final.numpy
                 ];
               });
+              
 
 
         PIP_NO_CACHE_DIR = "off";
@@ -431,6 +464,8 @@
           xorg.libXi
           xorg.libXmu
           freeglut
+          llvmPackages_12.stdenv
+          libllvm
         ];
 
         shellHook = ''
