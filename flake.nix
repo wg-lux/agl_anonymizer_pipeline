@@ -326,6 +326,7 @@
                   final.setuptools
                   final.flit
                   final.torch
+                  final.triton
                 ];
 
                 buildInputs = old.buildInputs or [] ++ [
