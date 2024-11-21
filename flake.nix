@@ -175,6 +175,32 @@
                 ];
               });
 
+              triton = prev.python311Packages.triton.overrideAttrs (old: {
+                nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+                  final.cudaPackages.cuda_nvcc
+                  final.cudaPackages.cudatoolkit
+                ];
+                
+                buildInputs = (old.buildInputs or []) ++ [
+                  final.cudaPackages.cuda_nvcc
+                  final.cudaPackages.cudatoolkit
+                ];
+
+                # Ensure CUDA paths are properly set during build
+                preBuild = ''
+                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
+                  export CUDA_PATH=${final.cudaPackages.cudatoolkit}
+                  export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
+                  mkdir -p $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
+                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/ptxas
+                '';
+
+                # Skip the problematic chmod command
+                postFixup = ''
+                  echo "Skipping chmod on ptxas"
+                '';
+              });
+
             })
           ];
 
