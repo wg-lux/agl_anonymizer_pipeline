@@ -179,30 +179,42 @@
                 ];
               });
 
-              triton = prev.python311Packages.triton.overrideAttrs (old: {
+              # In your poetryApp overrides
+              flair = prev.flair.overridePythonAttrs (old: {
                 format = "wheel";  # Force wheel format
                 preferWheel = true;
+                
+                buildInputs = old.buildInputs or [] ++ [
+                  final.python311Packages.torch-bin  # Use pre-built torch
+                ];
+                
+                propagatedBuildInputs = old.propagatedBuildInputs or [] ++ [
+                  final.python311Packages.torch-bin
+                  final.python311Packages.transformers
+                ];
+              });
 
-                # Move directory creation and environment setup earlier in the build process
-                preConfigure = ''
+              # Also modify torch to use pre-built version
+              torch = prev.torch-bin.overridePythonAttrs (old: {
+                format = "wheel";
+                preferWheel = true;
+              });
+
+              # And triton
+              triton = prev.triton.overridePythonAttrs (old: {
+                format = "wheel";
+                preferWheel = true;
+                
+                # Add CUDA runtime dependencies
+                propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
+                  final.cudaPackages.cudatoolkit
+                  final.cudaPackages.cuda_nvcc
+                ];
+                
+                # Set necessary environment variables
+                preBuild = ''
                   export CUDA_HOME=${final.cudaPackages.cudatoolkit}
                   export CUDA_PATH=${final.cudaPackages.cudatoolkit}
-                  export PATH=${final.cudaPackages.cuda_nvcc}/bin:$PATH
-                  
-                  # Create directories before the build starts
-                  mkdir -p $TMPDIR/triton/third_party/cuda/bin/
-                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $TMPDIR/triton/third_party/cuda/bin/ptxas
-                  
-                  # Ensure the build system can find ptxas
-                  export PYTHONPATH=$TMPDIR:$PYTHONPATH
-                '';
-
-                # Modify the install phase to handle the cuda directory
-                postInstall = ''
-                  # Create the final directory structure
-                  mkdir -p $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
-                  cp -r $TMPDIR/triton/third_party/cuda/bin/ptxas $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
-                  chmod +x $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/ptxas
                 '';
               });
 
