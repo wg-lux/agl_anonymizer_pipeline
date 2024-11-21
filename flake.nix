@@ -211,9 +211,6 @@
                   cp -r $TMPDIR/triton/third_party/cuda/bin/ptxas $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/
                   chmod +x $out/lib/python3.11/site-packages/triton/third_party/cuda/bin/ptxas
                 '';
-
-                # Remove the previous postFixup if it exists
-                postFixup = "";
               });
 
             })
