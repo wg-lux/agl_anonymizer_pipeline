@@ -170,24 +170,6 @@
                 ];
               });
 
-              triton = prev.python311Packages.openai-triton-cuda.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.cudaPackages.cudatoolkit
-                  final.cudaPackages.cudnn
-                ];
-                buildPhase = ''
-                  export CUDA_HOME=${final.cudaPackages.cudatoolkit}
-                  export PATH=${final.cudaPackages.cudatoolkit}/bin/ptxas:$PATH
-                  ${old.buildPhase or ""}
-                '';
-                postInstall = ''
-                  echo "Linking Triton CUDA libraries"
-                  export LD_LIBRARY_PATH=${final.cudaPackages.cudatoolkit}/lib64:$LD_LIBRARY_PATH
-                  export LD_LIBRARY_PATH=${final.cudaPackages.cudatoolkit}/bin/ptxas:$LD_LIBRARY_PATH
-                  find $out/lib/python3.11/site-packages/ -name "*.so" -exec patchelf --set-rpath ${final.cudaPackages.cudatoolkit}/lib64 {} \;
-                '';
-              });
-
 
 
             })
@@ -205,6 +187,7 @@
         
         poetryApp = mkPoetryApplication {
             python = pkgs.python311;
+            
             projectDir = ./.;  # Points to the project directory
             preferWheels = true;  # Disable wheel preference
 
@@ -372,7 +355,6 @@
           sympy
           tokenizers
           tomlkit
-          cudaPackages.cudaPackages.cudatoolkit
           torch-bin
           torchvision-bin
           torchaudio-bin
@@ -422,36 +404,20 @@
         "--localstatedir=$NIX_BUILD_TOP" # Redirect state files to tmp directory
       ];
 
-      mkShell = {
-        buildInputs = with pkgs; [
-          git gitRepo gnupg autoconf curl
-          procps gnumake util-linux m4 gperf unzip
-          cudaPackages.cudatoolkit linuxPackages.nvidia_x11
-          libGLU libGL
-          xorg.libXi xorg.libXmu freeglut
-          xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
-          ncurses5 stdenv.cc binutils
-        ];
-        shellHook = ''
-          export NIX_CCFLAGS="-/usr/include"
-          export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
-          # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
-          export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
-          export EXTRA_CCFLAGS="-I/usr/include"
-        ''; 
+      
 
-        NIX_LD = lib.fileContents "${pkgs.cudaPackages.cudatoolkit}/nix-support/dynamic-linker";
-        apps.agl_anonymizer_pipeline = {
-          buildPhase = ''
-            maturin build --release -m pyproject.toml
-            export RUSTFLAGS="-C link-arg=-L${pkgs.cudaPackages.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
-            rustup target add x86_64-linux
-            
-          '';
-          type = "app";
-          program = "${poetryApp}/bin/agl_anonymizer_pipeline";
-        };
+      NIX_LD = lib.fileContents "${pkgs.cudaPackages.cudatoolkit}/nix-support/dynamic-linker";
+      apps.agl_anonymizer_pipeline = {
+        buildPhase = ''
+          maturin build --release -m pyproject.toml
+          export RUSTFLAGS="-C link-arg=-L${pkgs.cudaPackages.cudatoolkit}/lib64 -C link-arg=-lcudart -C link-arg=-lcudnn"
+          rustup target add x86_64-linux
+          
+        '';
+        type = "app";
+        program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
+      
 
     };
 
