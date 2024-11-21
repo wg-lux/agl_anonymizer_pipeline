@@ -21,7 +21,6 @@ checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
 name = "agl_anonymizer_pipeline"
 version = "0.1.12"
 dependencies = [
- "llvm-lib",
  "maturin",
  "ptx-linker",
  "pyo3-setup",
@@ -1512,16 +1511,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "643cb0b8d4fcc284004d5fd0d67ccf61dfffadb7f75e1e71bc420f4688a3a704"
 
 [[package]]
-name = "llvm-lib"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e946dc7b7eebd988d5306fbaf48b8ed33ba14ec2713e8aebbe053d62f27c3f75"
-dependencies = [
- "libc",
- "llvm-sys 191.0.0",
-]
-
-[[package]]
 name = "llvm-sys"
 version = "80.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1532,20 +1521,6 @@ dependencies = [
  "libc",
  "regex",
  "semver 0.9.0",
-]
-
-[[package]]
-name = "llvm-sys"
-version = "191.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "893cddf1adf0354b93411e413553dd4daf5c43195d73f1acfa1e394bdd371456"
-dependencies = [
- "anyhow",
- "cc",
- "lazy_static",
- "libc",
- "regex-lite",
- "semver 1.0.23",
 ]
 
 [[package]]
@@ -2043,7 +2018,7 @@ dependencies = [
  "either",
  "env_logger",
  "failure",
- "llvm-sys 80.3.1",
+ "llvm-sys",
  "log",
  "rustc-llvm-proxy",
 ]
@@ -2230,12 +2205,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "regex-lite"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53a49587ad06b26609c52e423de037e7f57f20d53535d66e08c695f347df952a"
-
-[[package]]
 name = "regex-syntax"
 version = "0.6.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2308,7 +2277,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "libloading",
- "llvm-sys 80.3.1",
+ "llvm-sys",
  "quote 0.6.13",
  "syn 0.15.44",
 ]

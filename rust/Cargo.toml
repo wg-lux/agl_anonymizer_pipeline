@@ -7,7 +7,6 @@ edition = "2021"
 pyo3-setup = { version = "0.1.1"}
 maturin = { version = "1.5.1"}
 ptx-linker = { version = "0.9"}
-llvm-lib = { version = "0.8.1" }
 
 [[bin]]
 name = "agl_anonymizer_pipeline"
