@@ -318,21 +318,6 @@
                   final.setuptools
                 ];
               });
-              rustc-llvm-proxy = prev.rustc-llvm-proxy.overrideAttrs (old: {
-                  buildInputs = (old.buildInputs or []) ++ [
-                    final.llvmPackages.llvm
-                    final.llvmPackages.libllvm
-                    final.llvmPackages.libclang
-                    final.clang
-                    final.rustPkgs
-                  ];
-                  
-                  LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
-                  LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
-                  LLVM_CONFIG = "${final.llvmPackages.llvm}/bin/llvm-config";
-                  RUST_BACKTRACE = "full";
-                  CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG = "true";
-              });
               torch = prev.torch;  # Use pre-built torch
     
               flair = prev.flair.overridePythonAttrs (old: {
