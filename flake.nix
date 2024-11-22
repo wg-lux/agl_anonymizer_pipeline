@@ -276,6 +276,8 @@
                       LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
                       LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
                       RUST_BACKTRACE = "1";
+                      LLVM_CONFIG = "${pkgs.llvmPackages.llvm}/bin/llvm-config";  # Add this
+
               };
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
