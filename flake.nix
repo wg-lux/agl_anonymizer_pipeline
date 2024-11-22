@@ -238,6 +238,8 @@
               cudaPackages.cudatoolkit
               python311Packages.setuptools
               linuxPackages.nvidia_x11
+              llvmPackages.clang
+              clang
               llvmPackages.llvm
               llvmPackages.libllvm
               rustc
