@@ -390,6 +390,17 @@
                   final.numpy
                 ];
               });
+              agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.libllvm
+                  final.llvmPackages.llvm
+                  final.clang
+                  final.llvmPackages.clang
+                  final.setuptools
+                  final.maturin
+                  final.cudatoolkit
+                ];
+              });
               
 
 
