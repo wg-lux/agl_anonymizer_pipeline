@@ -273,8 +273,6 @@
                         cargo
                       ];
               };
-              
-
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
@@ -328,8 +326,8 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustPkgs
                   final.cmake
-                  final.llvmPackages_12.libclang
-                  final.llvmPackages_12.clang-unwrapped
+                  final.libclang
+                  final.clang-unwrapped
                   final.pkg-config
                   final.setuptools
                   final.maturin
