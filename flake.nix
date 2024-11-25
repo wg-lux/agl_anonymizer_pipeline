@@ -328,6 +328,10 @@
               flair = prev.flair.overridePythonAttrs (old: {
                 format = "wheel";
                 preferWheel = true;
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                final.python311Packages.cmake
+
+                ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
                   final.rustPkgs
@@ -350,6 +354,8 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustPkgs
                   final.setuptools-rust
+                  final.python311Packages.cmake
+
                 ];
 
               });
@@ -409,7 +415,6 @@
                 final.setuptools
                 final.maturin
                 final.cudatoolkit
-                final.python311Packages.cmake
               ];
               buildInputs = old.buildInputs or [] ++ [
                 final.libllvm
