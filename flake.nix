@@ -282,9 +282,7 @@
               customLLVM
               
             ];
-              # Add environment variables for LLVM
-            LLVM_SYS_120_PREFIX = "${customLLVM}";
-            LIBCLANG_PATH = "${customLLVM}/lib";
+
             
             # For the rust build
             RUST_BACKTRACE = "1";
