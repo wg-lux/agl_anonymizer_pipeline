@@ -244,12 +244,13 @@
               llvmPackages_12.libllvm
               rustc
               cargo
+              llvm_18
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
               llvmPackages_12.libllvm
-              llvm_18
+              
             ];
               # Add environment variables for LLVM
             LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
