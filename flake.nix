@@ -43,8 +43,24 @@
       let
       system = "x86_64-linux"; # Define the system architecture
       pks = import nixpkgs { inherit system; };  # Import Nix packages
-      naersk' = pkgs.callPackage naersk {};
-
+      naersk' = pkgs.callPackage naersk {
+        inherit (pkgs) stdenv;
+        cargo = pkgs.cargo;
+        rustc = pkgs.rustc;
+        
+        # Add LLVM configuration
+        nativeBuildInputs = with pkgs; [
+          llvmPackages_12.llvm
+          llvmPackages_12.libclang
+          pkg-config
+          cmake
+        ];
+        
+        # Set environment variables for the build
+        LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
+        LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
+        LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
+      };
 
 
         # Use cachix to cache NVIDIA-related packages
@@ -265,14 +281,28 @@
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
-              rustPkgs = naersk'.buildPackage {
-                    src = ./rust;
-                      buildInputs = with pkgs; [
-                        llvmPackages_12.libllvm
-                        rustc
-                        cargo
-                      ];
-              };
+            rustPkgs = naersk'.buildPackage {
+              src = ./rust;
+              nativeBuildInputs = with pkgs; [
+                llvmPackages_12.libclang
+                pkg-config
+                cmake
+                rustc
+                cargo
+              ];
+              buildInputs = with pkgs; [
+                llvmPackages_12.libllvm
+                llvmPackages_12.libclang
+              ];
+              
+              # Set environment variables
+              LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
+              LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
+              LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
+              RUST_BACKTRACE = "1";
+              
+              cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
+            };
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools

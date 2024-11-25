@@ -4,12 +4,18 @@ version = "0.1.12"
 edition = "2021"
 
 [dependencies]
-pyo3-setup = { version = "0.1.1"}
-maturin = { version = "1.5.1"}
-ptx-linker = { version = "0.9"}
-llvm-sys = {version = "120.0.0"}
-rustc-llvm-proxy = {version = "0.2.0"}
+pyo3-setup = "0.1.1"
+maturin = "1.5.1"
+ptx-linker = "0.9"
+llvm-sys = { version = "120.0.0", features = ["prefer-static"] }
+rustc-llvm-proxy = "0.2.0"
+
+[build-dependencies]
+cmake = "0.1"
 
 [[bin]]
 name = "agl_anonymizer_pipeline"
 path = "main.py"
+
+[features]
+default = ["llvm-sys/prefer-static"]
