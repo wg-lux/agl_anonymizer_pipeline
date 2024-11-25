@@ -329,7 +329,7 @@
                 format = "wheel";
                 preferWheel = true;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.python311Packages.cmake
+                final.cmake
 
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
@@ -354,7 +354,7 @@
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.rustPkgs
                   final.setuptools-rust
-                  final.python311Packages.cmake
+                  final.cmake
 
                 ];
 
@@ -415,6 +415,7 @@
                 final.setuptools
                 final.maturin
                 final.cudatoolkit
+                final.cmake
               ];
               buildInputs = old.buildInputs or [] ++ [
                 final.libllvm
