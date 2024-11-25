@@ -327,7 +327,7 @@
                   final.rustPkgs
                   final.cmake
                   final.libclang
-                  final.pkg-config
+                  final.pkgconfig
                   final.setuptools
                   final.maturin
                 ];
