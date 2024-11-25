@@ -327,7 +327,6 @@
                   final.rustPkgs
                   final.cmake
                   final.libclang
-                  final.clang-unwrapped
                   final.pkg-config
                   final.setuptools
                   final.maturin
