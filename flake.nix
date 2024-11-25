@@ -369,6 +369,18 @@
                   final.rustPkgs
                 ];
               });
+              ptx-linker = prev.ptx-linker.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools-rust
+                  final.rustPkgs
+                ];
+              });
+              rustc-llvm-proxy = prev.rustc-llvm-proxy.overridePythonAttrs (old: {
+                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                  final.setuptools-rust
+                  final.rustPkgs
+                ];
+              });
               confection = prev.confection.overridePythonAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                   final.setuptools
@@ -412,6 +424,8 @@
                 final.pkg-config
                 final.setuptools
                 final.maturin
+                final.rustc-llvm-proxy
+                final.ptx-linker
                 final.cudatoolkit
                 final.cmake
               ];
