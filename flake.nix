@@ -415,11 +415,11 @@
                 final.llvmPackages.llvm
                 final.llvmPackages.libclang
               ];
-              env = {
-                LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
-                LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
-                LLVM_CONFIG_PATH = "${final.llvmPackages.llvm}/bin/llvm-config";
-              };
+              
+              LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
+              LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
+              LLVM_CONFIG_PATH = "${final.llvmPackages.llvm}/bin/llvm-config";
+              
             });
               
 
