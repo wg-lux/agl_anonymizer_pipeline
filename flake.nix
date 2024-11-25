@@ -244,7 +244,7 @@
               llvmPackages_12.libllvm
               rustc
               cargo
-              llvm
+              llvm_12
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
@@ -358,7 +358,7 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.llvm
+                  final.llvm_12
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
@@ -446,7 +446,7 @@
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.llvm
+                final.llvm_12
                 final.libllvm
                 final.llvmPackages_12.libclang
                 final.clang
@@ -496,7 +496,7 @@
           python311Packages.cython
           blas
           python311Packages.cmake
-          llvm
+          llvm_12
           ];
 
         buildInputs = with pkgs.python311Packages; [
@@ -515,7 +515,7 @@
           torchaudio-bin
           coreutils-full
           python311Packages.flit
-          llvm
+          llvm_12
         ]; 
       });
         
