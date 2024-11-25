@@ -274,6 +274,8 @@
               rustc
               cargo
               customLLVM
+              llvmLibs
+              llvmWrapper
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
@@ -376,6 +378,7 @@
                   final.setuptools
                   final.maturin
                   final.llvmLibs
+                  final.customLLVM
                   final.llvmWrapper
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
