@@ -409,6 +409,7 @@
                 final.setuptools
                 final.maturin
                 final.cudatoolkit
+                final.python311Packages.cmake
               ];
               buildInputs = old.buildInputs or [] ++ [
                 final.libllvm
@@ -447,6 +448,7 @@
           python311Packages.wheel
           python311Packages.cython
           blas
+          python311Packages.cmake
           ];
 
         buildInputs = with pkgs.python311Packages; [
