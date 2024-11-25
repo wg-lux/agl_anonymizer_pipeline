@@ -44,22 +44,7 @@
       system = "x86_64-linux"; # Define the system architecture
       pks = import nixpkgs { inherit system; };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {
-        inherit (pkgs) stdenv;
-        cargo = pkgs.cargo;
-        rustc = pkgs.rustc;
-        
-        # Add LLVM configuration
-        nativeBuildInputs = with pkgs; [
-          llvmPackages_12.llvm
-          llvmPackages_12.libclang
-          pkg-config
-          cmake
-        ];
-        
-        # Set environment variables for the build
-        LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
-        LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
-        LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
+        inherit (pkgs) cargo rustc;
       };
 
 
@@ -282,6 +267,10 @@
                 enableShared = true;
               };
             rustPkgs = naersk'.buildPackage {
+              override = {
+                rustc = pkgs.rustc;
+                cargo = pkgs.cargo;
+              };
               src = ./rust;
               nativeBuildInputs = with pkgs; [
                 llvmPackages_12.libclang
@@ -294,12 +283,18 @@
                 llvmPackages_12.libllvm
                 llvmPackages_12.libclang
               ];
+              copyLibs = true;
               
               # Set environment variables
               LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
               LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
               LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
               RUST_BACKTRACE = "1";
+              preBuild = ''
+                export LLVM_SYS_120_PREFIX=${pkgs.llvmPackages_12.llvm}
+                export LIBCLANG_PATH=${pkgs.llvmPackages_12.libclang.lib}/lib
+                export LLVM_CONFIG_PATH=${pkgs.llvmPackages_12.llvm}/bin/llvm-config
+              '';
               
               cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
             };
