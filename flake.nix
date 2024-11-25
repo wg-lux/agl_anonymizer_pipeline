@@ -377,9 +377,9 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.llvmLibs
                   final.customLLVM
                   final.llvmWrapper
+                  final.llvmLibs
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
