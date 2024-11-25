@@ -461,7 +461,7 @@
               
               LIBCLANG_PATH = "${final.llvmPackages_12.libclang}/lib";
               LLVM_SYS_120_PREFIX = "${final.llvmPackages_12.libllvm}";
-              LLVM_CONFIG_PATH = "${final.llvmPackages_12.llvm}/bin/llvm-config";
+              LLVM_CONFIG_PATH = "${final.llvmPackages_12.libllvm}/bin/llvm-config";
               
             });
               
@@ -527,8 +527,6 @@
           xorg.libXmu
           freeglut
           llvmPackages_12.stdenv
-          llvm
-          libllvm
           llvmPackages_12.libllvm
           llvmPackages_12.libclang
           llvmPackages_12.clang-unwrapped
@@ -538,7 +536,7 @@
           export LD_LIBRARY_PATH="${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
           export LIBCLANG_PATH="${pkgs.llvmPackages_12.libclang}/lib"
           export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages_12.libllvm}"
-          export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.llvm}/bin/llvm-config"
+          export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.libllvm}/llvm/bin/llvm-config"
         '';
       };
       
