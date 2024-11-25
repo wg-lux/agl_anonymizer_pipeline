@@ -317,17 +317,6 @@
                 ];
                 copyLibs = true;
                 
-                # Set environment variables
-                LIBCLANG_PATH = "${customLLVM}/lib";
-                LLVM_SYS_120_PREFIX = "${customLLVM}";
-                LLVM_CONFIG_PATH = "${customLLVM}/bin/llvm-config";
-                RUST_BACKTRACE = "1";
-                preBuild = ''
-                  export LLVM_SYS_120_PREFIX=${customLLVM}
-                  export LIBCLANG_PATH=${llvmPackages_12.libclang.lib}/lib
-                  export LLVM_CONFIG_PATH=${customLLVM}/bin/llvm-config
-                '';
-                
                 cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
               };
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
@@ -566,16 +555,6 @@
           llvmPackages_12.clang-unwrapped
           pkg-config
         ];
-
-        shellHook = ''
-        export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
-        export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
-        export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
-
-        export LIBCLANG_PATH="${custonLLVM}/lib"
-        export LLVM_SYS_120_PREFIX="${customLLVM}"
-        export LLVM_CONFIG_PATH="${customLLVM}/bin/llvm-config"
-        '';
       };
       
 
