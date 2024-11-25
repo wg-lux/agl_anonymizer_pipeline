@@ -266,6 +266,7 @@
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
+              llvm_18 = prev.llvm_18;
             rustPkgs = naersk'.buildPackage {
               override = {
                 rustc = pkgs.rustc;
