@@ -318,18 +318,6 @@
                 
                 cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
               };
-              ptx-linker = prev.ptx-linker.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.setuptools-rust
-                  final.rustPkgs
-                ];
-              });
-              rustc-llvm-proxy = prev.rustc-llvm-proxy.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.setuptools-rust
-                  final.rustPkgs
-                ];
-              });
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
@@ -387,7 +375,6 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.rustc-llvm-proxy
                   final.llvmlibs
                   final.llvmWrapper
                 ];
@@ -475,8 +462,6 @@
                 final.pkg-config
                 final.setuptools
                 final.maturin
-                final.rustc-llvm-proxy
-                final.ptx-linker
                 final.cudatoolkit
                 final.cmake
               ];
@@ -517,7 +502,6 @@
           python311Packages.cython
           blas
           python311Packages.cmake
-          customLLVM
           ];
 
         buildInputs = with pkgs.python311Packages; [
@@ -530,13 +514,12 @@
           sympy
           tokenizers
           tomlkit
-          cudaPackages.cudaPackages.cudatoolkit
+          cudaPackages.cudatoolkit
           torch-bin
           torchvision-bin
           torchaudio-bin
           coreutils-full
           python311Packages.flit
-          customLLVM
         ]; 
       });
         
