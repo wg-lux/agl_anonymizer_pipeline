@@ -375,6 +375,9 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
+                  final.rustc-llvm-proxy
+                  final.llvmlibs
+                  final.llvmWrapper
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
