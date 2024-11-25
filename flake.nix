@@ -127,6 +127,7 @@
                   cmake
                   llvmPackages_12.llvm
                 ];
+                sourceRoot = "./llvm";
 
 
                 # Get gcc for libs
