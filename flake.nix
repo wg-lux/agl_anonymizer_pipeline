@@ -263,6 +263,10 @@
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
               {
+              llvmPackages = prev.llvmPackages_12;  # Or whatever version you're using
+              libllvm = final.llvmPackages.libllvm.override {
+                enableShared = true;
+              };
               rustPkgs = naersk'.buildPackage {
                     src = ./rust;
                       buildInputs = with pkgs; [
@@ -272,6 +276,7 @@
                         cargo
                       ];
               };
+              
 
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
@@ -390,17 +395,32 @@
                   final.numpy
                 ];
               });
+
+              
+                # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                  final.libllvm
-                  final.llvmPackages.llvm
-                  final.clang
-                  final.llvmPackages.clang
-                  final.setuptools
-                  final.maturin
-                  final.cudatoolkit
-                ];
-              });
+              nativeBuildInputs = old.nativeBuildInputs or [] ++ [
+                final.libllvm
+                final.llvmPackages.llvm
+                final.llvmPackages.libclang
+                final.clang
+                final.llvmPackages.clang-unwrapped
+                final.pkg-config
+                final.setuptools
+                final.maturin
+                final.cudatoolkit
+              ];
+              buildInputs = old.buildInputs or [] ++ [
+                final.libllvm
+                final.llvmPackages.llvm
+                final.llvmPackages.libclang
+              ];
+              env = {
+                LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
+                LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
+                LLVM_CONFIG_PATH = "${final.llvmPackages.llvm}/bin/llvm-config";
+              };
+            });
               
 
 
@@ -446,13 +466,16 @@
           coreutils-full
           python311Packages.flit
           
-        ];
-
-        
+        ]; 
       });
-
-
+        env = {
+          LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+          LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
+          LLVM_CONFIG_PATH = "${pkgs.llvmPackages.llvm}/bin/llvm-config";
+          RUST_BACKTRACE = "1";
+        };
       };
+
       devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
           git
@@ -465,12 +488,20 @@
           freeglut
           llvmPackages_12.stdenv
           libllvm
+          llvmPackages.llvm
+          llvmPackages.libclang
+          llvmPackages.clang-unwrapped
+          pkg-config
         ];
 
         shellHook = ''
         export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
         export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
         export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
+
+        export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
+        export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages.llvm}"
+        export LLVM_CONFIG_PATH="${pkgs.llvmPackages.llvm}/bin/llvm-config"
         '';
       };
       
