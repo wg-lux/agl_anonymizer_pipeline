@@ -532,6 +532,7 @@
           xorg.libXmu
           freeglut
           llvmPackages_12.stdenv
+          llvm
           libllvm
           llvmPackages_12.libllvm
           llvmPackages_12.libclang
