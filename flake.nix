@@ -119,7 +119,7 @@
                   owner = "llvm";
                   repo = "llvm-project";
                   rev = "llvmorg-12.0.1";
-                  sha256 = "sha256-XXpPZQ7FbiHMh9qX5gKmUGm6GKixaaaVBDiZ1pFMylM="; # Replace with actual hash
+                  sha256 = "sha256-GyN5qqoHYNORy2UobhwLUbMg3jW6b42VF6vGtJrgRSM="; 
                 };
                 nativeBuildInputs = with final; [
                   python3
