@@ -296,7 +296,6 @@
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
-              customLLVM = prev.customLLVM;
 
               rustPkgs = naersk'.buildPackage {
                 override = {
@@ -388,7 +387,6 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.customLLVM
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
@@ -476,7 +474,6 @@
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.customLLVM
                 final.libllvm
                 final.llvmPackages_12.libclang
                 final.clang
