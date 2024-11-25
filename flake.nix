@@ -113,39 +113,15 @@
                   final.clang
                 ];
               });
-              customLLVM = final.stdenv.mkDerivation {
-                name = "customLLVM";
-                src = pkgs.fetchFromGitHub {
-                  owner = "llvm";
-                  repo = "llvm-project";
-                  rev = "llvmorg-12.0.1";
-                  sha256 = "sha256-GyN5qqoHYNORy2UobhwLUbMg3jW6b42VF6vGtJrgRSM="; 
-                };
-                nativeBuildInputs = with final; [
-                  python3
-                  ninja
-                  cmake
-                  llvmPackages_12.llvm
-                ];
-                sourceRoot = "source/llvm";
-
-
-                # Get gcc for libs
-                gccForLibs = final.stdenv.cc.cc;
-
-                # Set up environment variables
-                NIX_LDFLAGS = "-L${final.stdenv.cc.cc}/lib/gcc/${final.stdenv.targetPlatform.config}/${final.stdenv.cc.cc.version}";
-                CFLAGS = "-B${final.stdenv.cc.cc}/lib/gcc/${final.stdenv.targetPlatform.config}/${final.stdenv.cc.cc.version} -B ${final.stdenv.cc.libc}/lib";
-
-                cmakeFlags = [
-                  "-DCMAKE_BUILD_TYPE=Release"
-                  "-DLLVM_ENABLE_PROJECTS=clang"
-                  "-DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"
-                  "-DLLVM_TARGETS_TO_BUILD=host"
-                  "-DGCC_INSTALL_PREFIX=${pkgs.gcc}"
-                  "-DC_INCLUDE_DIRS=${pkgs.glibc.dev}/include"
-                ];
-              };
+              # Replace the custom LLVM build with pre-built packages
+              customLLVM = final.llvmPackages_12.libllvm.overrideAttrs (old: {
+                # Just override the library paths needed
+                postFixup = ''
+                  mkdir -p $out/lib
+                  ln -s ${final.llvmPackages_12.libclang}/lib/libclang.so* $out/lib/
+                  ln -s ${final.llvmPackages_12.libllvm}/lib/libLLVM*.so* $out/lib/
+                '';
+              });
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -466,7 +442,7 @@
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.libllvm
+                final.llvmPackages_12.libllvm
                 final.llvmPackages_12.libclang
                 final.clang
                 final.llvmPackages_12.clang-unwrapped
@@ -483,9 +459,9 @@
                 final.llvmPackages_12.libclang
               ];
               
-              LIBCLANG_PATH = "${final.customLLVM}/lib";
-              LLVM_SYS_120_PREFIX = "${final.customLLVM}";
-              LLVM_CONFIG_PATH = "${final.customLLVM}/bin/llvm-config";
+              LIBCLANG_PATH = "${final.llvmPackages_12.libclang}/lib";
+              LLVM_SYS_120_PREFIX = "${final.llvmPackages_12.libllvm}";
+              LLVM_CONFIG_PATH = "${final.llvmPackages_12.llvm}/bin/llvm-config";
               
             });
               
@@ -558,6 +534,12 @@
           llvmPackages_12.clang-unwrapped
           pkg-config
         ];
+        shellHook = ''
+          export LD_LIBRARY_PATH="${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
+          export LIBCLANG_PATH="${pkgs.llvmPackages_12.libclang}/lib"
+          export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages_12.libllvm}"
+          export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.llvm}/bin/llvm-config"
+        '';
       };
       
 
