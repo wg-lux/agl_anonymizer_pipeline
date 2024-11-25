@@ -25,6 +25,7 @@ dependencies = [
  "maturin",
  "ptx-linker",
  "pyo3-setup",
+ "rustc-llvm-proxy",
 ]
 
 [[package]]

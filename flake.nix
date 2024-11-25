@@ -60,7 +60,7 @@
       # Define the C++ toolchain with Clang and GCC
       clangVersion = "16";   # Version of Clang
       gccVersion = "13";     # Version of GCC
-      llvmPkgs = pkgs."llvmPackages_${clangVersion}";  # LLVM toolchain
+      llvmPkgs = pkgs."llvmPackages_12_${clangVersion}";  # LLVM toolchain
       gccPkg = pkgs."gcc${gccVersion}";  # GCC package for compiling
 
       # Create a clang toolchain with libstdc++ from GCC
@@ -238,22 +238,20 @@
               cudaPackages.cudatoolkit
               python311Packages.setuptools
               linuxPackages.nvidia_x11
-              llvmPackages.clang
+              llvmPackages_12.clang
               clang
-              llvmPackages.llvm
-              llvmPackages.libllvm
+              llvmPackages_12.libllvm
               rustc
               cargo
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
-              llvmPackages.llvm
-              llvmPackages.libllvm
+              llvmPackages_12.libllvm
             ];
               # Add environment variables for LLVM
-            LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
-            LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+            LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
+            LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
             
             # For the rust build
             RUST_BACKTRACE = "1";
@@ -263,15 +261,14 @@
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
               {
-              llvmPackages = prev.llvmPackages_12;  # Or whatever version you're using
-              libllvm = final.llvmPackages.libllvm.override {
+              llvmPackages_12 = prev.llvmPackages_12;  # Or whatever version you're using
+              libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
               rustPkgs = naersk'.buildPackage {
                     src = ./rust;
                       buildInputs = with pkgs; [
-                        llvmPackages.llvm
-                        llvmPackages.libllvm
+                        llvmPackages_12.libllvm
                         rustc
                         cargo
                       ];
@@ -407,10 +404,9 @@
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
                 final.libllvm
-                final.llvmPackages.llvm
-                final.llvmPackages.libclang
+                final.llvmPackages_12.libclang
                 final.clang
-                final.llvmPackages.clang-unwrapped
+                final.llvmPackages_12.clang-unwrapped
                 final.pkg-config
                 final.setuptools
                 final.maturin
@@ -419,13 +415,12 @@
               ];
               buildInputs = old.buildInputs or [] ++ [
                 final.libllvm
-                final.llvmPackages.llvm
-                final.llvmPackages.libclang
+                final.llvmPackages_12.libclang
               ];
               
-              LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
-              LLVM_SYS_120_PREFIX = "${final.llvmPackages.llvm}";
-              LLVM_CONFIG_PATH = "${final.llvmPackages.llvm}/bin/llvm-config";
+              LIBCLANG_PATH = "${final.llvmPackages_12.libclang.lib}/lib";
+              LLVM_SYS_120_PREFIX = "${final.llvmPackages_12.llvm}";
+              LLVM_CONFIG_PATH = "${final.llvmPackages_12.llvm}/bin/llvm-config";
               
             });
               
@@ -491,9 +486,9 @@
           freeglut
           llvmPackages_12.stdenv
           libllvm
-          llvmPackages.llvm
-          llvmPackages.libclang
-          llvmPackages.clang-unwrapped
+          llvmPackages_12.libllvm
+          llvmPackages_12.libclang
+          llvmPackages_12.clang-unwrapped
           pkg-config
         ];
 
@@ -502,9 +497,9 @@
         export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
         export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
 
-        export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
-        export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages.llvm}"
-        export LLVM_CONFIG_PATH="${pkgs.llvmPackages.llvm}/bin/llvm-config"
+        export LIBCLANG_PATH="${pkgs.llvmPackages_12.libclang.lib}/lib"
+        export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages_12.libllvm}"
+        export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.libllvm}/bin/llvm-config"
         '';
       };
       
