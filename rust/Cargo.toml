@@ -2,6 +2,7 @@
 name = "agl_anonymizer_pipeline"
 version = "0.1.12"
 edition = "2021"
+build = "rust.rs"
 
 [dependencies]
 pyo3-setup = "0.1.1"
@@ -12,6 +13,7 @@ rustc-llvm-proxy = "0.2.0"
 
 [build-dependencies]
 cmake = "0.1"
+cc = "1.0"
 
 [[bin]]
 name = "agl_anonymizer_pipeline"

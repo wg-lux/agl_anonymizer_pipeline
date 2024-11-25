@@ -21,6 +21,7 @@ checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
 name = "agl_anonymizer_pipeline"
 version = "0.1.12"
 dependencies = [
+ "cc",
  "cmake",
  "llvm-sys 120.3.2",
  "maturin",
