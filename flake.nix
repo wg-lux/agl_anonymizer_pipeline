@@ -326,8 +326,13 @@
                 format = "wheel";
                 preferWheel = true;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.cmake
-
+                  final.rustPkgs
+                  final.cmake
+                  final.llvmPackages_12.libclang
+                  final.llvmPackages_12.clang-unwrapped
+                  final.pkg-config
+                  final.setuptools
+                  final.maturin
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
