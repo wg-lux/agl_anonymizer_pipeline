@@ -249,6 +249,7 @@
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
               llvmPackages_12.libllvm
+              llvm_18
             ];
               # Add environment variables for LLVM
             LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
@@ -266,39 +267,39 @@
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
-              llvm_18 = prev.llvm_18;
-            rustPkgs = naersk'.buildPackage {
-              override = {
-                rustc = pkgs.rustc;
-                cargo = pkgs.cargo;
+
+              rustPkgs = naersk'.buildPackage {
+                override = {
+                  rustc = pkgs.rustc;
+                  cargo = pkgs.cargo;
+                };
+                src = ./rust;
+                nativeBuildInputs = with pkgs; [
+                  llvmPackages_12.libclang
+                  pkg-config
+                  cmake
+                  rustc
+                  cargo
+                ];
+                buildInputs = with pkgs; [
+                  llvmPackages_12.libllvm
+                  llvmPackages_12.libclang
+                ];
+                copyLibs = true;
+                
+                # Set environment variables
+                LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
+                LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
+                LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
+                RUST_BACKTRACE = "1";
+                preBuild = ''
+                  export LLVM_SYS_120_PREFIX=${pkgs.llvmPackages_12.llvm}
+                  export LIBCLANG_PATH=${pkgs.llvmPackages_12.libclang.lib}/lib
+                  export LLVM_CONFIG_PATH=${pkgs.llvmPackages_12.llvm}/bin/llvm-config
+                '';
+                
+                cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
               };
-              src = ./rust;
-              nativeBuildInputs = with pkgs; [
-                llvmPackages_12.libclang
-                pkg-config
-                cmake
-                rustc
-                cargo
-              ];
-              buildInputs = with pkgs; [
-                llvmPackages_12.libllvm
-                llvmPackages_12.libclang
-              ];
-              copyLibs = true;
-              
-              # Set environment variables
-              LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
-              LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
-              LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
-              RUST_BACKTRACE = "1";
-              preBuild = ''
-                export LLVM_SYS_120_PREFIX=${pkgs.llvmPackages_12.llvm}
-                export LIBCLANG_PATH=${pkgs.llvmPackages_12.libclang.lib}/lib
-                export LLVM_CONFIG_PATH=${pkgs.llvmPackages_12.llvm}/bin/llvm-config
-              '';
-              
-              cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
-            };
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
                   prev.setuptools
