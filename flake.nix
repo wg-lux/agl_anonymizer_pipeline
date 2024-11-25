@@ -115,12 +115,14 @@
               });
               customLLVM = final.stdenv.mkDerivation {
                 name = "customLLVM";
+                src = final.llvmPackages_12.llvm;
                 nativeBuildInputs = with final; [
                   python3
                   ninja
                   cmake
                   llvmPackages_12.llvm
                 ];
+
 
                 # Get gcc for libs
                 gccForLibs = final.stdenv.cc.cc;
@@ -281,8 +283,8 @@
               
             ];
               # Add environment variables for LLVM
-            LLVM_SYS_120_PREFIX = "${pkgs.customLLVM}";
-            LIBCLANG_PATH = "${pkgs.customLLVM}/lib";
+            LLVM_SYS_120_PREFIX = "${customLLVM}";
+            LIBCLANG_PATH = "${customLLVM}/lib";
             
             # For the rust build
             RUST_BACKTRACE = "1";
@@ -318,14 +320,14 @@
                 copyLibs = true;
                 
                 # Set environment variables
-                LIBCLANG_PATH = "${pkgs.customLLVM}/lib";
-                LLVM_SYS_120_PREFIX = "${pkgs.customLLVM}";
-                LLVM_CONFIG_PATH = "${pkgs.customLLVM}/bin/llvm-config";
+                LIBCLANG_PATH = "${customLLVM}/lib";
+                LLVM_SYS_120_PREFIX = "${customLLVM}";
+                LLVM_CONFIG_PATH = "${customLLVM}/bin/llvm-config";
                 RUST_BACKTRACE = "1";
                 preBuild = ''
-                  export LLVM_SYS_120_PREFIX=${pkgs.customLLVM}
-                  export LIBCLANG_PATH=${pkgs.llvmPackages_12.libclang.lib}/lib
-                  export LLVM_CONFIG_PATH=${pkgs.customLLVM}/bin/llvm-config
+                  export LLVM_SYS_120_PREFIX=${customLLVM}
+                  export LIBCLANG_PATH=${llvmPackages_12.libclang.lib}/lib
+                  export LLVM_CONFIG_PATH=${customLLVM}/bin/llvm-config
                 '';
                 
                 cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
@@ -572,9 +574,9 @@
         export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
         export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
 
-        export LIBCLANG_PATH="${pkgs.custonLLVM}/lib"
-        export LLVM_SYS_120_PREFIX="${pkgs.customLLVM}"
-        export LLVM_CONFIG_PATH="${pkgs.customLLVM}/bin/llvm-config"
+        export LIBCLANG_PATH="${custonLLVM}/lib"
+        export LLVM_SYS_120_PREFIX="${customLLVM}"
+        export LLVM_CONFIG_PATH="${customLLVM}/bin/llvm-config"
         '';
       };
       
