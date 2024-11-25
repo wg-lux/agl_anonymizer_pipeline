@@ -296,6 +296,7 @@
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
+              customLLVM = prev.customLLVM;
 
               rustPkgs = naersk'.buildPackage {
                 override = {
@@ -309,6 +310,7 @@
                   cmake
                   rustc
                   cargo
+                  customLLVM
                 ];
                 buildInputs = with pkgs; [
                   llvmPackages_12.libllvm
