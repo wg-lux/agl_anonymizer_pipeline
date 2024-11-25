@@ -113,6 +113,34 @@
                   final.clang
                 ];
               });
+              customLLVM = final.stdenv.mkDerivation {
+                name = "customLLVM";
+                nativeBuildInputs = with final; [
+                  python3
+                  ninja
+                  cmake
+                  llvmPackages_12.llvm
+                ];
+
+                # Get gcc for libs
+                gccForLibs = final.stdenv.cc.cc;
+
+                # Set up environment variables
+                NIX_LDFLAGS = "-L${final.stdenv.cc.cc}/lib/gcc/${final.stdenv.targetPlatform.config}/${final.stdenv.cc.cc.version}";
+                CFLAGS = "-B${final.stdenv.cc.cc}/lib/gcc/${final.stdenv.targetPlatform.config}/${final.stdenv.cc.cc.version} -B ${final.stdenv.cc.libc}/lib";
+
+                cmakeFlags = [
+                  "-DGCC_INSTALL_PREFIX=${final.gcc}"
+                  "-DC_INCLUDE_DIRS=${final.stdenv.cc.libc.dev}/include"
+                  "-GNinja"
+                  "-DCMAKE_BUILD_TYPE=Release"
+                  "-DCMAKE_INSTALL_PREFIX=../inst"
+                  "-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
+                  "-DLLVM_ENABLE_PROJECTS=clang"
+                  "-DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"
+                  "-DLLVM_TARGETS_TO_BUILD=host"
+                ];
+              };
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -244,17 +272,17 @@
               llvmPackages_12.libllvm
               rustc
               cargo
-              llvm_12
+              customLLVM
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
-              llvmPackages_12.libllvm
+              customLLVM
               
             ];
               # Add environment variables for LLVM
-            LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
-            LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
+            LLVM_SYS_120_PREFIX = "${pkgs.customLLVM}";
+            LIBCLANG_PATH = "${pkgs.customLLVM}/lib";
             
             # For the rust build
             RUST_BACKTRACE = "1";
@@ -289,14 +317,14 @@
                 copyLibs = true;
                 
                 # Set environment variables
-                LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
-                LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.llvm}";
-                LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
+                LIBCLANG_PATH = "${pkgs.customLLVM}/lib";
+                LLVM_SYS_120_PREFIX = "${pkgs.customLLVM}";
+                LLVM_CONFIG_PATH = "${pkgs.customLLVM}/bin/llvm-config";
                 RUST_BACKTRACE = "1";
                 preBuild = ''
-                  export LLVM_SYS_120_PREFIX=${pkgs.llvmPackages_12.llvm}
+                  export LLVM_SYS_120_PREFIX=${pkgs.customLLVM}
                   export LIBCLANG_PATH=${pkgs.llvmPackages_12.libclang.lib}/lib
-                  export LLVM_CONFIG_PATH=${pkgs.llvmPackages_12.llvm}/bin/llvm-config
+                  export LLVM_CONFIG_PATH=${pkgs.customLLVM}/bin/llvm-config
                 '';
                 
                 cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
@@ -358,7 +386,7 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.llvm_12
+                  final.customLLVM
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
@@ -446,7 +474,7 @@
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.llvm_12
+                final.customLLVM
                 final.libllvm
                 final.llvmPackages_12.libclang
                 final.clang
@@ -464,9 +492,9 @@
                 final.llvmPackages_12.libclang
               ];
               
-              LIBCLANG_PATH = "${final.llvmPackages_12.libclang.lib}/lib";
-              LLVM_SYS_120_PREFIX = "${final.llvmPackages_12.llvm}";
-              LLVM_CONFIG_PATH = "${final.llvmPackages_12.llvm}/bin/llvm-config";
+              LIBCLANG_PATH = "${final.customLLVM}/lib";
+              LLVM_SYS_120_PREFIX = "${final.customLLVM}";
+              LLVM_CONFIG_PATH = "${final.customLLVM}/bin/llvm-config";
               
             });
               
@@ -496,7 +524,7 @@
           python311Packages.cython
           blas
           python311Packages.cmake
-          llvm_12
+          customLLVM
           ];
 
         buildInputs = with pkgs.python311Packages; [
@@ -515,7 +543,7 @@
           torchaudio-bin
           coreutils-full
           python311Packages.flit
-          llvm_12
+          customLLVM
         ]; 
       });
         
@@ -545,9 +573,9 @@
         export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH
         export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
 
-        export LIBCLANG_PATH="${pkgs.llvmPackages_12.libclang.lib}/lib"
-        export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages_12.libllvm}"
-        export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.libllvm}/bin/llvm-config"
+        export LIBCLANG_PATH="${pkgs.custonLLVM}/lib"
+        export LLVM_SYS_120_PREFIX="${pkgs.customLLVM}"
+        export LLVM_CONFIG_PATH="${pkgs.customLLVM}/bin/llvm-config"
         '';
       };
       
