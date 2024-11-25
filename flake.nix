@@ -468,12 +468,7 @@
           
         ]; 
       });
-        env = {
-          LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
-          LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages.llvm}";
-          LLVM_CONFIG_PATH = "${pkgs.llvmPackages.llvm}/bin/llvm-config";
-          RUST_BACKTRACE = "1";
-        };
+        
       };
 
       devShell = pkgs.mkShell {
