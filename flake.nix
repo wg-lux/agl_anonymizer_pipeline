@@ -114,14 +114,49 @@
                 ];
               });
               # Replace the custom LLVM build with pre-built packages
-              customLLVM = final.llvmPackages_12.libllvm.overrideAttrs (old: {
-                # Just override the library paths needed
+              customLLVM = final.llvmPackages_12.libllvm.override {
+                buildLlvmTools = old: old // {
+                  # Use the system's Clang and GCC
+                  clang = pkgs.clang;
+                  gcc = pkgs.gcc;
+                  cmakeFlags = (old.cmakeFlags or []) ++ [
+                    "-DLLVM_ENABLE_RTTI=ON"
+                    "-DLLVM_ENABLE_EH=ON"
+                    "-DLLVM_ENABLE_PROJECTS=clang;lld"
+                    "-DLLVM_TARGETS_TO_BUILD=X86"
+                    "-DLLVM_ENABLE_LIBXML2=OFF"
+                    "-DLLVM_ENABLE_TERMINFO=OFF"
+                    "-DLLVM_ENABLE_ZLIB=OFF"
+                    "-DLLVM_ENABLE_THREADS=OFF"
+                    "-DLLVM_ENABLE_ASSERTIONS=ON"
+                    "-DLLVM_ENABLE_LTO=OFF"
+                    "-DLLVM_ENABLE_PIC=ON"
+                    "-DLLVM_ENABLE_PDB=OFF"
+                    "-DLLVM_ENABLE_BINDINGS=OFF"
+                    "-DLLVM_ENABLE_OCAMLDOC=OFF"
+                    "-DLLVM_ENABLE_OCAMLDOC=OFF"
+                    "-DLLVM_ENABLE_LIBEDIT=OFF"
+                    "-DLLVM_ENABLE_LIBPFM=OFF"
+                    "-DLLVM_ENABLE_LIBXML2=OFF"
+                    "-DLLVM_ENABLE_LIBCXX=OFF"
+                    "-DLLVM_ENABLE_LIBCXXABI=OFF"
+                    "-DLLVM_ENABLE_LIBUNWIND=OFF"
+                    "-DLLVM_ENABLE_LIBFUZZER=OFF"
+                    "-DLLVM_ENABLE_LIBPFM=OFF"
+                    "-DLLVM_ENABLE_LIBGO"
+                    "-DLLVM_TARGETS_TO_BUILD=X86"
+                    "-DCMAKE_BUILD_TYPE=Release"
+                    "-DLLVM_OPTIMIZED_TABLEGEN=ON"
+                    "-G Ninja"
+                  ];
+                };
+                } // {
                 postFixup = ''
                   mkdir -p $out/lib
                   ln -s ${final.llvmPackages_12.libclang}/lib/libclang.so* $out/lib/
                   ln -s ${final.llvmPackages_12.libllvm}/lib/libLLVM*.so* $out/lib/
                 '';
-              });
+              };
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
