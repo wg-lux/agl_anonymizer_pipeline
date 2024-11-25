@@ -115,7 +115,12 @@
               });
               customLLVM = final.stdenv.mkDerivation {
                 name = "customLLVM";
-                src = final.llvmPackages_12.llvm;
+                src = pkgs.fetchFromGitHub {
+                  owner = "llvm";
+                  repo = "llvm-project";
+                  rev = "llvmorg-12.0.1";
+                  sha256 = "sha256-XXpPZQ7FbiHMh9qX5gKmUGm6GKixaaaVBDiZ1pFMylM="; # Replace with actual hash
+                };
                 nativeBuildInputs = with final; [
                   python3
                   ninja
@@ -132,15 +137,12 @@
                 CFLAGS = "-B${final.stdenv.cc.cc}/lib/gcc/${final.stdenv.targetPlatform.config}/${final.stdenv.cc.cc.version} -B ${final.stdenv.cc.libc}/lib";
 
                 cmakeFlags = [
-                  "-DGCC_INSTALL_PREFIX=${final.gcc}"
-                  "-DC_INCLUDE_DIRS=${final.stdenv.cc.libc.dev}/include"
-                  "-GNinja"
                   "-DCMAKE_BUILD_TYPE=Release"
-                  "-DCMAKE_INSTALL_PREFIX=../inst"
-                  "-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON"
                   "-DLLVM_ENABLE_PROJECTS=clang"
                   "-DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"
                   "-DLLVM_TARGETS_TO_BUILD=host"
+                  "-DGCC_INSTALL_PREFIX=${pkgs.gcc}"
+                  "-DC_INCLUDE_DIRS=${pkgs.glibc.dev}/include"
                 ];
               };
               mupdf = prev.mupdf.overrideAttrs (old: {
