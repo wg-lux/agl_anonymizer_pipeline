@@ -534,18 +534,9 @@
           xorg.libXi
           xorg.libXmu
           freeglut
-          llvmPackages_12.stdenv
-          llvmPackages_12.libllvm
-          llvmPackages_12.libclang
-          llvmPackages_12.clang-unwrapped
           pkg-config
         ];
-        shellHook = ''
-          export LD_LIBRARY_PATH="${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"
-          export LIBCLANG_PATH="${pkgs.llvmPackages_12.libclang}/lib"
-          export LLVM_SYS_120_PREFIX="${pkgs.llvmPackages_12.libllvm}"
-          export LLVM_CONFIG_PATH="${pkgs.llvmPackages_12.libllvm}/llvm/bin/llvm-config"
-        '';
+
       };
       
 
