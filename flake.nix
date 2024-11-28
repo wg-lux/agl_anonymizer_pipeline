@@ -294,7 +294,8 @@
             overrides = defaultPoetryOverrides.extend
             (final: prev: 
               {
-              llvmPackages_12 = prev.llvmPackages_12;  # Or whatever version you're using
+
+              llvmPackages_12 = prev.llvmPackages_12; 
               libllvm = final.llvmPackages_12.libllvm.override {
                 enableShared = true;
               };
@@ -318,7 +319,6 @@
                 ];
                 copyLibs = true;
                 
-                cargoBuildOptions = opts: opts ++ ["--features" "llvm-sys/prefer-static"];
               };
               gender-guesser = prev.gender-guesser.overridePythonAttrs (old: {
                 buildInputs = old.buildInputs or [] ++ [
@@ -557,9 +557,5 @@
         type = "app";
         program = "${poetryApp}/bin/agl_anonymizer_pipeline";
       };
-      
-
-    };
-
-      
+    };  
 }
