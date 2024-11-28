@@ -377,9 +377,9 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.customLLVM
                   final.llvmWrapper
                   final.llvmLibs
+                  prev.customLLVM
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
                   final.torch
@@ -452,7 +452,6 @@
                 ];
               });
 
-              
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
