@@ -377,8 +377,8 @@
                   final.pkgconfig
                   final.setuptools
                   final.maturin
-                  final.llvmWrapper
-                  final.llvmLibs
+                  prev.llvmWrapper
+                  prev.llvmLibs
                   prev.customLLVM
                 ];
                 buildInputs = (old.buildInputs or []) ++ [
