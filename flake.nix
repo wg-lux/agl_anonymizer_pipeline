@@ -279,9 +279,6 @@
               llvmPackages_12.libllvm
               rustc
               cargo
-              customLLVM
-              llvmLibs
-              llvmWrapper
             ];
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
