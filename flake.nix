@@ -78,7 +78,7 @@
         ];
         };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {
-        inherit (pkgs) cargo rustc;
+        inherit (pkgs) cargo rustc llvmPackages_12 cmake pkg-config llvmWrapper llvmLibs customLLVM;
       };
 
 
@@ -314,7 +314,6 @@
                   cmake
                   rustc
                   cargo
-                  customLLVM
                 ];
                 buildInputs = with pkgs; [
                   llvmPackages_12.libllvm
