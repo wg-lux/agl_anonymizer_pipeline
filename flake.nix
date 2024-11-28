@@ -78,7 +78,7 @@
         ];
         };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {
-        inherit (pkgs) cargo rustc llvmPackages_12 cmake pkg-config llvmWrapper llvmLibs;
+        inherit (pkgs) cargo rustc llvmWrapper llvmLibs;
       };
 
 
