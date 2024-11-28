@@ -45,8 +45,7 @@
       pks = import nixpkgs { inherit system; 
         overlays = [
           (final: prev: {
-                          # Replace the custom LLVM build with pre-built packages
-
+              # Replace the custom LLVM build with pre-built packages
               customLLVM = final.llvmPackages_12.libllvm.override {
                 buildLlvmTools = old: old // {
                   cmakeFlags = (old.cmakeFlags or []) ++ [
@@ -287,8 +286,6 @@
             buildInputs = with pkgs; [
               cudaPackages.cuda_nvcc
               cudaPackages.cudatoolkit
-              customLLVM
-              
             ];
 
             
