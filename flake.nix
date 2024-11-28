@@ -42,7 +42,42 @@
   outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, naersk, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
-      pks = import nixpkgs { inherit system; };  # Import Nix packages
+      pks = import nixpkgs { inherit system; 
+        overlays = [
+          (final: prev: {
+                          # Replace the custom LLVM build with pre-built packages
+
+              customLLVM = final.llvmPackages_12.libllvm.override {
+                buildLlvmTools = old: old // {
+                  cmakeFlags = (old.cmakeFlags or []) ++ [
+                    "-DLLVM_TARGETS_TO_BUILD=X86"
+                    "-DCMAKE_BUILD_TYPE=Release"
+                    "-DLLVM_OPTIMIZED_TABLEGEN=ON"
+                  ];
+                };
+              };
+              # Then create an overlay for the libraries
+              llvmLibs = final.stdenv.mkDerivation {
+                name = "llvm-libs";
+                buildCommand = ''
+                  mkdir -p $out/lib
+                  ln -s ${final.llvmPackages_12.libclang}/lib/libclang.so* $out/lib/
+                  ln -s ${final.llvmPackages_12.libllvm}/lib/libLLVM*.so* $out/lib/
+                '';
+              };
+
+              # Create a wrapper script to set environment variables
+              llvmWrapper = final.writeScriptBin "llvm-wrapper" ''
+                export LD_LIBRARY_PATH="${final.llvmPackages_12.libclang}/lib:${final.llvmPackages_12.libllvm}/lib:$LD_LIBRARY_PATH"
+                export LIBCLANG_PATH="${final.llvmPackages_12.libclang}/lib"
+                export LLVM_SYS_120_PREFIX="${final.llvmPackages_12.libllvm}"
+                export LLVM_CONFIG_PATH="${final.llvmPackages_12.llvm}/bin/llvm-config"
+                exec "$@"
+              '';
+
+          })
+        ];
+        };  # Import Nix packages
       naersk' = pkgs.callPackage naersk {
         inherit (pkgs) cargo rustc;
       };
@@ -113,35 +148,7 @@
                   final.clang
                 ];
               });
-              # Replace the custom LLVM build with pre-built packages
 
-              customLLVM = final.llvmPackages_12.libllvm.override {
-                buildLlvmTools = old: old // {
-                  cmakeFlags = (old.cmakeFlags or []) ++ [
-                    "-DLLVM_TARGETS_TO_BUILD=X86"
-                    "-DCMAKE_BUILD_TYPE=Release"
-                    "-DLLVM_OPTIMIZED_TABLEGEN=ON"
-                  ];
-                };
-              };
-              # Then create an overlay for the libraries
-              llvmLibs = final.stdenv.mkDerivation {
-                name = "llvm-libs";
-                buildCommand = ''
-                  mkdir -p $out/lib
-                  ln -s ${final.llvmPackages_12.libclang}/lib/libclang.so* $out/lib/
-                  ln -s ${final.llvmPackages_12.libllvm}/lib/libLLVM*.so* $out/lib/
-                '';
-              };
-
-              # Create a wrapper script to set environment variables
-              llvmWrapper = final.writeScriptBin "llvm-wrapper" ''
-                export LD_LIBRARY_PATH="${final.llvmPackages_12.libclang}/lib:${final.llvmPackages_12.libllvm}/lib:$LD_LIBRARY_PATH"
-                export LIBCLANG_PATH="${final.llvmPackages_12.libclang}/lib"
-                export LLVM_SYS_120_PREFIX="${final.llvmPackages_12.libllvm}"
-                export LLVM_CONFIG_PATH="${final.llvmPackages_12.llvm}/bin/llvm-config"
-                exec "$@"
-              '';
               mupdf = prev.mupdf.overrideAttrs (old: {
                 dontStrip = false;
                 nativeBuildInputs = old.nativeBuildInputs or [] ++ [
@@ -455,8 +462,8 @@
                 # ... your other overlays ...
               agl_anonymizer_pipeline-deps = prev.agl_anonymizer_pipeline-deps.overridePythonAttrs (old: {
               nativeBuildInputs = old.nativeBuildInputs or [] ++ [
-                final.llvmWrapper
-                final.llvmLibs
+                prev.llvmWrapper
+                prev.llvmLibs
                 final.llvmPackages_12.libllvm
                 final.llvmPackages_12.libclang
                 final.clang
