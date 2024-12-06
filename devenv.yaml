@@ -4,3 +4,5 @@ inputs:
     url: github:NixOS/nixpkgs/nixos-23.11
   devenv:
     url: github:cachix/devenv
+  nixpkgs-python:
+    follows: nixpkgs

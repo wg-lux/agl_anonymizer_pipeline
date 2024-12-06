@@ -1,75 +1,81 @@
 { pkgs, lib, ... }:
 
-{
-  # Enable NIX_PATH for legacy nix commands
-  env.NIX_PATH = "nixpkgs=${pkgs.path}";
-  
-  # Languages
-  languages = {
-    python = {
-      enable = true;
-      version = "3.11.9";
-      venv.enable = true;
-      uv.enable = true;
-    };
-    rust.enable = true;
-  };
+let
+  # Check if we're on a CUDA-compatible system (x86_64-linux)
+  isCudaSupported = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
 
-  # Packages
-  packages = with pkgs; [
+  # CUDA packages that will only be included on supported systems
+  cudaPackages = if isCudaSupported then with pkgs; [
+    cudaPackages.cuda_cudart
+    cudaPackages.cudnn
+    cudaPackages.cuda_nvcc
+  ] else [];
+
+  # Common packages for all platforms
+  commonPackages = with pkgs; [
+    # Python and build tools
     python311
     python311Packages.pip
     python311Packages.setuptools
     python311Packages.wheel
-    cudaPackages.cuda_cudart
-    cudaPackages.cudnn
-    cudaPackages.cuda_nvcc
-    stdenv.cc.cc
-    libcxx
-    clang-tools
-    libclang
-    llvmPackages_12.libllvm
-    llvmPackages_12.libclang
+    git
+    
+    # Build tools
     pkg-config
     cmake
-    git
+    
+    # Image processing
+    tesseract
     mupdf
     harfbuzz
     freetype
-    autoPatchelfHook
-    openjpeg
-    jbig2dec
-    gumbo
-    freeglut
-    libGLU
     libjpeg_turbo
-    tesseract
-    lcms2
   ];
 
-  env = {
-    PYTHON_VERSION = "3.11.9";
-    LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-      pkgs.cudaPackages.cuda_cudart
-      pkgs.cudaPackages.cudnn
-      "${pkgs.libglvnd}/lib"
-    ] + ":/run/opengl-driver/lib:/run/opengl-driver-32/lib";
-    LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang}/lib";
-    LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.libllvm}";
+  # Platform-specific environment variables
+  platformEnv = if isCudaSupported then {
     CUDA_HOME = "${pkgs.cudaPackages.cuda_cudart}";
     CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
+  } else {
+    DYLD_LIBRARY_PATH = lib.makeLibraryPath [
+      "${pkgs.stdenv.cc.cc.lib}"
+    ];
+  };
+in
+{
+  # Basic language support
+  languages.python = {
+    enable = true;
+    package = pkgs.python311;
+    venv.enable = true;
   };
 
+  # Combine common packages with conditional CUDA packages
+  packages = commonPackages ++ cudaPackages;
+
+  # Combined environment variables
+  env = {
+    NIX_PATH = "nixpkgs=${pkgs.path}";
+    PYTHON_VERSION = "3.11.9";
+    CUDA_ENABLED = if isCudaSupported then "1" else "0";
+  } // platformEnv;
+
+  # Simple shell initialization
   enterShell = ''
     export PYTHONPATH="$PWD:$PYTHONPATH"
     echo "Python $(python --version)"
-    if command -v nvcc &> /dev/null; then
-      echo "CUDA $(nvcc --version)"
+    if [ "$CUDA_ENABLED" = "1" ]; then
+      echo "CUDA is enabled"
     else
-      echo "CUDA not available"
+      echo "CUDA is not available on this platform"
     fi
   '';
 
-  # Processes for development
-  processes.dev.exec = "python app/main.py";
+  # Define processes
+  processes.my_python_app = {
+    exec = "${pkgs.python311}/bin/python agl_anonymizer_pipeline/main.py";
+  };
+
+  # Disable automatic cache configuration
+  cachix.enable = false;
 }
