@@ -1,24 +1,6 @@
-# devenv.yaml example for additional dependencies or custom imports
-
+allowUnfree: true
 inputs:
   nixpkgs:
     url: github:NixOS/nixpkgs/nixos-23.11
   devenv:
     url: github:cachix/devenv
-  nix2container:
-    url: github:nlewo/nix2container
-    inputs:
-      nixpkgs:
-        follows: nixpkgs
-  mk-shell-bin:
-    url: github:rrbutani/nix-mk-shell-bin
-
-imports:
-  # Specify local modules or additional config files here if needed.
-  - ./agl_anonymizer_pipeline
-  - ./devenv
-  - ./direnv
-  
-allowUnfree: true
-
-

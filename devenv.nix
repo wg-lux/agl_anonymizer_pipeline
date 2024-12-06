@@ -1,13 +1,9 @@
-# devenv.nix
 { pkgs, lib, ... }:
 
 {
   # Enable NIX_PATH for legacy nix commands
   env.NIX_PATH = "nixpkgs=${pkgs.path}";
   
-  # Enable direnv integration
-  containers.devcontainer.enable = true;
-
   # Languages
   languages = {
     python = {
@@ -24,18 +20,13 @@
 
   # Packages
   packages = with pkgs; [
-    # Python and build tools
     python311
     python311Packages.pip
     python311Packages.setuptools
     python311Packages.wheel
-    
-    # CUDA and GPU tools
     cudaPackages.cuda_cudart
     cudaPackages.cudnn
     cudaPackages.cuda_nvcc
-    
-    # C/C++ tools
     stdenv.cc.cc
     libcxx
     clang-tools
@@ -44,7 +35,6 @@
     llvmPackages_12.libclang
     pkg-config
     cmake
-        # Other dependencies
     git
     mupdf
     harfbuzz
@@ -60,7 +50,6 @@
     lcms2
   ];
 
-  # Environment variables
   env = {
     PYTHON_VERSION = "3.11.9";
     LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
@@ -74,17 +63,9 @@
     CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
   };
 
-  # Scripts and tasks
   enterShell = ''
     export PYTHONPATH="$PWD:$PYTHONPATH"
     echo "Python $(python --version)"
     echo "CUDA $(nvcc --version)"
   '';
-
-  # Pre-commit hooks
-  pre-commit.hooks = {
-    black.enable = true;
-    isort.enable = true;
-    rustfmt.enable = true;
-  };
 }
