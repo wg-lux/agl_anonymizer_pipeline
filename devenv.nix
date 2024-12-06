@@ -55,6 +55,7 @@ in
     PYTHON_VERSION = "3.11.9";
     CUDA_ENABLED = if isCudaSupported then "1" else "0";
   } // platformEnv;
+  uv = pkgs.uv;
 
   # Basic language support
   languages.python = {
