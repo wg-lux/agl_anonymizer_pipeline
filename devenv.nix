@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, inputs, ... }:
 
 let
   # Check if we're on a CUDA-compatible system (x86_64-linux)
@@ -45,20 +45,28 @@ in
 {
   # Combine common packages with conditional CUDA packages
   packages = commonPackages ++ cudaPackages;
+    # Combined environment variables
+  env = {
+        LD_LIBRARY_PATH = "${
+      with pkgs;
+      lib.makeLibraryPath buildInputs
+    }:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
+    NIX_PATH = "nixpkgs=${pkgs.path}";
+    PYTHON_VERSION = "3.11.9";
+    CUDA_ENABLED = if isCudaSupported then "1" else "0";
+  } // platformEnv;
 
   # Basic language support
   languages.python = {
     enable = true;
     package = pkgs.python311;
-    venv.enable = true;
+    uv = {
+      enable = true;
+      sync.enable = true;
+    }
   };
 
-  # Combined environment variables
-  env = {
-    NIX_PATH = "nixpkgs=${pkgs.path}";
-    PYTHON_VERSION = "3.11.9";
-    CUDA_ENABLED = if isCudaSupported then "1" else "0";
-  } // platformEnv;
+
 
   # Simple shell initialization
   enterShell = ''
