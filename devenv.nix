@@ -62,6 +62,7 @@ in
 
   # Combined environment variables
   env = {
+
     NIX_PATH = "nixpkgs=${pkgs.path}";
     PYTHON_VERSION = "3.11.9";
     CUDA_ENABLED = if isCudaSupported then "1" else "0";
@@ -73,7 +74,6 @@ in
     export NIX_PATH="nixpkgs=${pkgs.path}"
     export PYTHON_VERSION="3.11.9"
     export CUDA_ENABLED=${if isCudaSupported then "1" else "0"}
-    ${lib.concatMapStringsSep "\n" (name: "export ${name}=${env.${name}}") (builtins.attrNames platformEnv)}
     echo "Python $(python --version)"
     if [ "$CUDA_ENABLED" = "1" ]; then
       echo "CUDA is enabled"
