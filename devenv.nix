@@ -45,11 +45,11 @@ let
 in
 {
   # Basic language support
-  stdenv.mkDerivation {
+  agl_anonymizer_pipeline = stdenv.mkDerivation {
     pname = "agl_anonymizer_pipeline";
     version = "0.1.12";
     # other attributes
-  }
+  };
 
   languages.python = {
     enable = true;
