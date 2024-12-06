@@ -1,34 +1,30 @@
 { pkgs, lib, ... }:
 
 let
-  # Check if we're on a CUDA-compatible system (x86_64-linux)
+  # Überprüfen, ob das System CUDA-kompatibel ist (x86_64-linux)
   isCudaSupported = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
 
-  # CUDA packages that will only be included on supported systems
+  # CUDA-Pakete, die nur auf unterstützten Systemen enthalten sind
   cudaPackages = if isCudaSupported then with pkgs; [
-    cudaPackages.cuda_cudart
-    cudaPackages.cudnn
-    cudaPackages.cuda_nvcc
+    cuda_cudart
+    cudnn
+    cuda_nvcc
   ] else [];
   
-  buildInputs = with pkgs; [
-    python311
-  ];
-
-  # Common packages for all platforms
+  # Gemeinsame Pakete für alle Plattformen
   commonPackages = with pkgs; [
-    # Python and build tools
+    # Python und Build-Tools
     python311
     python311Packages.pip
     python311Packages.setuptools
     python311Packages.wheel
     git
-    
-    # Build tools
+
+    # Build-Tools
     pkg-config
     cmake
-    
-    # Image processing
+
+    # Bildverarbeitung
     tesseract
     mupdf
     harfbuzz
@@ -36,29 +32,32 @@ let
     libjpeg_turbo
   ];
 
-  # Platform-specific environment variables
+  # Kombinieren der gemeinsamen Pakete mit den bedingten CUDA-Paketen
+  packagesList = commonPackages ++ cudaPackages;
+
+  # Plattform-spezifische Umgebungsvariablen
   platformEnv = if isCudaSupported then {
-    CUDA_HOME = "${pkgs.cudaPackages.cuda_cudart}";
-    CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
+    CUDA_HOME = "${pkgs.cuda_cudart}";
+    CUDA_PATH = "${pkgs.cuda_cudart}";
   } else {
     DYLD_LIBRARY_PATH = lib.makeLibraryPath [
-      "${pkgs.stdenv.cc.cc.lib}"
+      pkgs.stdenv.cc.cc.lib
     ];
   };
 in
 {
-  # Combine common packages with conditional CUDA packages
-  buildInputs = commonPackages ++ cudaPackages;
+  # Definiere die zu installierenden Pakete
+  packages = packagesList;
 
-  # Combined environment variables
+  # Kombinierte Umgebungsvariablen
   env = {
-    LD_LIBRARY_PATH = "${lib.makeLibraryPath pkgs.buildInputs}:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
+    LD_LIBRARY_PATH = "${lib.makeLibraryPath packagesList}:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
     NIX_PATH = "nixpkgs=${pkgs.path}";
     PYTHON_VERSION = "3.11.9";
     CUDA_ENABLED = if isCudaSupported then "1" else "0";
   } // platformEnv;
 
-  # Basic language support
+  # Grundlegende Sprachunterstützung
   languages.python = {
     enable = true;
     package = pkgs.python311;
@@ -68,7 +67,7 @@ in
     };
   };
 
-  # Simple shell initialization
+  # Einfache Shell-Initialisierung
   enterShell = ''
     export PYTHONPATH="$PWD:$PYTHONPATH"
     export NIX_PATH="nixpkgs=${pkgs.path}"
@@ -76,17 +75,17 @@ in
     export CUDA_ENABLED=${if isCudaSupported then "1" else "0"}
     echo "Python $(python --version)"
     if [ "$CUDA_ENABLED" = "1" ]; then
-      echo "CUDA is enabled"
+      echo "CUDA ist aktiviert"
     else
-      echo "CUDA is not available on this platform"
+      echo "CUDA ist auf dieser Plattform nicht verfügbar"
     fi
   '';
 
-  # Define processes
+  # Definiere Prozesse
   processes.my_python_app = {
     exec = "${pkgs.python311}/bin/python agl_anonymizer_pipeline/main.py";
   };
 
-  # Disable automatic cache configuration
+  # Deaktiviere automatische Cache-Konfiguration
   cachix.enable = false;
 }
