@@ -10,9 +10,9 @@ let
     cudaPackages.cudnn
     cudaPackages.cuda_nvcc
   ] else [];
-  buildInputs = {
+  buildInputs = with pkgs [
     python311
-  };
+  ];
 
   # Common packages for all platforms
   commonPackages = with pkgs; [
