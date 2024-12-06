@@ -10,7 +10,8 @@ let
     cudaPackages.cudnn
     cudaPackages.cuda_nvcc
   ] else [];
-  buildInputs = with pkgs [
+  
+  buildInputs = with pkgs; [
     python311
   ];
 
