@@ -9,11 +9,8 @@
     python = {
       enable = true;
       version = "3.11.9";
+      venv.enable = true;
       uv.enable = true;
-      uv.sync = {
-        enable = true;
-        requirements = true;
-      };
     };
     rust.enable = true;
   };
@@ -66,6 +63,13 @@
   enterShell = ''
     export PYTHONPATH="$PWD:$PYTHONPATH"
     echo "Python $(python --version)"
-    echo "CUDA $(nvcc --version)"
+    if command -v nvcc &> /dev/null; then
+      echo "CUDA $(nvcc --version)"
+    else
+      echo "CUDA not available"
+    fi
   '';
+
+  # Processes for development
+  processes.dev.exec = "python app/main.py";
 }
