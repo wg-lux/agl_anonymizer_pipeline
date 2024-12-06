@@ -1,13 +1,41 @@
-{ pkgs, lib, config, inputs, ... }:
-let
-  pythonVersion = "python311";
-  python = pkgs.${pythonVersion};
+# devenv.nix
+{ pkgs, lib, ... }:
+
+{
+  # Enable NIX_PATH for legacy nix commands
+  env.NIX_PATH = "nixpkgs=${pkgs.path}";
   
-  buildInputs = with pkgs; [
-    python
+  # Enable direnv integration
+  containers.devcontainer.enable = true;
+
+  # Languages
+  languages = {
+    python = {
+      enable = true;
+      version = "3.11.9";
+      uv.enable = true;
+      uv.sync = {
+        enable = true;
+        requirements = true;
+      };
+    };
+    rust.enable = true;
+  };
+
+  # Packages
+  packages = with pkgs; [
+    # Python and build tools
+    python311
+    python311Packages.pip
+    python311Packages.setuptools
+    python311Packages.wheel
+    
+    # CUDA and GPU tools
     cudaPackages.cuda_cudart
     cudaPackages.cudnn
     cudaPackages.cuda_nvcc
+    
+    # C/C++ tools
     stdenv.cc.cc
     libcxx
     clang-tools
@@ -16,40 +44,9 @@ let
     llvmPackages_12.libclang
     pkg-config
     cmake
-    mupdf
-    rustc
-    cargo
-  ];
-
-  pythonPackages = ps: with ps; [
-    setuptools
-    wheel
-    pip
-    numpy
-    spacy
-    spacy-lookups-data
-    gender-guesser
-    gensim
-    pytesseract
-    imutils
-    opencv4
-    pytorch-revgrad
-    flair
-    transformers
-    pymupdf
-    tokenizers
-    hatchling
-    ftfy
-    safetensors
-    torch-bin
-    torchvision-bin
-    torchaudio-bin
-    gdown
-  ];
-in 
-{
-  packages = with pkgs; [
+        # Other dependencies
     git
+    mupdf
     harfbuzz
     freetype
     autoPatchelfHook
@@ -61,72 +58,33 @@ in
     libjpeg_turbo
     tesseract
     lcms2
-    cudaPackages.cuda_nvcc
-  ] ++ buildInputs;
+  ];
 
+  # Environment variables
   env = {
     PYTHON_VERSION = "3.11.9";
-    PYTHONPATH = "${python}/lib/python3.11/site-packages:$PWD";
-    LD_LIBRARY_PATH = "${
-      lib.makeLibraryPath buildInputs
-    }:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
+    LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
+      pkgs.cudaPackages.cuda_cudart
+      pkgs.cudaPackages.cudnn
+      "${pkgs.libglvnd}/lib"
+    ] + ":/run/opengl-driver/lib:/run/opengl-driver-32/lib";
     LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang}/lib";
     LLVM_SYS_120_PREFIX = "${pkgs.llvmPackages_12.libllvm}";
-    LLVM_CONFIG_PATH = "${pkgs.llvmPackages_12.llvm}/bin/llvm-config";
-    RUST_BACKTRACE = "1";
-    RUSTFLAGS = "-C target-cpu=native";
     CUDA_HOME = "${pkgs.cudaPackages.cuda_cudart}";
     CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
   };
 
-  languages = {
-    python = {
-      enable = true;
-      version = "3.11.9";
-      uv = {
-        enable = true;
-        sync = {
-          enable = true;
-          pyproject = true;
-          requirements = true;
-        };
-      };
-      packages = pythonPackages;
-    };
-    rust = {
-      enable = true;
-      channel = "stable";
-    };
-  };
+  # Scripts and tasks
+  enterShell = ''
+    export PYTHONPATH="$PWD:$PYTHONPATH"
+    echo "Python $(python --version)"
+    echo "CUDA $(nvcc --version)"
+  '';
 
-  processes = {
-    nvidia-monitor.exec = "nvidia-smi -l 1";
-  };
-
+  # Pre-commit hooks
   pre-commit.hooks = {
     black.enable = true;
     isort.enable = true;
     rustfmt.enable = true;
-  };
-
-  enterShell = ''
-    export PYTHONPATH="$PWD:$PYTHONPATH"
-    echo "Python version: $(python --version)"
-    echo "CUDA version: $(nvcc --version)"
-    echo "Rust version: $(rustc --version)"
-  '';
-
-  # Build and deployment tasks
-  tasks = {
-    "build".exec = ''
-      cargo build --release
-    '';
-    "test".exec = ''
-      cargo test
-      python -m pytest
-    '';
-    "run".exec = ''
-      python app/main.py
-    '';
   };
 }
