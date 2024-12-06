@@ -63,7 +63,7 @@ in
     uv = {
       enable = true;
       sync.enable = true;
-    }
+    };
   };
 
 
