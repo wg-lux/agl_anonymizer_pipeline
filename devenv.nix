@@ -3,7 +3,12 @@
 let
   # Check if we're on a CUDA-compatible system (x86_64-linux)
   isCudaSupported = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
-
+  stdenv = pkgs.stdenv;
+  stdenv.mkDerivation {
+    pname = "agl_anonymizer_pipeline";
+    version = "0.1.12";
+    # other attributes
+  }
   # CUDA packages that will only be included on supported systems
   cudaPackages = if isCudaSupported then with pkgs; [
     cudaPackages.cuda_cudart
