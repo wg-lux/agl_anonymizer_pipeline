@@ -46,7 +46,7 @@ in
 {
   # Basic language support
   stdenv.mkDerivation = {
-    pname = "agl_anonymizer_pipeline";
+    name = "agl_anonymizer_pipeline";
     version = "0.1.12";
     # other attributes
   };
