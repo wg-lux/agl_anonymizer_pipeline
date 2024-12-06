@@ -12,7 +12,6 @@ let
   ] else [];
   buildInputs = {
     python311
-    uv    
   };
 
   # Common packages for all platforms
