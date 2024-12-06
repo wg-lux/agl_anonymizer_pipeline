@@ -5,15 +5,20 @@ inputs:
     url: github:NixOS/nixpkgs/nixos-23.11
   devenv:
     url: github:cachix/devenv
+  nix2container:
+    url: github:nlewo/nix2container
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  mk-shell-bin:
+    url: github:rrbutani/nix-mk-shell-bin
 
 imports:
   # Specify local modules or additional config files here if needed.
   - ./agl_anonymizer_pipeline
   - ./devenv
   - ./direnv
-  - ./modules/conda
+  
+allowUnfree: true
 
-# Optional environment variables or custom settings not managed in flake.nix
-env:
-  GREET: "devenv"
-  PROJECT_DIR: "./agl_anonymizer_pipeline"
+
