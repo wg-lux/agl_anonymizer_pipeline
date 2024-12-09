@@ -6,6 +6,7 @@ let
     # cudaPackages.cuda_cudart
     # cudaPackages.cudnn
     stdenv.cc.cc
+    zlib
   ];
 
 
@@ -85,9 +86,9 @@ in
   '';
 
   # Definiere Prozesse
-  #processes.my_python_app = {
-  #  exec = "${pkgs.python311}/bin/python agl_anonymizer_pipeline/main.py";
-  #};
+  processes.my_python_app = {
+    exec = "${pkgs.python311}/bin/python agl_anonymizer_pipeline/main.py --image images/lebron_james.jpg";
+  };
 
   # Deaktiviere automatische Cache-Konfiguration
   cachix.enable = false;
