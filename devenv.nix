@@ -7,6 +7,9 @@ let
     # cudaPackages.cudnn
     stdenv.cc.cc
     zlib
+    mesa
+    glibc
+    opencv
   ];
 
 
@@ -56,6 +59,12 @@ in
 {
   # Definiere die zu installierenden Pakete
   # packages = packagesList;
+
+  
+  #packages = with pkgs; [
+  #  mesa
+  #  glibc
+  #];
 
   # Kombinierte Umgebungsvariablen
   env = {
