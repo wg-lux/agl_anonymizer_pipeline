@@ -1,12 +1,19 @@
 { pkgs, lib, ... }:
-
 let
+
+  buildInputs = with pkgs; [
+    python311Full
+    # cudaPackages.cuda_cudart
+    # cudaPackages.cudnn
+    stdenv.cc.cc
+  ];
+
+
   # Überprüfen, ob das System CUDA-kompatibel ist (x86_64-linux)
   isCudaSupported = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
 
   # CUDA-Pakete, die nur auf unterstützten Systemen enthalten sind
   cudaPackages = if isCudaSupported then with pkgs; [
-    cuda_cudart
     cudnn
     cuda_nvcc
   ] else [];
@@ -37,8 +44,8 @@ let
 
   # Plattform-spezifische Umgebungsvariablen
   platformEnv = if isCudaSupported then {
-    CUDA_HOME = "${pkgs.cudaPackages.cuda_cudart}";
-    CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
+    CUDA_HOME = "${pkgs.cudaPackages.cuda_nvcc}";
+    CUDA_PATH = "${pkgs.cudaPackages.cuda_nvcc}";
   } else {
     DYLD_LIBRARY_PATH = lib.makeLibraryPath [
       pkgs.stdenv.cc.cc.lib
