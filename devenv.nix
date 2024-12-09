@@ -37,8 +37,8 @@ let
 
   # Plattform-spezifische Umgebungsvariablen
   platformEnv = if isCudaSupported then {
-    CUDA_HOME = "${pkgs.cuda_cudart}";
-    CUDA_PATH = "${pkgs.cuda_cudart}";
+    CUDA_HOME = "${pkgs.cudaPackages.cuda_cudart}";
+    CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
   } else {
     DYLD_LIBRARY_PATH = lib.makeLibraryPath [
       pkgs.stdenv.cc.cc.lib
