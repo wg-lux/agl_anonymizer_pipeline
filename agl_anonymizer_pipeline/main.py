@@ -1,11 +1,11 @@
 import cv2
 import uuid
-from .custom_logger import get_logger
-from .ocr_pipeline_manager import process_images_with_OCR_and_NER
-from .pdf_operations import merge_pdfs, convert_image_to_pdf
-from .image_reassembly import reassemble_image
+from custom_logger import get_logger
+from ocr_pipeline_manager import process_images_with_OCR_and_NER
+from pdf_operations import merge_pdfs, convert_image_to_pdf
+from image_reassembly import reassemble_image
 import torch
-from .directory_setup import create_temp_directory, create_results_directory
+from directory_setup import create_temp_directory, create_results_directory
 import pymupdf  # PyMuPDF
 from pathlib import Path
 

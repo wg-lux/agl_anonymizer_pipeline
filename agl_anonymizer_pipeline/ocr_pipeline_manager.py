@@ -1,19 +1,19 @@
-from .ocr import trocr_on_boxes, tesseract_on_boxes
-from .flair_NER import NER_German
-from .names_generator import gender_and_handle_full_names, gender_and_handle_separate_names, gender_and_handle_device_names
-from .east_text_detection import east_text_detection
+from ocr import trocr_on_boxes, tesseract_on_boxes
+from flair_NER import NER_German
+from names_generator import gender_and_handle_full_names, gender_and_handle_separate_names, gender_and_handle_device_names
+from east_text_detection import east_text_detection
 import re
-from .pdf_operations import convert_pdf_to_images
-from .blur import blur_function
-from .device_reader import read_name_boxes, read_background_color
-from .tesseract_text_detection import tesseract_text_detection
+from pdf_operations import convert_pdf_to_images
+from blur import blur_function
+from device_reader import read_name_boxes, read_background_color
+from tesseract_text_detection import tesseract_text_detection
 import cv2
 import json
 from pathlib import Path
 import uuid
-from .directory_setup import create_temp_directory, create_blur_directory
+from directory_setup import create_temp_directory, create_blur_directory
 import csv
-from .custom_logger import get_logger
+from custom_logger import get_logger
 import torch
 ##### WARNING: CHANGED FROM pymupdf TO pypdf
 import pymupdf
