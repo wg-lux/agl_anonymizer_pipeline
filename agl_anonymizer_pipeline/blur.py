@@ -36,6 +36,8 @@ def blur_function(image_path, box, background_color=None, expansion=10, blur_str
     """ 
     logger.info("Applying blur to the specified region")
     blur_dir= create_blur_directory()
+    if blur_dir is None:
+        raise ValueError("Blur directory could not be created or accessed")
     image_path = Path(image_path)
     image = cv2.imread(str(image_path))
     (startX, startY, endX, endY) = box

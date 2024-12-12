@@ -117,35 +117,20 @@ def create_main_directory(default_main_directory:Path = None):
     return default_main_directory
 
 def create_results_directory(default_main_directory:Path=None) -> Path:
-    """
-    Creates 'blurred_images' directory in a writable location (outside the Nix store).
-    
-    Args:
-        directory (str): The path where the blurred images directory will be created.
-                         Defaults to `default_main_directory`.
-    
-    Returns:
-        str: Path to the blurred images directory.
-    """
-    
     if not default_main_directory:
         default_main_directory = MAIN_DIR
     else:
         default_main_directory = _str_to_path(default_main_directory)
     
-    
     results_dir = Path(default_main_directory) / 'results'
     if results_dir.exists():
         logger.debug("Using default blur directory settings")
-  
+        return results_dir  # Add return here
     else:
         logger.info(f"Creating blur directory, directory at {results_dir} not found")
         results_dir = Path(default_main_directory) / 'results'
-        results_dir = Path(results_dir)
-
         create_directories([results_dir])
         logger.debug(f"Anonymization results directory created at {results_dir}")
-
         return results_dir
 
 def create_model_directory(default_main_directory:Path=None) -> Path:
@@ -213,27 +198,15 @@ def create_temp_directory(default_temp_directory:Path=None, default_main_directo
         return temp_dir, default_main_directory, csv_dir
 
 def create_blur_directory(default_main_directory:Path=None) -> Path:
-    """
-    Creates 'blurred_images' directory in a writable location (outside the Nix store).
-    
-    Args:
-        directory (str): The path where the blurred images directory will be created.
-                         Defaults to `default_main_directory`.
-    
-    Returns:
-        str: Path to the blurred images directory.
-    """
-    
     if not default_main_directory:
         default_main_directory = MAIN_DIR
     else:
         default_main_directory = _str_to_path(default_main_directory)
     
-    
     blur_dir = Path(default_main_directory) / 'blurred_results'
     if blur_dir.exists():
         logger.info(f"Using default blur directory settings at {blur_dir}")
-  
+        return blur_dir 
     else:
         logger.debug(f"Creating blur directory, directory at {blur_dir} not found")
         blur_dir = default_main_directory / 'blurred_results'
@@ -241,7 +214,6 @@ def create_blur_directory(default_main_directory:Path=None) -> Path:
 
         create_directories([blur_dir])
         logger.info(f"Blur directory created at {blur_dir}")
-
         return blur_dir
 
         

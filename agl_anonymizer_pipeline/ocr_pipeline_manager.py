@@ -72,7 +72,7 @@ def process_images_with_OCR_and_NER(file_path, east_path='frozen_east_text_detec
     gender_pars = []
 
     try:
-        file_extension = file_path.split('.')[-1].lower()
+        file_extension = file_path.suffix.lower().lstrip('.')  # lstrip removes the leading '.'        
         mime_types = {
             'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg',

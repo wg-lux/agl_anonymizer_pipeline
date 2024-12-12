@@ -69,76 +69,69 @@ class ImageProcessingError(Exception):
 def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
     try:
         clear_gpu_memory()
-        temp_dir, base_dir, csv_dir = create_temp_directory()
-
-        results_dir = create_results_directory()
-
-        image_paths = get_image_paths(Path(image_or_pdf_path), Path(temp_dir))  # Ensure Path usage
-
+        with temp_directory_manager() as (temp_dir, base_dir, csv_dir):
+            results_dir = create_results_directory()
+            image_paths = get_image_paths(Path(image_or_pdf_path), Path(temp_dir))
             
-        processed_pdf_paths = []
-        result = None
-        try:
+            processed_pdf_paths = []
+            result = None
+            
             for img_path in image_paths:
+                success = False
                 try:
+                    # Try with original path
                     if not Path(img_path).exists():
-                        raise ImageProcessingError(f"Image path does not exist: {img_path}")  
+                        raise ImageProcessingError(f"Image path does not exist: {img_path}")
+                    
                     processed_image_path, result = process_image(
-                        img_path, east_path, device, min_confidence, width, height, Path(results_dir), Path(temp_dir)
+                        img_path, east_path, device, min_confidence, width, height, 
+                        Path(results_dir), Path(temp_dir)
                     )
-                    if image_or_pdf_path.lower().endswith('.pdf'):
+                    success = True
+                except (ImageProcessingError, RuntimeError, ValueError) as e:
+                    # Try with local path
+                    logger.info(f"Error processing with original path: {e}, trying local path")
+                    try:
+                        root_dir = Path(__file__).resolve().parent
+                        local_img_path = root_dir / img_path
+                        logger.info(f"Trying local path: {local_img_path}")
+                        
+                        if not local_img_path.exists():
+                            raise ImageProcessingError(f"Local image path does not exist: {local_img_path}")
+                        
+                        processed_image_path, result = process_image(
+                            local_img_path, east_path, device, min_confidence, width, height,
+                            Path(results_dir), Path(temp_dir)
+                        )
+                        success = True
+                    except Exception as local_err:
+                        logger.error(f"Error processing with local path: {local_err}")
+                        raise ImageProcessingError(f"Failed to process image with both paths: {e}, local error: {local_err}")
+                
+                if success:
+                    if str(image_or_pdf_path).lower().endswith('.pdf'):
                         temp_pdf_path = Path(temp_dir) / f"temporary_pdf_{uuid.uuid4()}.pdf"
                         convert_image_to_pdf(processed_image_path, temp_pdf_path)
                         processed_pdf_paths.append(temp_pdf_path)
                     else:
                         processed_pdf_paths.append(processed_image_path)
-                except ImageProcessingError as e:
-                    print(f"Error processing {img_path}: {e}, trying as local")
-                    root_dir = Path(__file__).resolve().parent
-                    img_path = root_dir / img_path  # Correct path joining
-                    processed_image_path, result = process_image(
-                        img_path, east_path, device, min_confidence, width, height, Path(results_dir), Path(temp_dir)
-                    )
-                    if image_or_pdf_path.lower().endswith('.pdf'):
-                        temp_pdf_path = Path(temp_dir) / f"temporary_pdf_{uuid.uuid4()}.pdf"
-                        convert_image_to_pdf(processed_image_path, temp_pdf_path)
-                        processed_pdf_paths.append(temp_pdf_path)
-                    else:
-                        processed_pdf_paths.append(processed_image_path)
-                except Exception as e:
-                    error_message = f"Error processing {img_path}: {e}"
-                    logger.error(error_message)
 
             if not processed_pdf_paths:
-                error_message = "No processed images were generated."
-                logger.error(error_message)
-                raise RuntimeError(error_message)
+                raise ImageProcessingError("No processed images were generated.")
 
-            if image_or_pdf_path.lower().endswith('.pdf'):
+            if str(image_or_pdf_path).lower().endswith('.pdf'):
                 final_pdf_path = Path(results_dir) / f"final_document_{uuid.uuid4()}.pdf"
                 merge_pdfs(processed_pdf_paths, final_pdf_path)
                 output_path = final_pdf_path
             else:
                 output_path = processed_pdf_paths[0]
-        finally:
-            # Clean up temporary directory
-            temp_dir_path = Path(temp_dir)  # Ensure temp_dir is a Path object
-            if temp_dir_path.exists() and temp_dir_path.is_dir():
-                for file in temp_dir_path.iterdir():
-                    try:
-                        file.unlink()  # Use unlink() to remove the file
-                    except Exception as e:
-                        logger.warning(f"Failed to delete temp file {file}: {e}")
 
-        logger.info(f"Output Path: {output_path}")
-        if not validation:
-            return output_path  # Return only the output path
-        else:
-            return output_path, result, image_or_pdf_path  # Return additional info if validating
-    except FileNotFoundError as e:
-        raise ImageProcessingError(f"Input file not found: {str(e)}")
-    except ValueError as e:
-        raise ImageProcessingError(f"Invalid input: {str(e)}")
+            logger.info(f"Output Path: {output_path}")
+            if not validation:
+                return output_path
+            else:
+                return output_path, result, image_or_pdf_path
+
     except Exception as e:
         raise ImageProcessingError(f"Processing failed: {str(e)}")
 
