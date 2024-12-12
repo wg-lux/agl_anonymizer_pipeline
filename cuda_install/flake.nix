@@ -28,18 +28,17 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    poetry2nix.url = "github:nix-community/poetry2nix";
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs"; # Ensure poetry2nix follows nixpkgs for consistency
     cachix = {
       url = "github:cachix/cachix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     naersk.url = "github:nix-community/naersk";
+    devenv.url = "github:cachix/devenv"
 
 
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, poetry2nix, cachix, naersk, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, devenv, cachix, naersk, ... }:
       let
       system = "x86_64-linux"; # Define the system architecture
       pks = import nixpkgs { inherit system; 
@@ -262,7 +261,7 @@
 
         poetry2nixProcessed = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-
+'''
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
         
         poetryApp = mkPoetryApplication {
