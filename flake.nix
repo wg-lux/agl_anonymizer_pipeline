@@ -29,7 +29,7 @@ let
   # Add uv2nix workspace setup
   workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
   overlay = workspace.mkPyprojectOverlay {
-    sourcePreference = "wheel";
+    sourcePreference = "sdist";
   };
   pkgs = nixpkgs.legacyPackages.${system};
   python = pkgs.python312;
