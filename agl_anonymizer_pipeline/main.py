@@ -8,6 +8,7 @@ import torch
 from directory_setup import create_temp_directory, create_results_directory
 import fitz  # fitz
 from pathlib import Path
+import os
 
 
 
@@ -47,7 +48,24 @@ Directory Setup:
 You can change the default path for the base directory as well as the temporary directory 
 by changing the values specified in the directory_setup.py file.
 '''
+from contextlib import contextmanager
 
+@contextmanager
+def temp_directory_manager():
+    temp_dir, base_dir, csv_dir = create_temp_directory()
+    try:
+        yield temp_dir, base_dir, csv_dir
+    finally:
+        temp_dir_path = Path(temp_dir)
+        if temp_dir_path.exists() and temp_dir_path.is_dir():
+            for file in temp_dir_path.iterdir():
+                try:
+                    file.unlink()
+                except Exception as e:
+                    logger.warning(f"Failed to delete temp file {file}: {e}")
+class ImageProcessingError(Exception):
+    """Custom exception for image processing errors"""
+    pass
 def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation=False, min_confidence=0.5, width=320, height=320):
     try:
         clear_gpu_memory()
@@ -63,6 +81,21 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
         try:
             for img_path in image_paths:
                 try:
+                    if not Path(img_path).exists():
+                        raise ImageProcessingError(f"Image path does not exist: {img_path}")  
+                    processed_image_path, result = process_image(
+                        img_path, east_path, device, min_confidence, width, height, Path(results_dir), Path(temp_dir)
+                    )
+                    if image_or_pdf_path.lower().endswith('.pdf'):
+                        temp_pdf_path = Path(temp_dir) / f"temporary_pdf_{uuid.uuid4()}.pdf"
+                        convert_image_to_pdf(processed_image_path, temp_pdf_path)
+                        processed_pdf_paths.append(temp_pdf_path)
+                    else:
+                        processed_pdf_paths.append(processed_image_path)
+                except ImageProcessingError as e:
+                    print(f"Error processing {img_path}: {e}, trying as local")
+                    root_dir = Path(__file__).resolve().parent
+                    img_path = root_dir / img_path  # Correct path joining
                     processed_image_path, result = process_image(
                         img_path, east_path, device, min_confidence, width, height, Path(results_dir), Path(temp_dir)
                     )
@@ -112,9 +145,7 @@ def main(image_or_pdf_path, east_path=None, device="olympus_cv_1500", validation
 # Configure logging
 logger = get_logger(__name__)
 
-class ImageProcessingError(Exception):
-    """Custom exception for image processing errors"""
-    pass
+
 
 def resize_image(image_path: Path, max_width=1024, max_height=1024):
     image = cv2.imread(str(image_path))  # OpenCV expects a string

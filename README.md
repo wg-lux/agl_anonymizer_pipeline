@@ -19,8 +19,7 @@ To get started with AGL Anonymizer, clone this repository and install the requir
 
 git clone https://github.com/maxhild/agl_anonymizer_pipeline.git
 cd agl_anonymizer_pipeline
-nix build
-nix develop
+nix develop .#impure
 
 AGL Anonymizer uses a nix based setup. Therefore after running nix develop a development environment will be opened. Here, the pipeline cann now be called in python through the main function (details in the modules and usage section). On the first call, this function will download various machine learning models in the background and set up the default directories.
 
@@ -46,9 +45,6 @@ code:
 
 python main.py --image images/your_image.jpg
 
-example:
-
-python main.py --image images/lebron_james.jpg
 
 ## Packaging
 
@@ -99,7 +95,7 @@ Configure Settings: Adjust the settings in the configuration file (if applicable
 Run the Module: Execute the main script to process the images.
 
 ```bash
-python main.py --image images/your_image.jpg --east_path=None --device="lympus_cv_1500" --validation=true --min_confidence=0.5 --width=320 --height=320
+python main.py --image images/your_image.jpg  --device="lympus_cv_1500" --validation=true --width=320 --height=320
 ```
 
 Arguments can be set through flags or the system call to change the module settings.
