@@ -24,7 +24,6 @@
   outputs = { self, nixpkgs, devenv, pyproject-nix, uv2nix, pyproject-build-systems, ... } @ inputs:
 let
   system = "x86_64-linux";
-  pkgs = nixpkgs.legacyPackages.${system};
   inherit (nixpkgs) lib;
   
   # Add uv2nix workspace setup
@@ -32,49 +31,82 @@ let
   overlay = workspace.mkPyprojectOverlay {
     sourcePreference = "wheel";
   };
+  pkgs = nixpkgs.legacyPackages.${system};
+  python = pkgs.python312;
+      # Convert workspace deps to attribute set
+      depsToAttrSet = deps: builtins.listToAttrs (map (dep: {
+        name = if builtins.isString dep then dep else dep.name;
+        value = {};
+      }) deps);
+
+      buildInputsOverlay = final: prev: {
+        accelerate = prev.accelerate or (
+          pkgs.python312Packages.accelerate.overridePythonAttrs (oldAttrs: {
+            nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [
+              pkgs.python312Packages.pip
+              pkgs.python312Packages.wheel
+              pkgs.python312Packages.setuptools
+            ];
+            # Remove uv-specific flags from the build process
+            pipInstallFlags = [
+              "--no-deps"
+              "--prefix=${placeholder "out"}"
+            ];
+          })
+        );
+        fst-pso = prev.fst-pso or pkgs.python312Packages.fst-pso;
+      };
 
 
-  pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
-    python = pkgs.python311;
+  pythonSet = 
+  (pkgs.callPackage pyproject-nix.build.packages {
+    inherit python;
   }).overrideScope (
     lib.composeManyExtensions [
       pyproject-build-systems.overlays.default
       overlay
+      buildInputsOverlay
     ]
   );
 in {
-  packages.${system} = {
-    agl_anonymizer_pipeline-devenv-up = self.devShells.${system}.agl_anonymizer_pipeline.config.procfileScript;
-    agl_anonymizer_pipeline-devenv-test = self.devShells.${system}.agl_anonymizer_pipeline.config.test;
-    projectB-devenv-up = self.devShells.${system}.projectB.config.procfileScript;
-    projectB-devenv-test = self.devShells.${system}.projectB.config.test;
-  };
+  packages.x86_64-linux.default = pythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.default;
+  uv2nix =
+    let
+      # Create an overlay enabling editable mode for all local dependencies.
+      editableOverlay = workspace.mkEditablePyprojectOverlay {
+        # Use environment variable
+        root = "$REPO_ROOT";
+        # Optional: Only enable editable for these packages
+        # members = [ "hello-world" ];
+      };
 
-  devShells.${system} = {
-    agl_anonymizer_pipeline = devenv.lib.mkShell {
-      inherit inputs pkgs;
-      modules = [
-        {
-          # Fix 3: Make sure PYTHON_VENV is a string path
-          env.PYTHON_VENV = toString (pythonSet.mkVirtualEnv "project-a-env" workspace.deps.all);
-          enterShell = ''
-            echo "this is agl_anonymizer_pipeline"
-            . $PYTHON_VENV/bin/activate
-          '';
-        }
-      ];
-    };
+      # Override previous set with our overrideable overlay.
+      editablePythonSet = pythonSet.overrideScope editableOverlay;
 
-    projectB = devenv.lib.mkShell {
-      inherit inputs pkgs;
-      modules = [
-        {
-          enterShell = ''
-            echo "this is project B"
-          '';
-        }
-      ];
-    };
+      # Build virtual environment, with local packages being editable.
+      #
+      # Enable all optional dependencies for development.
+      virtualenv = editablePythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.all;
+
+    in
+  pkgs.mkShell {
+    packages = [
+      virtualenv
+      pkgs.uv
+    ];
+    shellHook = ''
+      # Undo dependency propagation by nixpkgs.
+      unset PYTHONPATH
+
+      # Don't create venv using uv
+      export UV_NO_SYNC=1
+
+      # Prevent uv from downloading managed Python's
+      export UV_PYTHON_DOWNLOADS=never
+
+      # Get repository root using git. This is expanded at runtime by the editable `.pth` machinery.
+      export REPO_ROOT=$(git rev-parse --show-toplevel)
+    '';
   };
 };
 }

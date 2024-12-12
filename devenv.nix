@@ -28,10 +28,6 @@ in
     uv = {
       enable = true;
       sync.enable = true;
-      requirements = ''
-        fst-pso
-        accelerate
-      '';
     };
   };
 
