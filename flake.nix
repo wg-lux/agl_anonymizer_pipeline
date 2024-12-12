@@ -20,8 +20,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-
-  outputs = { self, nixpkgs, devenv, pyproject-nix, uv2nix, pyproject-build-systems, ... } @ inputs:
+outputs = { self, nixpkgs, devenv, pyproject-nix, uv2nix, pyproject-build-systems, ... } @ inputs:
 let
   system = "x86_64-linux";
   inherit (nixpkgs) lib;
@@ -48,16 +47,47 @@ let
 in {
   packages.x86_64-linux.default = pythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.default;
   impure = pkgs.mkShell {
-    packages = [
+    packages = with pkgs; [
       python
-      pkgs.uv
+      uv
+      # Add OpenGL and related libraries
+      libGL
+      libGLU
+      xorg.libX11
+      mesa
+      # System libraries needed by OpenCV
+      stdenv.cc.cc.lib
+      zlib
+      glib
     ];
+    
     shellHook = ''
-      unset PYTHONPATH
+      export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
+        pkgs.libGL
+        pkgs.libGLU
+        pkgs.xorg.libX11
+        pkgs.mesa
+        pkgs.stdenv.cc.cc.lib
+        pkgs.zlib
+        pkgs.glib
+      ]}:$LD_LIBRARY_PATH
+            unset PYTHONPATH
       export UV_PYTHON_DOWNLOADS=never
+      
+      # Create and activate venv if it doesn't exist
+      if [ ! -d .venv ]; then
+        uv venv .venv
+      fi
+      source .venv/bin/activate
+      cd agl_anonymizer_pipeline
+      python -m spacy download de_core_news_md
+      mkdir ./agl-anonymizer-temp
+      mkdir ./agl-anonymizer
+
     '';
   };
-  
+
+
   uv2nix =
     let
       # Create an overlay enabling editable mode for all local dependencies.

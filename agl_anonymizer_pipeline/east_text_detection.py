@@ -4,10 +4,10 @@ import numpy as np
 import time
 import cv2
 import json
-from .box_operations import extend_boxes_if_needed
-from .directory_setup import create_temp_directory, create_model_directory
+from box_operations import extend_boxes_if_needed
+from directory_setup import create_temp_directory, create_model_directory
 import urllib.request
-from .custom_logger import get_logger
+from custom_logger import get_logger
 from pathlib import Path
 logger = get_logger(__name__)
 

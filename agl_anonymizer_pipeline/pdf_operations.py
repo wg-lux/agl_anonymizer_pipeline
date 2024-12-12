@@ -1,4 +1,4 @@
-import pymupdf  # PyMuPDF
+import fitz # fitz
 import numpy as np
 from pathlib import Path
 
@@ -23,7 +23,7 @@ def convert_pdf_page_to_image(page):
 def convert_pdf_to_images(pdf_path):
     """Convert a PDF file to a list of image paths."""
     images = []
-    doc = pymupdf.open(pdf_path)
+    doc = fitz.open(pdf_path)
     for page_num in range(len(doc)):
         page = doc[page_num]
         pix = page.get_pixmap()
@@ -35,16 +35,16 @@ def convert_pdf_to_images(pdf_path):
 
 def merge_pdfs(pdf_paths, output_path):
     """Merge multiple PDFs into a single PDF using PyMuPDF."""
-    merged_doc = pymupdf.open()
+    merged_doc = fitz.open()
     for path in pdf_paths:
-        doc = pymupdf.open(path)
+        doc = fitz.open(path)
         merged_doc.insert_pdf(doc)
     merged_doc.save(str(output_path))  # Save as string if required by pymupdf
 
 def convert_image_to_pdf(image_path, pdf_path):
     """Converts an image to a PDF using PyMuPDF."""
-    img = pymupdf.Pixmap(str(image_path))  # Convert to string if needed
-    doc = pymupdf.open()
+    img = fitz.Pixmap(str(image_path))  # Convert to string if needed
+    doc = fitz.open()
     rect = img.rect
     page = doc.new_page(width=rect.width, height=rect.height)
     page.insert_image(rect, filename=str(image_path))  # Convert to string if needed

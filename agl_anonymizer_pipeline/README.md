@@ -67,7 +67,7 @@ Contributions to the AGL Anonymizer Pipeline are welcome! If you have suggestion
 
 TO DO:
 
-- UTF-8 Handling of Names - CV2 putText only works in ASCII
+- UTF-8 Handling of Names - cv2 putText only works in ASCII
 - Improving the text region detection by Model Training
 - You can customize the behavior of AGL Anonymizer by modifying the parameters in the config.py file (if included). This includes adjusting the OCR sensitivity, blur intensity, and more.
 

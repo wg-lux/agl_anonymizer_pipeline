@@ -49,7 +49,7 @@ def test_main_with_image(sample_image):
 @patch('transformers.VisionEncoderDecoderModel.from_pretrained')
 @patch('transformers.AutoTokenizer.from_pretrained')
 def test_trocr_on_boxes(mock_tokenizer, mock_model, mock_processor, sample_image):
-    from ../ocr import trocr_on_boxes
+    from ./ocr import trocr_on_boxes
     
     boxes = [(10, 10, 100, 50)]
     
@@ -67,7 +67,7 @@ def test_trocr_on_boxes(mock_tokenizer, mock_model, mock_processor, sample_image
 
 # Test image processing functions
 def test_resize_image(sample_image):
-    from ../main import resize_image
+    from ./main import resize_image
     
     original_size = cv2.imread(str(sample_image)).shape[:2]
     resize_image(sample_image, max_width=300, max_height=300)
@@ -78,7 +78,7 @@ def test_resize_image(sample_image):
 
 # Test PDF handling
 def test_get_image_paths(sample_pdf):
-    from ../main import get_image_paths
+    from ./main import get_image_paths
     
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
@@ -90,7 +90,7 @@ def test_get_image_paths(sample_pdf):
 
 # Test error handling
 def test_main_with_invalid_file():
-    from ../main import main
+    from ./main import main
     
     with pytest.raises(FileNotFoundError):
         main("nonexistent_file.jpg")
@@ -98,7 +98,7 @@ def test_main_with_invalid_file():
 # Test NER functions
 @patch('flair.models.SequenceTagger.load')
 def test_split_and_check():
-    from ../ocr_pipeline_manager import split_and_check
+    from ./ocr_pipeline_manager import split_and_check
     
     text = "John Doe is a person"
     entities = split_and_check(text)
@@ -109,7 +109,7 @@ def test_split_and_check():
 
 # Test integration
 def test_process_images_with_OCR_and_NER(sample_image):
-    from ../ocr_pipeline_manager import process_images_with_OCR_and_NER
+    from ./ocr_pipeline_manager import process_images_with_OCR_and_NER
     
     modified_images_map, result = process_images_with_OCR_and_NER(
         str(sample_image),
@@ -124,7 +124,7 @@ def test_process_images_with_OCR_and_NER(sample_image):
 
 # Test GPU memory management
 def test_clear_gpu_memory():
-    from ../main import clear_gpu_memory
+    from ./main import clear_gpu_memory
     
     if torch.cuda.is_available():
         # Allocate some GPU memory

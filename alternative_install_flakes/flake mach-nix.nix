@@ -94,7 +94,7 @@
       pytesseract
       numpy
       imutils
-      opencv-python-headless
+      cv2-headless
       flair
       transformers
       pytorch  # Replacing 'torch' with 'pytorch' as per Nixpkgs naming

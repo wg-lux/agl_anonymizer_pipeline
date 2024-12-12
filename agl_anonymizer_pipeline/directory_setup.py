@@ -1,6 +1,6 @@
 from pathlib import Path, PosixPath
 import logging
-from .custom_logger import get_logger
+from custom_logger import get_logger
 import os
 
 logger = get_logger(__name__)
@@ -36,8 +36,8 @@ To change the default installation paths, update these variables:
 # 
 # CHANGE THIS IF YOU WANT TO USE A DIFFERENT DIRECTORY
 
-default_main_directory = Path("/etc/agl-anonymizer")
-default_temp_directory = Path("/etc/agl-anonymizer-temp")
+default_main_directory = Path("./agl-anonymizer")
+default_temp_directory = Path("./agl-anonymizer-temp")
 
 # Check if environment variables are set and override if available
 
