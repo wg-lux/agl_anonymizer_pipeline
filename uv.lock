@@ -32,7 +32,9 @@ name = "agl-anonymizer-pipeline"
 version = "0.1.12"
 source = { editable = "." }
 dependencies = [
+    { name = "accelerate" },
     { name = "flair" },
+    { name = "fst-pso" },
     { name = "ftfy" },
     { name = "gdown" },
     { name = "gender-guesser" },
@@ -59,7 +61,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "accelerate", specifier = ">=1.2.0" },
     { name = "flair", specifier = "==0.13.1" },
+    { name = "fst-pso", specifier = ">=1.8.1" },
     { name = "ftfy", specifier = "==6.2.0" },
     { name = "gdown", specifier = "==5.2.0" },
     { name = "gender-guesser", specifier = "==0.4.0" },

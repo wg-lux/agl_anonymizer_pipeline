@@ -2,7 +2,6 @@
 name = "agl_anonymizer_pipeline"
 version = "0.1.12"
 description = "This package is made to censor sensitive data in images and extract the contents. NER is planned for the future."
-authors = ["maxhild <58726316+maxhild@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,7 +28,9 @@ dependencies = [
     "torchaudio == 2.3.0",
     "maturin == 1.5.1",
     "gdown == 5.2.0",
-    "setuptools-rust == 1.9.0"
+    "setuptools-rust == 1.9.0",
+    "fst-pso>=1.8.1",
+    "accelerate>=1.2.0",
 ]
 
 [build-system]
