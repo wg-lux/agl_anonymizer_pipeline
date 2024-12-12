@@ -30,7 +30,7 @@ wheels = [
 [[package]]
 name = "agl-anonymizer-pipeline"
 version = "0.1.12"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "flair" },
     { name = "ftfy" },

@@ -20,7 +20,6 @@ in
 {
   env = {
     LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
-    # Remove PATH setting as it will be handled by the virtual environment
   };
 
   languages.python = {
@@ -33,7 +32,12 @@ in
   };
 
   processes.my_python_app = {
-    exec = "${config.env.PYTHON_VENV}/bin/python agl_anonymizer_pipeline/main.py --image images/lebron_james.jpg";
+    exec = "python agl_anonymizer_pipeline/main.py --image images/lebron_james.jpg";
+    process-compose = {
+      enabled = true;
+      output.stdout = true;
+      output.stderr = true;
+    };
   };
 
   cachix.enable = false;
