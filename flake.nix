@@ -29,33 +29,11 @@ let
   # Add uv2nix workspace setup
   workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
   overlay = workspace.mkPyprojectOverlay {
-    sourcePreference = "sdist";
+    sourcePreference = "wheel";
   };
   pkgs = nixpkgs.legacyPackages.${system};
-  python = pkgs.python312;
-      # Convert workspace deps to attribute set
-      depsToAttrSet = deps: builtins.listToAttrs (map (dep: {
-        name = if builtins.isString dep then dep else dep.name;
-        value = {};
-      }) deps);
+  python = pkgs.python311;
 
-      buildInputsOverlay = final: prev: {
-        accelerate = prev.accelerate or (
-          pkgs.python312Packages.accelerate.overridePythonAttrs (oldAttrs: {
-            nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [
-              pkgs.python312Packages.pip
-              pkgs.python312Packages.wheel
-              pkgs.python312Packages.setuptools
-            ];
-            # Remove uv-specific flags from the build process
-            pipInstallFlags = [
-              "--no-deps"
-              "--prefix=${placeholder "out"}"
-            ];
-          })
-        );
-        fst-pso = prev.fst-pso or pkgs.python312Packages.fst-pso;
-      };
 
 
   pythonSet = 
@@ -65,11 +43,21 @@ let
     lib.composeManyExtensions [
       pyproject-build-systems.overlays.default
       overlay
-      buildInputsOverlay
     ]
   );
 in {
   packages.x86_64-linux.default = pythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.default;
+  impure = pkgs.mkShell {
+    packages = [
+      python
+      pkgs.uv
+    ];
+    shellHook = ''
+      unset PYTHONPATH
+      export UV_PYTHON_DOWNLOADS=never
+    '';
+  };
+  
   uv2nix =
     let
       # Create an overlay enabling editable mode for all local dependencies.
