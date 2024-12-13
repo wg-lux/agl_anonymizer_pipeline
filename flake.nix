@@ -31,6 +31,7 @@ let
       allowUnfree = true;
       cudaSupport = true;
       autoAddDriverRunpath = true;
+      
     };
 
     overlays = [
@@ -48,94 +49,28 @@ let
             ];
           });
 
-          cuda_nvcc = prev.cudaPackages.cuda_nvcc.overrideAttrs (old: {
-            buildPhase = (old.preBuild or "") + ''
-              export CXX=${final.gcc10}/bin/g++
-
-              '';
-
-            buildInputs = (old.buildInputs or []) ++ [
-              final.stdenv.cc.cc
-              final.gcc10
-
-            ];
-
-          });
-          nccl = prev.cudaPackages.nccl.overrideAttrs (old: {
-            buildPhase = (old.buildPhase or "") + ''
-              export CXX=${final.gcc10}/bin/g++
-
-              '';
-
-            buildInputs = (old.buildInputs or []) ++ [
-              final.stdenv.cc.cc
-              final.cudaPackages.cuda_nvcc
-              final.gcc10
-
-
-            ];
-
-          });
-          cudatoolkit = prev.cudaPackages.cudatoolkit.overrideAttrs (old: {
-            buildPhase = (old.preBuild or "") + ''
-              export CXX=${final.gcc10}/bin/g++
-
-              '';
-
-            buildInputs = (old.buildInputs or []) ++ [
-              final.stdenv.cc.cc
-              final.gcc10
-              final.cuda_nvcc
-              final.nccl
-
-            ];
-
-          });
-          cudnn = prev.cudaPackages.cudnn.overrideAttrs (old: {
-            buildPhase = (old.preBuild or "") + ''
-              export CXX=${final.gcc10}/bin/g++
-
-              '';
-
-            buildInputs = (old.buildInputs or []) ++ [
-              final.stdenv.cc.cc
-              final.gcc10
-              final.cuda_nvcc
-              final.nccl
-              final.cudatoolkit
-
-            ];
-
+            gcc12Stdenv = prev.stdenv.override {
+              cc = prev.gcc12;
+            };
+          nccl = prev.cudaPackages_12.nccl.overrideAttrs (old: {
+            stdenv = final.gcc12Stdenv;
           });
 
-          nvidia_x11 = prev.linuxPackages.nvidia_x11.overrideAttrs (old: {
-            buildInputs = (old.buildInputs or []) ++ [
-              final.cudatoolkit
-              final.cuda_nvcc
-              final.gcc10
-              final.nccl
-              final.cudnn
-              final.libllvm
-            ];
-            buildPhase = ''
-              export CXX=${final.gcc10}/bin/g++
-              '';
-          });
+
 
           triton = prev.triton.overrideAttrs (old: {
                 format = "wheel";
-                sandbox = false;
                 preferWheel = true;
                 
                 # Use specific version known to work with PyTorch
                 version = "2.1.0";  # or another stable version
                 
                 propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
-                  final.cudaPackages.cudatoolkit
-                  final.cudaPackages.cuda_nvcc
+                  final.cudaPackages_12.cudatoolkit
                   final.linuxPackages.nvidia_x11
-                  final.cudaPackages.cudnn
-                  final.libllvm
+                  final.llvmPackages_14.libllvm
+                  final.nccl
+                  final.gcc12
                 ];
 
                 # Skip build phases since we're using wheel
@@ -144,27 +79,23 @@ let
                 # Set environment variables
                 postFixup = ''
                   mkdir -p $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/
-                  ln -s ${final.cudaPackages.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
+                  ln -s ${final.cudaPackages_12.cuda_nvcc}/bin/ptxas $out/lib/python3.11/site-packages/triton/backends/nvidia/bin/ptxas
                 '';
               });
           torch = prev.python311Packages.torch-bin.overridePythonAttrs (old: {
             format = "wheel";
             preferWheel = true;
-            sandbox = false;
             buildInputs = (old.buildInputs or []) ++ [
               final.python311Packages.setuptools
               final.python311Packages.wheel
               final.python311Packages.cython
               final.stdenv.cc.cc
-              final.gcc10
-              final.cudatoolkit
-              final.cudnn
+              final.gcc12
               final.nccl
-              final.cuda_nvcc
               final.triton
             ];
             buildPhase = ''
-              export CXX=${final.gcc10}/bin/g++
+              export CXX=${final.gcc12}/bin/g++
             '';
 
           });
@@ -179,7 +110,7 @@ let
               final.stdenv.cc.cc
             ];
             buildPhase = ''
-              export CXX=${final.gcc10}/bin/g++
+              export CXX=${final.gcc12}/bin/g++
               '';
 
           });
@@ -273,15 +204,15 @@ in {
       stdenv.cc.cc.lib
       zlib
       glib
-      gcc10
+      gcc12
+      llvmPackages_14.libllvm
 
       tesseract
-      cuda_nvcc
       nccl
-      cudatoolkit
+      cudaPackages_12.cudatoolkit
       
-      cudnn
-      nvidia_x11
+      cudaPackages_12.cudnn
+      linuxPackages.nvidia_x11
       torch
       torchvision
       triton
@@ -309,16 +240,14 @@ in {
         pkgs.python311Packages.setuptools
         pkgs.python311Packages.wheel
         pkgs.python311Packages.cython
-        pkgs.gcc10
+        pkgs.gcc12
+        pkgs.nccl
 
-        pkgs.cudaPackages.cuda_nvcc
-        pkgs.cudaPackages.cudatoolkit
-        pkgs.cudaPackages.nccl
-        pkgs.cudaPackages.cudnn
+        pkgs.cudaPackages_12.cudatoolkit
+        pkgs.cudaPackages_12.cudnn
         pkgs.linuxPackages.nvidia_x11
-        pkgs.python311Packages.pynvml
-        pkgs.python311Packages.torch-bin
-        pkgs.python311Packages.torchvision-bin
+        pkgs.torch
+        pkgs.torchvision
 
       ]}:$LD_LIBRARY_PATH
             unset PYTHONPATH
@@ -329,24 +258,24 @@ in {
         uv venv .venv
       fi
       source .venv/bin/activate
-      export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
+      export CUDA_PATH=${pkgs.cudaPackages_12.cudatoolkit}
       # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib
       export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
       export EXTRA_CCFLAGS="-I/usr/include"
-      export LD_LIBRARY_PATH=${pkgs.cudaPackages.cudatoolkit}/lib64:$LD_LIBRARY_PATH
-      export EXTRA_LDFLAGS="-L${pkgs.cudaPackages.cudatoolkit}/lib64"
-      export EXTRA_CCFLAGS="-I${pkgs.cudaPackages.cudatoolkit}/include"
-      export PATH=${pkgs.cudaPackages.cudatoolkit}/bin:$PATH
-      export CUDA_HOME="${pkgs.cudaPackages.cudatoolkit}"
-      export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"
-      export CUDA_ROOT="${pkgs.cudaPackages.cudatoolkit}"
-      export LD_LIBRARY_PATH="${pkgs.cudaPackages.cudatoolkit}/lib:${pkgs.cudaPackages.cudnn}/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.python311Packages.pynvml}/lib:$LD_LIBRARY_PATH"
-      export XLA_FLAGS="--xla_gpu_cuda_data_dir=${pkgs.cudaPackages.cudatoolkit}"
-      export EXTRA_LDFLAGS="-L/lib -L${pkgs.cudaPackages.cudatoolkit}/lib"
+      export LD_LIBRARY_PATH=${pkgs.cudaPackages_12.cudatoolkit}/lib64:$LD_LIBRARY_PATH
+      export EXTRA_LDFLAGS="-L${pkgs.cudaPackages_12.cudatoolkit}/lib64"
+      export EXTRA_CCFLAGS="-I${pkgs.cudaPackages_12.cudatoolkit}/include"
+      export PATH=${pkgs.cudaPackages_12.cudatoolkit}/bin:$PATH
+      export CUDA_HOME="${pkgs.cudaPackages_12.cudatoolkit}"
+      export CUDA_PATH="${pkgs.cudaPackages_12.cudatoolkit}"
+      export CUDA_ROOT="${pkgs.cudaPackages_12.cudatoolkit}"
+      export LD_LIBRARY_PATH="${pkgs.cudaPackages_12.cudatoolkit}/lib:${pkgs.cudaPackages_12.cudnn}/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.python311Packages.pynvml}/lib:$LD_LIBRARY_PATH"
+      export XLA_FLAGS="--xla_gpu_cuda_data_dir=${pkgs.cudaPackages_12.cudatoolkit}"
+      export EXTRA_LDFLAGS="-L/lib -L${pkgs.cudaPackages_12.cudatoolkit}/lib"
       export EXTRA_CCFLAGS="-I/usr/include"
-      export CUDA_TOOLKIT_ROOT_DIR="${pkgs.cudaPackages.cudatoolkit}"
-      export CUDA_TOOLKIT_ROOT="${pkgs.cudaPackages.cudatoolkit}"
-      export CUDNN_ROOT="${pkgs.cudaPackages.cudnn}"
+      export CUDA_TOOLKIT_ROOT_DIR="${pkgs.cudaPackages_12.cudatoolkit}"
+      export CUDA_TOOLKIT_ROOT="${pkgs.cudaPackages_12.cudatoolkit}"
+      export CUDNN_ROOT="${pkgs.cudaPackages_12.cudnn}"
     
       cd agl_anonymizer_pipeline
       python -m spacy download de_core_news_md
@@ -378,7 +307,7 @@ in {
       virtualenv = editablePythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.all;
 
     in
-  pkgs.mkShell {
+  pkgs.gcc12Stdenv.mkShell {
     packages = [
       virtualenv
       pkgs.uv
@@ -388,8 +317,8 @@ in {
       PATH = "${pkgs.uv}/bin:$PATH";
       LD_LIBRARY_PATH = "${lib.makeLibraryPath}:/run/opengl-driver/lib:/run/opengl-driver-32/lib";
       TESSDATA_PREFIX = "${pkgs.tesseract}/share/tessdata";  # Add this line
-      CUDA_HOME = "${pkgs.cudaPackages.cudatoolkit}";
-      CUDA_PATH = "${pkgs.cudaPackages.cudatoolkit}";
+      CUDA_HOME = "${pkgs.cudaPackages_12.cudatoolkit}";
+      CUDA_PATH = "${pkgs.cudaPackages_12.cudatoolkit}";
 
     };
     shellHook = ''
