@@ -155,6 +155,7 @@ in {
       stdenv.cc.cc.lib
       zlib
       glib
+      glibc
       tesseract
 
 
@@ -172,6 +173,7 @@ in {
         pkgs.stdenv.cc.cc.lib
         pkgs.zlib
         pkgs.glib
+        pkgs.glibc
         pkgs.tesseract
 
       ]}:$LD_LIBRARY_PATH
@@ -306,7 +308,7 @@ in {
       # Enable all optional dependencies for development.
       virtualenv = editablePythonSet.mkVirtualEnv "agl_anonymizer_pipeline-env" workspace.deps.all;
 
-    in
+in
   pkgs.gcc12Stdenv.mkShell {
     packages = [
       virtualenv
