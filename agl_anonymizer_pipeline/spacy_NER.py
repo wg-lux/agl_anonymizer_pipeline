@@ -23,13 +23,15 @@ def NER_German(text):
     try:
         doc = nlp(text)
         entities = [(ent.text, ent.start_char, ent.end_char, ent.label_) for ent in doc.ents]
+        for token in doc:
+            print(token.text, token.pos_, token.dep_)
 
         if entities:
             logger.info('The following NER tags are found:')
             for entity in entities:
                 logger.info(entity)
 
-            per_found = any(ent.label_ == 'PER' for ent in doc.ents)
+            per_found = any(ent.label_ == 'PER' or ent.label_ =='PERSON' for ent in doc.ents)
 
             if per_found:
                 logger.info("A person tag ('PER') was found in the text. Replacing...")

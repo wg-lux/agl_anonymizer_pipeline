@@ -12,22 +12,37 @@ import numpy as np
 from custom_logger import get_logger
 
 logger = get_logger(__name__)
+# At the start of your script
+if torch.cuda.is_available():
+    logger.info(f"CUDA version: {torch.version.cuda}")
+    logger.info(f"GPU Device: {torch.cuda.get_device_name(0)}")
+    logger.info(f"Number of GPUs: {torch.cuda.device_count()}")
 
 def preload_models():
     global processor, model, tokenizer, device
 
     logger.info("Preloading models...")
 
-    # Determine the device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logger.info(f"Using device: {device}")
+    # More explicit CUDA availability check
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        torch.backends.cudnn.benchmark = True  # Enable CUDA optimization
+        logger.info(f"Using CUDA device: {torch.cuda.get_device_name(0)}")
+    else:
+        device = torch.device('cpu')
+        logger.warning("CUDA not available, using CPU")
 
-    # Load processor, model, and tokenizer
-    processor = ViTImageProcessor.from_pretrained('microsoft/trocr-base-str')
-    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-str')
-    tokenizer = AutoTokenizer.from_pretrained('microsoft/trocr-base-str')
+    # Load models with CUDA memory optimization
+    with torch.cuda.device(device):
+        processor = ViTImageProcessor.from_pretrained('microsoft/trocr-base-str')
+        model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-str')
+        tokenizer = AutoTokenizer.from_pretrained('microsoft/trocr-base-str')
+        
+        # Move model to GPU and enable CUDA optimizations
+        if torch.cuda.is_available():
+            model = model.cuda()
+            model = torch.compile(model)  # Optional: Uses torch's compiler for additional speedup
 
-    # Move the model to the appropriate device
     model.to(device)
 
     # Optionally, set up the pipeline if you intend to use it
@@ -44,74 +59,111 @@ def preload_models():
     logger.info("Models preloaded successfully.")
     return processor, model, tokenizer, device
 
+def cleanup_gpu():
+    """Clean up GPU memory"""
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+def print_gpu_info():
+    if torch.cuda.is_available():
+        logger.info(f"GPU Memory used: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
+        logger.info(f"GPU Memory cached: {torch.cuda.memory_reserved() / 1e9:.2f} GB")
+        cudasupport = True
+        return cudasupport
+    else:
+        cudasupport = False
+        return cudasupport
+
 def trocr_on_boxes(image_path, boxes):
-    image = Image.open(image_path).convert("RGB")
-    extracted_text_with_boxes = []
-    confidences = []
+    try:
+        image = Image.open(image_path).convert("RGB")
+        extracted_text_with_boxes = []
+        confidences = []
 
-    # Ensure models are loaded
-    processor, model, tokenizer, device = preload_models()
+        # Ensure models are loaded
+        processor, model, tokenizer, device = preload_models()
 
-    logger.debug("Processing image with TrOCR")
+        logger.debug("Processing image with TrOCR")
 
-    for idx, box in enumerate(boxes):
-        try:
-            (startX, startY, endX, endY) = box
+        for idx, box in enumerate(boxes):
+            cudasupport = print_gpu_info()
+            try:
+                (startX, startY, endX, endY) = box
 
-            # Expand the region of interest
-            image_np = np.asarray(image)
-            image_shape = image_np.shape
-            expanded_box = expand_roi(startX, startY, endX, endY, 5, image_shape)
-            (startX_exp, startY_exp, endX_exp, endY_exp) = expanded_box
+                # Expand the region of interest
+                image_np = np.asarray(image)
+                image_shape = image_np.shape
+                expanded_box = expand_roi(startX, startY, endX, endY, 5, image_shape)
+                (startX_exp, startY_exp, endX_exp, endY_exp) = expanded_box
 
-            # Crop the image to the expanded box
-            cropped_image = image.crop((startX_exp, startY_exp, endX_exp, endY_exp))
+                # Crop the image to the expanded box
+                cropped_image = image.crop((startX_exp, startY_exp, endX_exp, endY_exp))
 
-            # Process the cropped image using the processor
-            pixel_values = processor(
-                cropped_image, 
-                return_tensors="pt"
-            ).pixel_values
+                # Process the cropped image using the processor
+                pixel_values = processor(
+                    cropped_image, 
+                    return_tensors="pt"
+                ).pixel_values
+                if cudasupport==True:
+                    # Move pixel_values to the same device as the model
+                    pixel_values = pixel_values.to(device)
+                    with torch.cuda.amp.autocast():  # Enable automatic mixed precision
+                        pixel_values = processor(
+                            cropped_image, 
+                            return_tensors="pt"
+                        ).pixel_values.to(device)
 
-            # Move pixel_values to the same device as the model
-            pixel_values = pixel_values.to(device)
+                        # Generate text with CUDA optimizations
+                        outputs = model.generate(
+                            pixel_values, 
+                            output_scores=True, 
+                            return_dict_in_generate=True, 
+                            max_new_tokens=50,
+                            use_cache=True  # Enable CUDA caching
+                        )
+                else:
+                    continue
+                # Generate text predictions using the model
+                outputs = model.generate(
+                    pixel_values, 
+                    output_scores=True, 
+                    return_dict_in_generate=True, 
+                    max_new_tokens=50
+                )
 
-            # Generate text predictions using the model
-            outputs = model.generate(
-                pixel_values, 
-                output_scores=True, 
-                return_dict_in_generate=True, 
-                max_new_tokens=50
-            )
+                # Decode the output tokens into readable text
+                generated_text = tokenizer.batch_decode(
+                    outputs.sequences, 
+                    skip_special_tokens=True
+                )[0]
 
-            # Decode the output tokens into readable text
-            generated_text = tokenizer.batch_decode(
-                outputs.sequences, 
-                skip_special_tokens=True
-            )[0]
+                # Calculate confidence score from the last token's scores
+                scores = outputs.scores  # List of logits for each generation step
+                if scores:
+                    # Take the scores from the last generation step
+                    last_scores = scores[-1]
+                    confidence_score = torch.nn.functional.softmax(last_scores, dim=-1).max().item()
+                else:
+                    confidence_score = 0.0  # Default confidence if scores are unavailable
 
-            # Calculate confidence score from the last token's scores
-            scores = outputs.scores  # List of logits for each generation step
-            if scores:
-                # Take the scores from the last generation step
-                last_scores = scores[-1]
-                confidence_score = torch.nn.functional.softmax(last_scores, dim=-1).max().item()
-            else:
-                confidence_score = 0.0  # Default confidence if scores are unavailable
+                # Append results to the lists
+                extracted_text_with_boxes.append((generated_text.strip(), expanded_box))
+                confidences.append(confidence_score)
 
-            # Append results to the lists
-            extracted_text_with_boxes.append((generated_text.strip(), expanded_box))
-            confidences.append(confidence_score)
+                logger.info(f"Processed box {idx + 1}/{len(boxes)}: '{generated_text.strip()}' with confidence {confidence_score:.4f}")
 
-            logger.info(f"Processed box {idx + 1}/{len(boxes)}: '{generated_text.strip()}' with confidence {confidence_score:.4f}")
+            except Exception as e:
+                logger.info(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
+                extracted_text_with_boxes.append(("", box))
+                confidences.append(0.0)
 
-        except Exception as e:
-            logger.info(f"Error processing box {idx + 1}/{len(boxes)}: {e}")
-            extracted_text_with_boxes.append(("", box))
-            confidences.append(0.0)
-
-    logger.debug("TrOCR processing complete")
-    return extracted_text_with_boxes, confidences
+        logger.debug("TrOCR processing complete")
+        return extracted_text_with_boxes, confidences
+    except Exception as e:
+        logger.error(f"Error in TrOCR processing: {e}")
+        cleanup_gpu()
+    finally:
+        cleanup_gpu()
 
 def tesseract_on_boxes(image_path, boxes):
     image = Image.open(image_path).convert("RGB")

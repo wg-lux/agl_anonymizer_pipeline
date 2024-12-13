@@ -33,6 +33,7 @@ version = "0.1.12"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
+    { name = "certifi" },
     { name = "fst-pso" },
     { name = "ftfy" },
     { name = "gdown" },
@@ -64,6 +65,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = ">=1.2.0" },
+    { name = "certifi", specifier = ">=2024.8.30" },
     { name = "fst-pso", specifier = ">=1.8.1" },
     { name = "ftfy", specifier = "==6.2.0" },
     { name = "gdown", specifier = "==5.2.0" },

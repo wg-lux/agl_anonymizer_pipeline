@@ -19,3 +19,6 @@ __pycache__/
 ./.vscode/
 ./.mypy_cache/
 ./.pytest_cache/
+./agl_anonymizer_pipeline/agl-anonymizer-temp
+./agl_anonymizer_pipeline/agl-anonymizer
+

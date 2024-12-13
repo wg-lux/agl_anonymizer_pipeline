@@ -6,11 +6,13 @@ import cv2
 import json
 from box_operations import extend_boxes_if_needed
 from directory_setup import create_temp_directory, create_model_directory
-import urllib.request
 from custom_logger import get_logger
 from pathlib import Path
-logger = get_logger(__name__)
+import certifi
+import urllib.request
+import ssl
 
+logger = get_logger(__name__)
 
 '''
 This module implements argman's EAST Text Detection in a function. 
@@ -29,25 +31,32 @@ MODEL_URL = 'https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-
 temp_dir, base_dir, csv_dir = create_temp_directory()
 model_dir = create_model_directory()
 
-east_model_path = Path(model_dir)  # Correct joinpath usage
+# At the top level, after creating model_dir
+east_model_path = Path(model_dir) / "frozen_east_text_detection.pb"
+# Download once when module loads
 
-# Download the model if it doesn't exist
 if not east_model_path.exists():
     try:
-        import urllib.request
         logger.info(f"Model not found. Downloading EAST model to {str(east_model_path)}...")
-        urllib.request.urlretrieve(MODEL_URL, str(east_model_path))
+        # Create SSL context with certifi's certificates
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        
+        with urllib.request.urlopen(MODEL_URL, context=ssl_context) as response:
+            east_model_path.write_bytes(response.read())
         logger.debug("Download complete.")
     except Exception as e:
-        logger.debug(f"Error downloading the model: {e}")
-        raise
-else:
-    logger.debug(f"EAST model already exists at {east_model_path}")
+        logger.error(f"Error downloading the model: {e}")
+        raiselogger = get_logger(__name__)
+
 
 def east_text_detection(image_path, east_path=None, min_confidence=0.5, width=320, height=320):
-    # If east_path is not provided, use the downloaded model path
     if east_path is None:
-        east_path = east_model_path
+        east_path = str(east_model_path)  # Convert to string for cv2
+        
+    if not Path(east_path).exists():
+        raise FileNotFoundError(f"EAST model not found at: {east_path}")
+        
+    logger.debug(f"Using EAST model at: {east_path} (size: {Path(east_path).stat().st_size} bytes)")
 
     # Load the input image and grab the image dimensions
     orig = cv2.imread(image_path)
@@ -72,6 +81,11 @@ def east_text_detection(image_path, east_path=None, min_confidence=0.5, width=32
 
     # Load the pre-trained EAST text detector
     logger.debug("[INFO] Loading EAST text detector...")
+    if east_model_path.exists():
+        logger.debug(f"EAST model size: {east_model_path.stat().st_size} bytes")
+    else:
+        logger.debug(f"EAST model not found at {east_model_path}")
+        raise FileNotFoundError(f"EAST model not found at {east_model_path}")
     net = cv2.dnn.readNet(east_path)
 
     blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
