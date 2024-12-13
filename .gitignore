@@ -4,8 +4,8 @@ result
 *.pyc
 __pycache__/
 .pytest_cache/
-./agl_anonymizer_pipeline/agl-anonymizer-temp
-./agl_anonymizer_pipeline-env/
+*./agl_anonymizer_pipeline/agl-anonymizer-temp
+*./agl_anonymizer_pipeline-env/
 ./agl_anonymizer_pipeline.egg-info/
 ./dist/
 ./build/
@@ -19,6 +19,6 @@ __pycache__/
 ./.vscode/
 ./.mypy_cache/
 ./.pytest_cache/
-./agl_anonymizer_pipeline/agl-anonymizer-temp
-./agl_anonymizer_pipeline/agl-anonymizer
+*./agl_anonymizer_pipeline/agl-anonymizer-temp
+*./agl_anonymizer_pipeline/agl-anonymizer
 
