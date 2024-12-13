@@ -50,7 +50,6 @@ let
 
           cuda_nvcc = prev.cudaPackages.cuda_nvcc.overrideAttrs (old: {
             buildPhase = (old.preBuild or "") + ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
 
               '';
@@ -64,7 +63,6 @@ let
           });
           nccl = prev.cudaPackages.nccl.overrideAttrs (old: {
             buildPhase = (old.buildPhase or "") + ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
 
               '';
@@ -80,7 +78,6 @@ let
           });
           cudatoolkit = prev.cudaPackages.cudatoolkit.overrideAttrs (old: {
             buildPhase = (old.preBuild or "") + ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
 
               '';
@@ -96,7 +93,6 @@ let
           });
           cudnn = prev.cudaPackages.cudnn.overrideAttrs (old: {
             buildPhase = (old.preBuild or "") + ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
 
               '';
@@ -122,7 +118,6 @@ let
               final.libllvm
             ];
             buildPhase = ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
               '';
           });
@@ -169,8 +164,6 @@ let
               final.triton
             ];
             buildPhase = ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
-              mkdir -p $TMPDIR
               export CXX=${final.gcc10}/bin/g++
             '';
 
@@ -186,7 +179,6 @@ let
               final.stdenv.cc.cc
             ];
             buildPhase = ''
-              export TMPDIR=$NIX_BUILD_TOP/tmp
               export CXX=${final.gcc10}/bin/g++
               '';
 
